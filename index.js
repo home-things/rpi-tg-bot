@@ -20,7 +20,7 @@ const child_process = require('child_process');
 const getLightStatus = () => parseInt(execSync('gpio -1 read 22'), 10);
 const getLightStatus_ = () => exec_('gpio -1 read 22').then(l => parseInt(l, 10));
 const throttle = require('lodash.throttle');
-cosnt debounce = require('just-debounce-it');
+const debounce = require('just-debounce-it');
 const randList = (list) => {
 	return list[Math.floor(Math.random() * list.length)];
 };
