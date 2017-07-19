@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "watch": "npm-watch",
-    "restart": "./restart"
+    "restart": "./restart",
+    "test": "ava"
   },
   "author": "",
   "license": "ISC",
