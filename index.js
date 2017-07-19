@@ -35,7 +35,7 @@ let homematesPresense = {
 const homematesMap = {
 	lenya: 'Лёня',
 	misha: 'Миша',
-	sasha: 'Саша',
+	sasha: 'Саня',
 };
 
 const onChange = (type, signal, data) => {
@@ -149,14 +149,14 @@ app.telegram.getMe().then((botInfo) => {
  voice
 */
 
-app.hears(/^(читай|зачитывай)\s+((входящие\s+)?сообшения|ч[ая]т)/i, (ctx) => {
+app.hears(/^(?:(читай|зачитывай)\s+((входящие\s+)?сообшения|ч[ая]т)|read\s+(chat|messages))/i, (ctx) => {
 	commands.run('voice', 'speech_chat', ctx);
 });
-app.hears(/^не\s+(читай|зачитывай)\s+((входящие\s+)?сообшения|ч[ая]т)/i, (ctx) => {
+app.hears(/^(?:не\s+(читай|зачитывай)\s+((входящие\s+)?сообшения|ч[ая]т)|перестань\s+читать\s+ч[ая]т|no\s+read\s+(chat|messages))/i, (ctx) => {
 	isVoiceVerboseMode = false;
 	ctx.reply('ok, I`ll be quiet')
 });
-app.hears([/^say ((.|\n)+)/im, /^скажи ((.|\n)+)/mi], (ctx) => {
+app.hears([/^(?:say\s+((.|\n)+))/im, /^(?:скажи\s+((.|\n)+))/mi], (ctx) => {
 	console.log(ctx.match);
 	ctx.reply('ok, wait please');
 	say(ctx.match[1], ctx);
@@ -168,7 +168,7 @@ app.hears([/^say ((.|\n)+)/im, /^скажи ((.|\n)+)/mi], (ctx) => {
  home
 */
 
-app.hears(/^who\s+(is\s+)?at\+home\??|(все|кто)\s+(ли\s+)?дома\??/i, (ctx) => {
+app.hears(/^(?:who\s+(is\s+)?at\+home\??|(все|кто)\s+(ли\s+)?дома\??)/i, (ctx) => {
 	Promise.all([
 		ctx.reply('10 sec, please… 😅 '),
 		whoAtHome(),
@@ -187,15 +187,15 @@ app.hears(/^who\s+(is\s+)?at\+home\??|(все|кто)\s+(ли\s+)?дома\??/i,
  light
 */
 
-app.hears('turn light on', (ctx) => {exec('light on'); ctx.reply('ok');})
-app.hears('turn light off', (ctx) => {exec('light off'); ctx.reply('ok');})
-app.hears(['is light on', 'light status'], (ctx) => {const status = getLightStatus(); ctx.reply('ok: ' + (status ? 'on' : 'off'));})
+app.hears(/^turn light on/i, (ctx) => {exec('light on'); ctx.reply('ok');})
+app.hears(/^turn light off/i, (ctx) => {exec('light off'); ctx.reply('ok');})
+app.hears([/^is light on/i, /^light status/i], (ctx) => {const status = getLightStatus(); ctx.reply('ok: ' + (status ? 'on' : 'off'));})
 
 /*
  music
 */
 
-app.hears(/(выключи|останови|выруби|убери)\s+(музыку|звук)/i, (ctx) => {
+app.hears(/^(?:(выключи|останови|выруби|убери)\s+(музыку|звук))/i, (ctx) => {
 	if(Boolean(execSync('has-music'))) {
 		exec('stop-music', (err, stdout, stderr) => {
 			console.log('cb', err, stdout,stderr);
@@ -205,7 +205,7 @@ app.hears(/(выключи|останови|выруби|убери)\s+(музы
 		ctx.reply('Нимагуу. You can make quieter');
 	}
 })
-app.hears(/поставь на паузу|^пауза$/i, (ctx) => {
+app.hears(/^(?:поставь на паузу|пауза$|pause(,\s+please!?)?)/i, (ctx) => {
 	if(Boolean(execSync('has-music'))) {
 		exec('pause-music', (err, stdout, stderr) => {
 			console.log('cb', err, stdout,stderr);
@@ -215,7 +215,7 @@ app.hears(/поставь на паузу|^пауза$/i, (ctx) => {
 		ctx.reply('Нимагуу. You can make quieter');
 	}
 })
-app.hears(/^продолж(и|ай)\s+(воспроизведение|играть)|resume\s+playing/i, (ctx) => {
+app.hears(/^(?:продолж(и|ай)\s+(воспроизведение|играть)|resume\s+playing)/i, (ctx) => {
 	if(Boolean(execSync('has-music'))) {
 		exec('resume-music', (err, stdout, stderr) => {
 			console.log('cb', err, stdout,stderr);
@@ -225,17 +225,17 @@ app.hears(/^продолж(и|ай)\s+(воспроизведение|играт
 		ctx.reply('Нимагуу');
 	}
 })
-app.hears(/^(сделай\s+)?(по)?тише|^make(\s+(sound|music))?\s+quieter/i, (ctx) => {
+app.hears(/^(?:(сделай\s+)?(по)?тише|make(\s+(sound|music))?\s+quieter)/i, (ctx) => {
 	exec('v=$(get-vol); vol $(node -p "$v - 10") quieter', (err, stdout, stderr) => {
 		err ? ctx.reply('I`m cannot') : ctx.reply(`ok, vol decreased`);
 	});
 });
-app.hears(/^(сделай\s+)?(по)?громче|^make(\s+(sound|music))?\s+louder/i, (ctx) => {
+app.hears(/^(?:(сделай\s+)?(по)?громче|make(\s+(sound|music))?\s+louder)/i, (ctx) => {
 	exec('v=$(get-vol); vol $(node -p "$v + 10") louder', (err, stdout, stderr) => {
 		err ? ctx.reply('I`m cannot') : ctx.reply(`ok, vol increased`);
 	});
 });
-app.hears(/^((сы|и)грай|воспроизведи|play)\s+((.|\n)+)/i, (ctx) => {
+app.hears(/^(?:(?:(?:сы|и)грай|воспроизведи|play)\s+((?:.|\n)+))/i, (ctx) => {
 	ctx.reply('ok, I`ll try')
 	exec(`mpg321 "${ ctx.match[1].trim().replace(/\n/g, ' ') }"`, (err, stdout, stderr) => {
 		err ? ctx.reply('нишмаглаа') : ctx.reply('ok, listen');
@@ -251,7 +251,7 @@ app.command('start', (props) => {
   console.log('start', from, props)
   return reply('Welcome!')
 })
-app.hears(/hi/i, (ctx) => ctx.reply('Hey there!'))
+app.hears(/^hi$/i, (ctx) => ctx.reply('Hey there!'))
 
 //app.telegram.sendMessage(VIGVAM_ID, 'Привет человеки');
 //app.on('inline_query', (props) => {
@@ -265,7 +265,7 @@ app.hears(/hi/i, (ctx) => ctx.reply('Hey there!'))
  universal
 */
 
-app.hears(/^(повтори|((и|повтори)\s+)?ещё(\s+раз)?|(one\s+more\s+time|more|repeat)(,\s+please)?)$/i, (ctx) => {
+app.hears(/^(?:повтори|((и|повтори)\s+)?ещё(\s+раз)?|(one\s+more\s+time|more|repeat)(,\s+please)?)$/i, (ctx) => {
 	if (!lastCommand.has()) return;
 	switch(lastCommand.type) {
 		// change the entity
@@ -297,13 +297,13 @@ app.hears(/^(повтори|((и|повтори)\s+)?ещё(\s+раз)?|(one\s+m
 	}
 });
 
-app.hears(/^(yep|yes|да|Y)/i, (ctx) => {
+app.hears(/^(?:yep|yes|да|Y)/i, (ctx) => {
 	if (_isIn1wordAnsExpecting()) {
 		isIn1wordAnsExpecting = false;
 		lastQuestion.answer(true);
 	}
 });
-app.hears(/^(no|nope|N|нет|не-а)/i, (ctx) => {
+app.hears(/^(?:no|nope|N|нет|не-а)/i, (ctx) => {
 	if (_isIn1wordAnsExpecting()) {
 		lastQuestion.answer(false);
 	}
