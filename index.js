@@ -60,10 +60,15 @@ const onChange = (type, signal, data) => {
 let lastMessageTime = null;
 
 const getIntro = () => {
-	if (Date.now() - lastMessageTime < 1000 * INTRO_DELAY) return '';
-	lastMessageTime = Date.now()
-	return ['ааааа','вигв+аме','кар+оч','сл+ушайте','зт с+амое'][Math.floor(Math.random() * 5)]
-		+ '... &&& ...';
+	let intro;
+	if (Date.now() - lastMessageTime < 1000 * INTRO_DELAY) intro = '';
+
+	intro = ['ааааа','вигв+аме','кар+оч','сл+ушайте','эт с+амое'][Math.floor(Math.random() * 5)]
+		+ ', ... &&& ... — ';
+
+	lastMessageTime = Date.now();
+	
+	return intro;
 };
 const say = (text, ctx, isQuiet, noIntro) => {
 	console.log()
