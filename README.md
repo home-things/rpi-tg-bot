@@ -14,6 +14,7 @@
 
 #### copy to this repo
 
+* nodejs airplay server (stream music from iphone)
 * nodejs homekit server (siri: `turn light on`)
 * cront jobs & bash scripts (download & play podcasts, light scripts)
 * alfred workflow
