@@ -187,9 +187,17 @@ app.hears(/^(?:who\s+(is\s+)?at\+home\??|(все|кто)\s+(ли\s+)?дома\??
  light
 */
 
-app.hears(/^turn light on/i, (ctx) => {exec('light on'); ctx.reply('ok');})
-app.hears(/^turn light off/i, (ctx) => {exec('light off'); ctx.reply('ok');})
-app.hears([/^is light on/i, /^light status/i], (ctx) => {const status = getLightStatus(); ctx.reply('ok: ' + (status ? 'on' : 'off'));})
+app.hears(/^(?:turn\s+light\s+on|включи\s+свет)/i, (ctx) => {
+	exec_('light on').then(() => ctx.reply('ok')).catch(() => ctx.reply('нишмаглаа'));
+});
+app.hears(/^(?:turn\s+light\s+off|выключи\s+свет)/i, (ctx) => {
+	exec_('light off').then(() => ctx.reply('ok')).catch(() => ctx.reply('нишмаглаа'));
+});
+app.hears(/^(?:is\s+light\s+on|light\s+status|включен(\s+ли)?\s+свет|свет\s+включен\??)/i, (ctx) => {
+	getLightStatus_().then(status => {
+		ctx.reply('ok: ' + (status ? 'on' : 'off'));
+	}).catch(() => ctx.reply('нишмаглаа'));
+});
 
 /*
  music
