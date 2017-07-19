@@ -1,4 +1,4 @@
-// set: ts=4
+// vim: set ts=4
 
 const ANS_EXP = 8; // s
 const INTRO_DELAY = 20; // s
@@ -29,7 +29,7 @@ let homematesPresense = {
 	lenya: null,
 	misha: null,
 	sasha: null,
-	empty: function () { return !(this.lenya && this.misha && this.sasha); },
+	empty: function () { return !this.lenya && !this.misha && !this.sasha; },
 };
 
 const homematesMap = {
@@ -43,13 +43,13 @@ const onChange = (type, signal, data) => {
 	case('home'):
 		switch(signal) {
 		case('presense'):
-			if (data.sasha && data.sasha.before) getLightStatus_().then(v=>{if(v) throw 'y'}).then(() => exec_('light on')).then(() => {
+			if (data.sasha && data.sasha.before) getLightStatus_().then(v=>{if(v.trim()) throw 'y'}).then(() => exec_('light on')).then(() => {
 				app.telegram.sendMessage(SASHA_ID, 'Sasha came back ==> Light turned on');
 			}).catch(() => {});
-			if (data.sasha && !data.sasha.before) getLightStatus_().then(v=>{if(!v) throw 'n'}).then(() => exec_('light off')).then(() => {
+			if (data.sasha && !data.sasha.before) getLightStatus_().then(v=>{if(!v.trim()) throw 'n'}).then(() => exec_('light off')).then(() => {
 				app.telegram.sendMessage(SASHA_ID, 'Sasha left ==> Light turned off');
 			}).catch(() => {});
-			if (homematesPresense.empty()) exec_('has-music').then(v=>{if(!v) throw 'none'}).then(() => exec_('stop-music')).then(() => {
+			if (homematesPresense.empty()) exec_('has-music').then(v=>{if(!v.trim()) throw 'none'}).then(() => exec_('stop-music')).then(() => {
 				app.telegram.sendMessage(VIGVAM_ID, 'No body at home ==> Music stopped');
 			}).catch(() => {});
 		break;
@@ -176,7 +176,7 @@ app.hears(/^who\s+(is\s+)?at\+home\??|(все|кто)\s+(ли\s+)?дома\??/i,
 	.then(([replyCtx, json]) => {
 		const getStatus = (id) => json[id]
 			? `✅ ${ homematesMap[id] } ${ randList(['дома ', 'тута', 'где-то здесь']) }`
-			: `🔴 ${ homematesMap[id] } ${ randList(['не дома', 'отсутствует', 'шляется']) }`
+			: `🔴 ${ homematesMap[id] } ${ id === 'lenya' ? randList(['— по бабам', '— опять по бабам']) : randList(['не дома', 'отсутствует', 'шляется']) }`
 		const txt = Object.keys(homematesMap).map((id) => getStatus(id)).join('\n');
 		app.telegram.editMessageText(replyCtx.chat.id, replyCtx.message_id, null, txt);
 	});
@@ -313,7 +313,7 @@ app.hears(/./, (ctx) => {
 	console.log(ctx.from)
 	if(!isVoiceVerboseMode) return;
 	const name = ctx.update.message.from.first_name;
-	say(`говорит ${ homematesMap[name] || name }: ${ ctx.match.input }`, ctx, true);
+	say(`говорит ${ homematesMap[name.toLowerCase()] || name }: ${ ctx.match.input }`, ctx, true);
 });
 
 const startHomematesePresensePolling = () => {
