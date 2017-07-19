@@ -76,11 +76,23 @@ const say = (text, ctx, isQuiet, noIntro) => {
 	});
 };
 
+const whoAtHome = () => {
+	return exec_('who-at-home')
+	.then((stdout) => {
+		const j = JSON.parse(stdout)
+		j.lenya = j.lenya === 'Y';
+		j.misha = j.misha === 'Y';
+		j.sasha = j.sasha === 'Y';
+		return j;
+	});
+};
+
 let isVoiceVerboseMode = false;
 let _isIn1wordAnsExpecting = false;
 const isIn1wordAnsExpecting = () => {
 	return _isIn1wordAnsExpecting ? (Date.now() - _isIn1wordAnsExpecting < 1000 * ANS_EXP) : false;
 };
+
 const lastCommand = {
 	_command: null,
 	type: null,
@@ -292,7 +304,7 @@ app.hears(/^(yep|yes|да|Y)/i, (ctx) => {
 	}
 });
 app.hears(/^(no|nope|N|нет|не-а)/i, (ctx) => {
-	if (isIn1wordAnsExpecting()) {
+	if (_isIn1wordAnsExpecting()) {
 		lastQuestion.answer(false);
 	}
 });
@@ -304,11 +316,10 @@ app.hears(/./, (ctx) => {
 	say(`говорит ${ homematesMap[name] || name }: ${ ctx.match.input }`, ctx, true);
 });
 
-app.startPolling()
-
-const pollHomematesePresense = () => {
+const startHomematesePresensePolling = () => {
 	setInterval(reportHomematesePresenseChange, 1000 * 60 * 1);
-}
+};
+
 const reportHomematesePresenseChange = async () => {
 	if ((new Date()).getHours() < 9) return;
 	console.log('poll homemates presense', homematesPresense);
@@ -318,11 +329,13 @@ const reportHomematesePresenseChange = async () => {
 		onChange('home', 'presense', diff);
 	}
 };
+
 const sendHomematesDiff = throttle((diff) => {
 	console.log('diff', diff);
 	app.telegram.sendMessage(VIGVAM_ID, '🏠↘︎↖︎\n'
 	+ diff.map(item => item.who + (item.before ? ' вернулся' : (Math.random() > .5 ? ' ушёл' : ' свалил'))));
 }, 1000 * 60 * 60);
+
 const getHomematesePresenseChange = () => {
 	const diff = whoAtHome().then(actualPresense => {
 		const diff = ['lenya', 'misha', 'sasha'].filter(m => {
@@ -336,15 +349,7 @@ const getHomematesePresenseChange = () => {
 	});
 	return diff;
 };
-const whoAtHome = () => {
-	return exec_('who-at-home')
-	.then((stdout) => {
-		const j = JSON.parse(stdout)
-		j.lenya = j.lenya === 'Y';
-		j.misha = j.misha === 'Y';
-		j.sasha = j.sasha === 'Y';
-		return j;
-	});
-};
 
 
+app.startPolling();
+startHomematesePresensePolling();
