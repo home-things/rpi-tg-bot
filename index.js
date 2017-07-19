@@ -6,7 +6,7 @@ const VIGVAM_ID = -158775326;
 const SASHA_ID = 147445817;
 const MISHA_ID = 210367273;
 
-require('dotenv').config();
+require('dotenv').config(); // load BOT_TOKE from .env file
 
 const Telegraf = require('telegraf')
 const TOKEN = null;
@@ -14,16 +14,11 @@ const token = process.env.BOT_TOKEN || TOKEN;
 
 const util = require('util');
 const child_process = require('child_process');
-	const exec = child_process.exec.bind(child_process);
-	const exec_ = util.promisify(exec);
-	const execSync = (cmd) => child_process.execSync(cmd, {encoding: 'utf8'});
-const getLightStatus = () => parseInt(execSync('gpio -1 read 22'), 10);
-const getLightStatus_ = () => exec_('gpio -1 read 22').then(l => parseInt(l, 10));
+const exec = util.promisify(child_process.exec.bind(child_process));
+const getLightStatus = () => exec('gpio -1 read 22').then(l => parseInt(l, 10));
 const throttle = require('lodash.throttle');
 const debounce = require('just-debounce-it');
-const randList = (list) => {
-	return list[Math.floor(Math.random() * list.length)];
-};
+const randList = (list) => list[Math.floor(Math.random() * list.length)];
 
 let homematesPresense = {
 	lenya: null,
@@ -43,13 +38,13 @@ const onChange = (type, signal, data) => {
 	case('home'):
 		switch(signal) {
 		case('presense'):
-			if (data.sasha && data.sasha.before) getLightStatus_().then(v=>{if(v.trim()) throw 'y'}).then(() => exec_('light on')).then(() => {
+			if (data.sasha && data.sasha.before) getLightStatus().then(v=>{if(v.trim()) throw 'y'}).then(() => exec('light on')).then(() => {
 				app.telegram.sendMessage(SASHA_ID, 'Sasha came back ==> Light turned on');
 			}).catch(() => {});
-			if (data.sasha && !data.sasha.before) getLightStatus_().then(v=>{if(!v.trim()) throw 'n'}).then(() => exec_('light off')).then(() => {
+			if (data.sasha && !data.sasha.before) getLightStatus().then(v=>{if(!v.trim()) throw 'n'}).then(() => exec('light off')).then(() => {
 				app.telegram.sendMessage(SASHA_ID, 'Sasha left ==> Light turned off');
 			}).catch(() => {});
-			if (homematesPresense.empty()) exec_('has-music').then(v=>{if(!v.trim()) throw 'none'}).then(() => exec_('stop-music')).then(() => {
+			if (homematesPresense.empty()) exec('has-music').then(v=>{if(!v.trim()) throw 'none'}).then(() => exec('stop-music')).then(() => {
 				app.telegram.sendMessage(VIGVAM_ID, 'No body at home ==> Music stopped');
 			}).catch(() => {});
 		break;
@@ -67,7 +62,7 @@ const getIntro = () => getIntro_() || '';
 
 const say = (text, ctx, isQuiet, noIntro) => {
 	console.log(">>", text.trim().replace(/\n/g, ' '))
-	return exec_(`tts "${ noIntro || getIntro() }, ${ text.replace(/\n/g, ' ') }"`).then((stdout) => {
+	return exec(`tts "${ noIntro || getIntro() }, ${ text.replace(/\n/g, ' ') }"`).then((stdout) => {
 		console.log('say', stdout);
 		isQuiet || ctx.reply('я всё сказал');
 	}).catch(e => {
@@ -77,7 +72,7 @@ const say = (text, ctx, isQuiet, noIntro) => {
 };
 
 const whoAtHome = () => {
-	return exec_('who-at-home')
+	return exec('who-at-home')
 	.then((stdout) => {
 		const j = JSON.parse(stdout)
 		j.lenya = j.lenya === 'Y';
@@ -169,6 +164,7 @@ app.hears([/^(?:say\s+((.|\n)+))/im, /^(?:скажи\s+((.|\n)+))/mi], (ctx) => 
 */
 
 app.hears(/^(?:who\s+(is\s+)?at\+home\??|(все|кто)\s+(ли\s+)?дома\??)/i, (ctx) => {
+	console.log('wtf');
 	Promise.all([
 		ctx.reply('10 sec, please… 😅 '),
 		whoAtHome(),
@@ -188,13 +184,13 @@ app.hears(/^(?:who\s+(is\s+)?at\+home\??|(все|кто)\s+(ли\s+)?дома\??
 */
 
 app.hears(/^(?:turn\s+light\s+on|включи\s+свет)/i, (ctx) => {
-	exec_('light on').then(() => ctx.reply('ok')).catch(() => ctx.reply('нишмаглаа'));
+	exec('light on').then(() => ctx.reply('ok')).catch(() => ctx.reply('нишмаглаа'));
 });
 app.hears(/^(?:turn\s+light\s+off|выключи\s+свет)/i, (ctx) => {
-	exec_('light off').then(() => ctx.reply('ok')).catch(() => ctx.reply('нишмаглаа'));
+	exec('light off').then(() => ctx.reply('ok')).catch(() => ctx.reply('нишмаглаа'));
 });
 app.hears(/^(?:is\s+light\s+on|light\s+status|включен(\s+ли)?\s+свет|свет\s+включен\??)/i, (ctx) => {
-	getLightStatus_().then(status => {
+	getLightStatus().then(status => {
 		ctx.reply('ok: ' + (status ? 'on' : 'off'));
 	}).catch(() => ctx.reply('нишмаглаа'));
 });
@@ -204,49 +200,55 @@ app.hears(/^(?:is\s+light\s+on|light\s+status|включен(\s+ли)?\s+све�
 */
 
 app.hears(/^(?:(выключи|останови|выруби|убери)\s+(музыку|звук))/i, (ctx) => {
-	if(Boolean(execSync('has-music'))) {
-		exec('stop-music', (err, stdout, stderr) => {
-			console.log('cb', err, stdout,stderr);
-			err ? ctx.reply('нишмаглааа') : ctx.reply('ok, music stopped');
-		});
-	} else {
-		ctx.reply('Нимагуу. You can make quieter');
-	}
+	exec('has-music').then(hasMusic => {
+		if(hasMusic) {
+			exec('stop-music').then((stdout) => {
+				ctx.reply('ok, music stopped');
+			}).catch(e => {console.error(e); ctx.reply('нишмаглааа');});
+		} else {
+			ctx.reply('Нимагуу. You can make quieter');
+		}
+	}).catch(e =>{console.error(e); ctx.reply('Нимагуу');});
 })
 app.hears(/^(?:поставь на паузу|пауза$|pause(,\s+please!?)?)/i, (ctx) => {
-	if(Boolean(execSync('has-music'))) {
-		exec('pause-music', (err, stdout, stderr) => {
-			console.log('cb', err, stdout,stderr);
-			err ? ctx.reply('I cannot :/') : ctx.reply('Done, music paused');
-		});
-	} else {
-		ctx.reply('Нимагуу. You can make quieter');
-	}
+	exec('has-music').then(hasMusic => {
+		if(hasMusic) {
+			exec('pause-music').then((stdout) => {
+				ctx.reply('Done, music paused');
+			}).catch((e) => {console.error(e); ctx.reply('I cannot :/');});
+		} else {
+			ctx.reply('Нимагуу. You can make quieter');
+		}
+	}).catch(e =>{console.error(e); ctx.reply('Нимагуу');});
 })
 app.hears(/^(?:продолж(и|ай)\s+(воспроизведение|играть)|resume\s+playing)/i, (ctx) => {
-	if(Boolean(execSync('has-music'))) {
-		exec('resume-music', (err, stdout, stderr) => {
-			console.log('cb', err, stdout,stderr);
-			err ? ctx.reply('I cannot :/') : ctx.reply('Done, music resumed');
-		});
-	} else {
-		ctx.reply('Нимагуу');
-	}
+	exec('has-music').then(hasMusic => {
+		if(hasMusic) {
+			exec('resume-music').then((stdout) => {
+				ctx.reply('Done, music resumed');
+			}).catch((e) => {console.error(e); ctx.reply('I cannot :/');});
+		} else {
+			ctx.reply('Нимагуу. You can make quieter');
+		}
+	}).catch(e =>{console.error(e); ctx.reply('Нимагуу');});
 })
 app.hears(/^(?:(сделай\s+)?(по)?тише|make(\s+(sound|music))?\s+quieter)/i, (ctx) => {
-	exec('v=$(get-vol); vol $(node -p "$v - 10") quieter', (err, stdout, stderr) => {
-		err ? ctx.reply('I`m cannot') : ctx.reply(`ok, vol decreased`);
-	});
+	exec('v=$(get-vol); vol $(node -p "$v - 10") quieter').then((stdout) => {
+		ctx.reply(`ok, vol decreased`);
+	}).catch(e =>{console.error(e); ctx.reply('Нимагуу');});
 });
 app.hears(/^(?:(сделай\s+)?(по)?громче|make(\s+(sound|music))?\s+louder)/i, (ctx) => {
-	exec('v=$(get-vol); vol $(node -p "$v + 10") louder', (err, stdout, stderr) => {
-		err ? ctx.reply('I`m cannot') : ctx.reply(`ok, vol increased`);
-	});
+	exec('v=$(get-vol); vol $(node -p "$v + 10") quieter').then((stdout) => {
+		ctx.reply(`ok, vol insreased`);
+	}).catch(e =>{console.error(e); ctx.reply('Нимагуу');});
 });
 app.hears(/^(?:(?:(?:сы|и)грай|воспроизведи|play)\s+((?:.|\n)+))/i, (ctx) => {
+	console.log(ctx.match[1].trim());
 	ctx.reply('ok, I`ll try')
-	exec(`mpg321 "${ ctx.match[1].trim().replace(/\n/g, ' ') }"`, (err, stdout, stderr) => {
-		err ? ctx.reply('нишмаглаа') : ctx.reply('ok, listen');
+	exec(`mplayer "${ ctx.match[1].trim() }"`).then((stdout) => {
+	}).catch((e) => {
+		console.error(e);
+		ctx.reply('нишмаглаа');
 	});
 });
 /*
@@ -306,13 +308,13 @@ app.hears(/^(?:повтори|((и|повтори)\s+)?ещё(\s+раз)?|(one\s
 });
 
 app.hears(/^(?:yep|yes|да|Y)/i, (ctx) => {
-	if (_isIn1wordAnsExpecting()) {
-		isIn1wordAnsExpecting = false;
+	if (isIn1wordAnsExpecting()) {
+		_isIn1wordAnsExpecting = false;
 		lastQuestion.answer(true);
 	}
 });
 app.hears(/^(?:no|nope|N|нет|не-а)/i, (ctx) => {
-	if (_isIn1wordAnsExpecting()) {
+	if (isIn1wordAnsExpecting()) {
 		lastQuestion.answer(false);
 	}
 });
@@ -346,7 +348,7 @@ const sendHomematesDiff = throttle((diff) => {
 
 const getHomematesePresenseChange = () => {
 	const diff = whoAtHome().then(actualPresense => {
-		const diff = ['lenya', 'misha', 'sasha'].filter(m => {
+		const diff = Object.keys(homematesMap).filter(m => {
 			return homematesPresense[m] !== null && homematesPresense[m] !== actualPresense[m];
 		})
 		.map(m => {
