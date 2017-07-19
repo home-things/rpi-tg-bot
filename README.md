@@ -12,9 +12,22 @@
 
 ## todo
 
-#### copy to this repo
+#### to copy to this repo
 
 * nodejs airplay server (stream music from iphone)
 * nodejs homekit server (siri: `turn light on`)
-* cront jobs & bash scripts (download & play podcasts, light scripts)
+* cron jobs & bash scripts (download & play podcasts, light scripts)
 * alfred workflow
+
+#### to write
+* `word2vec` for 1) command matching, 2) music search
+* `api.ai` for intent mining
+* split into modules
+* repeat, undo, ask detaild commands
+* learnings new commands synonims (— do magic — ... — I say to you, bot! — wow, do you mean 'switch magic on'?)
+* weather, jokes, reminders
+* programming state maschine transitions via `tg`
+* transcribing voice messages
+* auto problem diagnosis
+* VAD+mics
+* integrate with - or write your own platform (e.g. http://hobbyquaker.github.io/ccu.io)
