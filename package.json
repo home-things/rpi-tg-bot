@@ -12,6 +12,7 @@
   "dependencies": {
     "dotenv": "^4.0.0",
     "jsdom": "^11.1.0",
+    "just-debounce-it": "^1.0.1",
     "lodash.throttle": "^4.1.1",
     "npm-watch": "^0.2.0",
     "recastai": "^3.4.1",
