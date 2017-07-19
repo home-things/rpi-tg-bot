@@ -66,14 +66,14 @@ const getIntro_ = debounce(() => {
 const getIntro = () => getIntro_() || '';
 
 const say = (text, ctx, isQuiet, noIntro) => {
-	console.log()
-	try {
 	console.log(">>", text.trim().replace(/\n/g, ' '))
-	exec(`tts "${ noIntro || getIntro() }, ${ text.replace(/\n/g, ' ') }"`, (err, stdout, stderr) => {
-		console.log('cb', err, stdout,stderr);
+	return exec_(`tts "${ noIntro || getIntro() }, ${ text.replace(/\n/g, ' ') }"`).then((stdout) => {
+		console.log('say', stdout);
 		isQuiet || ctx.reply('я всё сказал');
+	}).catch(e => {
+		console.error('say error', e);
+		isQuiet || ctx.reply('нишмаглаа /');
 	});
-	} catch(e){}
 };
 
 let isVoiceVerboseMode = false;
@@ -140,7 +140,7 @@ app.telegram.getMe().then((botInfo) => {
 app.hears(/^(читай|зачитывай)\s+((входящие\s+)?сообшения|ч[ая]т)/i, (ctx) => {
 	commands.run('voice', 'speech_chat', ctx);
 });
-app.hears(/^не\s*(читай|зачитывай)\s+((входящие\s+)?сообшения|ч[ая]т)/i, (ctx) => {
+app.hears(/^не\s+(читай|зачитывай)\s+((входящие\s+)?сообшения|ч[ая]т)/i, (ctx) => {
 	isVoiceVerboseMode = false;
 	ctx.reply('ok, I`ll be quiet')
 });
@@ -148,28 +148,6 @@ app.hears([/^say ((.|\n)+)/im, /^скажи ((.|\n)+)/mi], (ctx) => {
 	console.log(ctx.match);
 	ctx.reply('ok, wait please');
 	say(ctx.match[1], ctx);
-/*
-   const ps = child_process.spawn(`curl`, ['-v', `http://invntrm.ru`])
-    ps.on('uncaughtException', function (err) {
-      console.error('uncaughtException: ', err.message)
-      console.error(err.stack)
-      process.exit(1)
-    })
-	ps.on('error', (err) => {
-			console.log('Failed to start child process.');
-	});
-		ps.stdout.on('data', (data) => {
-		  console.log(`stdout: ${data}`);
-		});
-
-		ps.stderr.on('data', (data) => {
-		  console.log(`stderr: ${data}`);
-		});
-
-		ps.on('close', (code) => {
-		  console.log(`child process exited with code ${code}`);
-		});
-*/
 	console.log('sent');
 });
 
@@ -179,16 +157,15 @@ app.hears([/^say ((.|\n)+)/im, /^скажи ((.|\n)+)/mi], (ctx) => {
 */
 
 app.hears(/^who\s+(is\s+)?at\+home\??|(все|кто)\s+(ли\s+)?дома\??/i, (ctx) => {
-	
 	Promise.all([
 		ctx.reply('10 sec, please… 😅 '),
 		whoAtHome(),
 	])
 	.then(([replyCtx, json]) => {
-		const getStatus = id => json[id]
-			? (randList(['дома ', 'тута', 'где-то здесь']) + '✅')
-			: (randList(['не дома', 'отсутствует', 'шляется']) + '🔴 ')
-		const txt = Object.keys(homematesMap).map((id) => `${ homematesMap[id] } ${ getStatus(id) }`).join('\n');
+		const getStatus = (id) => json[id]
+			? `✅ ${ homematesMap[id] } ${ randList(['дома ', 'тута', 'где-то здесь']) }`
+			: `🔴 ${ homematesMap[id] } ${ randList(['не дома', 'отсутствует', 'шляется']) }`
+		const txt = Object.keys(homematesMap).map((id) => getStatus(id)).join('\n');
 		app.telegram.editMessageText(replyCtx.chat.id, replyCtx.message_id, null, txt);
 	});
 });
@@ -323,7 +300,8 @@ app.hears(/^(no|nope|N|нет|не-а)/i, (ctx) => {
 app.hears(/./, (ctx) => {
 	console.log(ctx.from)
 	if(!isVoiceVerboseMode) return;
-	say(`говорит ${ ctx.update.message.from.first_name }: ${ ctx.match.input }`, ctx, true);
+	const name = ctx.update.message.from.first_name;
+	say(`говорит ${ homematesMap[name] || name }: ${ ctx.match.input }`, ctx, true);
 });
 
 app.startPolling()
