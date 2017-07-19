@@ -20,6 +20,7 @@ const child_process = require('child_process');
 const getLightStatus = () => parseInt(execSync('gpio -1 read 22'), 10);
 const getLightStatus_ = () => exec_('gpio -1 read 22').then(l => parseInt(l, 10));
 const throttle = require('lodash.throttle');
+cosnt debounce = require('just-debounce-it');
 const randList = (list) => {
 	return list[Math.floor(Math.random() * list.length)];
 };
@@ -59,17 +60,11 @@ const onChange = (type, signal, data) => {
 
 let lastMessageTime = null;
 
-const getIntro = () => {
-	let intro;
-	if (Date.now() - lastMessageTime < 1000 * INTRO_DELAY) intro = '';
+const getIntro_ = debounce(() => {
+	return randList(['ааааа','вигв+аме','кар+оч','сл+ушайте','эт с+амое']) + ', ... &&& ... — ';
+}, INTRO_DELAY, true);
+const getIntro = () => getIntro_() || '';
 
-	intro = ['ааааа','вигв+аме','кар+оч','сл+ушайте','эт с+амое'][Math.floor(Math.random() * 5)]
-		+ ', ... &&& ... — ';
-
-	lastMessageTime = Date.now();
-	
-	return intro;
-};
 const say = (text, ctx, isQuiet, noIntro) => {
 	console.log()
 	try {
