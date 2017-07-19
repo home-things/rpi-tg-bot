@@ -1,0 +1,4 @@
+#!/bin/sh
+sudo kill -15 $(cat pid) 2>/dev/null
+node . &
+echo $! > pid
