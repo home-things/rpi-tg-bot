@@ -19,6 +19,7 @@ const getLightStatus = () => exec('gpio -1 read 22').then(l => parseInt(l, 10));
 const throttle = require('lodash.throttle');
 const debounce = require('just-debounce-it');
 const randList = (list) => list[Math.floor(Math.random() * list.length)];
+const edit = (repCtx, txt) => app.telegram.editMessageText(replyCtx.chat.id, replyCtx.message_id, null, txt);
 
 let homematesPresense = {
 	lenya: null,
@@ -174,7 +175,7 @@ app.hears(/^(?:who\s+(is\s+)?at\+home\??|(все|кто)\s+(ли\s+)?дома\??
 			? `✅ ${ homematesMap[id] } ${ randList(['дома ', 'тута', 'где-то здесь']) }`
 			: `🔴 ${ homematesMap[id] } ${ id === 'lenya' ? randList(['— по бабам', '— опять по бабам']) : randList(['не дома', 'отсутствует', 'шляется']) }`
 		const txt = Object.keys(homematesMap).map((id) => getStatus(id)).join('\n');
-		app.telegram.editMessageText(replyCtx.chat.id, replyCtx.message_id, null, txt);
+		edit(replyCtx, txt);
 	});
 });
 
@@ -251,9 +252,22 @@ app.hears(/^(?:(?:(?:сы|и)грай|воспроизведи|play)\s+((?:.|\n)
 		ctx.reply('нишмаглаа');
 	});
 });
+
 /*
  misc
 */
+
+app.hears(/^(?:(?:какая\s+)?погода|что\s+с\s+погодой\??)/i, (ctx) => {
+	Promise.all([
+		ctx.reply('sec, please'),
+		exec(`get-weather | jq '"Погода: \(.description), \(.temp | floor) градусов"'`),	
+	])
+	.then(([repCtx, weather]) => {
+		edit(repCtx, weather); return weather;
+	})
+	.then((weather) => say(weather, ctx, true, true))
+	.catch(e => {console.error(e); ctx.reply('нишмагла');});
+});
 
 //app.on('sticker', (ctx) => ctx.reply(''))
 app.command('start', (props) => {
