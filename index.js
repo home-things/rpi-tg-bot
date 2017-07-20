@@ -19,6 +19,7 @@ const throttle = require('lodash.throttle');
 const debounce = require('just-debounce-it');
 const randList = (list) => list[Math.floor(Math.random() * list.length)];
 const edit = (repCtx, txt) => app.telegram.editMessageText(repCtx.chat.id, repCtx.message_id, null, txt);
+const typing = (ctx) => app.telegram.sendChatAction(ctx.chat.id, 'typing').catch(e=>console.error('e', e));
 
 const app = new Telegraf(token);
 
@@ -32,8 +33,8 @@ let homemates = {
 		misha: { presense: null, name: 'Миша', id: 210367273 },
 		sasha: { presense: null, name: 'Саня', id: 147445817 },
 	},
-	get: function (key, field) { console.log('wtf', key.toLowerCase(), this.list[key.toLowerCase()]); return this.list[key.toLowerCase()] && this.list[key.toLowerCase()][field]; },
-	setAll: function (field, object) { Object.keys(this).forEach((m) => this[m][field] = object[field]); },
+	get: function (key, field) { return this.list[key.toLowerCase()] && this.list[key.toLowerCase()][field]; },
+	setAll: function (field, object) { Object.keys(this.list).forEach((key) => this[key][field] = object[field]); },
 	empty: function () { return Object.keys(this.list).every(key => !this.get(key, 'presense')); },
 	isMember: function (id) { Object.keys(this.list).some(key => this.get(key, 'id') === id); },
 }
@@ -151,11 +152,11 @@ const commands = {
 */
 
 app.hears(/^(?:(читай|зачитывай)\s+((входящие\s+)?сообшения|ч[ая]т)|read\s+(chat|messages))/i, (ctx) => {
-	app.telegram.sendChatAction(ctx.chat.id, 'typing').then(v=>console.log('v',v), e=>console.error('e', e));
+	typing(ctx);
 	commands.run('voice', 'voice_over', ctx);
 });
 app.hears(/^(?:не\s+(читай|зачитывай)\s+((входящие\s+)?сообшения|ч[ая]т)|перестань\s+читать\s+ч[ая]т|no\s+read\s+(chat|messages))/i, (ctx) => {
-	app.telegram.sendChatAction(ctx.chat.id, 'typing').then(v=>console.log('v',v), e=>console.error('e', e));
+	typing(ctx);
 	isVoiceVerboseMode = false;
 	ctx.reply('ok, I`ll be quiet')
 });
@@ -174,7 +175,7 @@ app.hears([/^(?:say\s+((.|\n)+))/im, /^(?:скажи\s+((.|\n)+))/mi], (ctx) => 
 app.hears(/^(?:who\s+(is\s+)?at\+home\??|(все|кто)\s+(ли\s+)?дома\??)/i, (ctx) => {
 	Promise.all([
 		ctx.reply('10 sec, please… 😅 '),
-		app.telegram.sendChatAction(ctx.chat.id, 'typing').then(v=>console.log('v',v), e=>console.error('e', e)),
+		typing(ctx),
 		whoAtHome(),
 	])
 	.then(([replyCtx, json]) => {
@@ -192,15 +193,15 @@ app.hears(/^(?:who\s+(is\s+)?at\+home\??|(все|кто)\s+(ли\s+)?дома\??
 */
 
 app.hears(/^(?:turn\s+light\s+on|включи\s+свет)/i, (ctx) => {
-	app.telegram.sendChatAction(ctx.chat.id, 'typing').then(v=>console.log('v',v), e=>console.error('e', e));
+	typing(ctx);
 	exec('light on').then(() => ctx.reply('ok')).catch(() => ctx.reply('нишмаглаа'));
 });
 app.hears(/^(?:turn\s+light\s+off|выключи\s+свет)/i, (ctx) => {
-	app.telegram.sendChatAction(ctx.chat.id, 'typing').then(v=>console.log('v',v), e=>console.error('e', e));
+	typing(ctx);
 	exec('light off').then(() => ctx.reply('ok')).catch(() => ctx.reply('нишмаглаа'));
 });
 app.hears(/^(?:is\s+light\s+on|light\s+status|включен(\s+ли)?\s+свет|свет\s+включен\??)/i, (ctx) => {
-	app.telegram.sendChatAction(ctx.chat.id, 'typing').then(v=>console.log('v',v), e=>console.error('e', e));
+	typing(ctx);
 	getLightStatus().then(status => {
 		ctx.reply('ok: ' + (status ? 'on' : 'off'));
 	}).catch(() => ctx.reply('нишмаглаа'));
@@ -211,7 +212,7 @@ app.hears(/^(?:is\s+light\s+on|light\s+status|включен(\s+ли)?\s+све�
 */
 
 app.hears(/^(?:(выключи|останови|выруби|убери)\s+(музыку|звук))/i, (ctx) => {
-	app.telegram.sendChatAction(ctx.chat.id, 'typing').then(v=>console.log('v',v), e=>console.error('e', e));
+	typing(ctx);
 	exec('has-music').then(hasMusic => {
 		if(hasMusic) {
 			exec('stop-music').then((stdout) => {
@@ -223,7 +224,7 @@ app.hears(/^(?:(выключи|останови|выруби|убери)\s+(му
 	}).catch(e =>{console.error(e); ctx.reply('Нимагуу');});
 })
 app.hears(/^(?:поставь на паузу|пауза$|pause(,\s+please!?)?)/i, (ctx) => {
-	app.telegram.sendChatAction(ctx.chat.id, 'typing').then(v=>console.log('v',v), e=>console.error('e', e));
+	typing(ctx);
 	exec('has-music').then(hasMusic => {
 		if(hasMusic) {
 			exec('pause-music').then((stdout) => {
@@ -235,7 +236,7 @@ app.hears(/^(?:поставь на паузу|пауза$|pause(,\s+please!?)?)/
 	}).catch(e =>{console.error(e); ctx.reply('Нимагуу');});
 })
 app.hears(/^(?:продолж(и|ай)\s+(воспроизведение|играть)|resume\s+playing)/i, (ctx) => {
-	app.telegram.sendChatAction(ctx.chat.id, 'typing').then(v=>console.log('v',v), e=>console.error('e', e));
+	typing(ctx);
 	exec('has-music').then(hasMusic => {
 		if(hasMusic) {
 			exec('resume-music').then((stdout) => {
@@ -247,13 +248,13 @@ app.hears(/^(?:продолж(и|ай)\s+(воспроизведение|игр�
 	}).catch(e =>{console.error(e); ctx.reply('Нимагуу');});
 })
 app.hears(/^(?:(сделай\s+)?(по)?тише|make(\s+(sound|music))?\s+quieter)/i, (ctx) => {
-	app.telegram.sendChatAction(ctx.chat.id, 'typing').then(v=>console.log('v',v), e=>console.error('e', e));
+	typing(ctx);
 	exec('v=$(get-vol); vol $(node -p "$v - 10") quieter').then((stdout) => {
 		ctx.reply(`ok, vol decreased`);
 	}).catch(e =>{console.error(e); ctx.reply('Нимагуу');});
 });
 app.hears(/^(?:(сделай\s+)?(по)?громче|make(\s+(sound|music))?\s+louder)/i, (ctx) => {
-	app.telegram.sendChatAction(ctx.chat.id, 'typing').then(v=>console.log('v',v), e=>console.error('e', e));
+	typing(ctx);
 	exec('v=$(get-vol); vol $(node -p "$v + 10") quieter').then((stdout) => {
 		ctx.reply(`ok, vol insreased`);
 	}).catch(e =>{console.error(e); ctx.reply('Нимагуу');});
@@ -275,7 +276,7 @@ app.hears(/^(?:(?:(?:сы|и)грай|воспроизведи|play)\s+((?:.|\n)
 app.hears(/^(?:(?:какая\s+)?погода|что\s+с\s+погодой\??|что\s+обещают\??|(?:(?:(?:say|get|read)\s+)?(?:a\s+)?weather))/i, (ctx) => {
 	Promise.all([
 		ctx.reply('10 sec, please… 😅'),
-		app.telegram.sendChatAction(ctx.chat.id, 'typing').then(v=>console.log('v',v), e=>console.error('e', e)),
+		typing(ctx),
 		exec(`get-weather`).then(res => JSON.parse(res)),
 	])
 	.then(([repCtx, weather]) => {
@@ -360,14 +361,14 @@ app.hears(/./, (ctx) => {
 	say(`говорит ${ homemates.get(name, 'name') || name }: ${ ctx.match.input }`, ctx, true);
 });
 
-const startHomematesePresensePolling = () => {
-	setInterval(reportHomematesePresenseChange, 1000 * 60 * 1);
+const startHomematesPresensePolling = () => {
+	setInterval(reportHomematesPresenseChange, 1000 * 60 * 1);
 };
 
-const reportHomematesePresenseChange = async () => {
+const reportHomematesPresenseChange = async () => {
 	if ((new Date()).getHours() < 9) return;
 	console.log('poll homemates presense');
-	const diff = await getHomematesePresenseChange();
+	const diff = await getHomematesPresenseChange();
 	if (diff.length) {
 		sendHomematesDiff(diff);
 		onChange('home', 'presense', diff);
@@ -380,10 +381,10 @@ const sendHomematesDiff = throttle((diff) => {
 	+ diff.map(item => item.who + (item.before ? ' вернулся' : (Math.random() > .5 ? ' ушёл' : ' свалил'))));
 }, 1000 * 60 * 60);
 
-const getHomematesePresenseChange = () => {
+const getHomematesPresenseChange = () => {
 	const diff = whoAtHome().then(actualPresense => {
 		const diff = Object.keys(homemates.list).filter(key => {
-			return homemates.get(key, 'presense') !== null && homemates.get(key, 'presense') !== actualPresense[m];
+			return homemates.get(key, 'presense') !== null && homemates.get(key, 'presense') !== actualPresense[key];
 		})
 		.map(key => {
 			return { who: key, after: homemates.get(key, 'presense'), before: actualPresense[key] };
@@ -396,4 +397,4 @@ const getHomematesePresenseChange = () => {
 
 
 app.startPolling();
-startHomematesePresensePolling();
+startHomematesPresensePolling();
