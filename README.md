@@ -30,9 +30,9 @@
 * [x] sound control: play by url, pause/resume/stop, scrpts
 * [x] voice over
 * [x] basic weather
+* [x] basic presense control
 * [ ] `word2vec` for 1) command matching, 2) music search
 * [ ] `api.ai` for intent mining
-* [ ] split into modules
 * [ ] repeat, undo, ask detaild commands
 * [ ] learnings new commands synonyms (— do magic — ... — I say to you, bot! — wow, do you mean 'switch magic on'?)
 * [ ] weather (with icons)
@@ -46,6 +46,10 @@
 * [ ] integrate with - or write your own platform (e.g. http://hobbyquaker.github.io/ccu.io)
 * [x] ACL (control rights)
 * [ ] `/commands` for usual cases
+
+#### meta/refuctoring
+* [ ] tests
+* [ ] split into modules
 
 #### hardware
 * [ ] light toggle button
