@@ -35,7 +35,7 @@ let homemates = {
 	},
 	get: function (key, field) { return this.list[key.toLowerCase()] && this.list[key.toLowerCase()][field]; },
 	set: function (key, field, val) { this.list[key][field] = val; return val; },
-	setAll: function (field, object) { Object.keys(this.list).forEach((key) => {this.set(key, field, object[field]);}); },
+	setAll: function (field, object) { Object.keys(this.list).forEach((key) => {this.set(key, field, object[key]);}); },
 	empty: function () { return Object.keys(this.list).every(key => !this.get(key, 'presense')); },
 	isMember: function (id) { Object.keys(this.list).some(key => this.get(key, 'id') === id); },
 }
@@ -385,7 +385,7 @@ const sendHomematesDiff = throttle((diff) => {
 const getHomematesPresenseChange = () => {
 	const diff = whoAtHome().then(actualPresense => {
 		const diff = Object.keys(homemates.list).filter(key => {
-			return homemates.get(key, 'presense') !== null && homemates.get(key, 'presense') !== actualPresense[key];
+			return (homemates.get(key, 'presense') !== undefined && homemates.get(key, 'presense') !== null) && homemates.get(key, 'presense') !== actualPresense[key];
 		})
 		.map(key => {
 			return { who: key, after: homemates.get(key, 'presense'), before: actualPresense[key] };
