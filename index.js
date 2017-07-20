@@ -32,7 +32,7 @@ let homemates = {
 		misha: { presense: null, name: 'Миша', id: 210367273 },
 		sasha: { presense: null, name: 'Саня', id: 147445817 },
 	},
-	get: function (key, field) { return this.list[key.toLowerCase()][field]; },
+	get: function (key, field) { console.log('wtf', key.toLowerCase(), this.list[key.toLowerCase()]); return this.list[key.toLowerCase()] && this.list[key.toLowerCase()][field]; },
 	setAll: function (field, object) { Object.keys(this).forEach((m) => this[m][field] = object[field]); },
 	empty: function () { return Object.keys(this.list).every(key => !this.get(key, 'presense')); },
 	isMember: function (id) { Object.keys(this.list).some(key => this.get(key, 'id') === id); },
@@ -151,9 +151,11 @@ const commands = {
 */
 
 app.hears(/^(?:(читай|зачитывай)\s+((входящие\s+)?сообшения|ч[ая]т)|read\s+(chat|messages))/i, (ctx) => {
+	app.telegram.sendChatAction(ctx.chat.id, 'typing').then(v=>console.log('v',v), e=>console.error('e', e));
 	commands.run('voice', 'voice_over', ctx);
 });
 app.hears(/^(?:не\s+(читай|зачитывай)\s+((входящие\s+)?сообшения|ч[ая]т)|перестань\s+читать\s+ч[ая]т|no\s+read\s+(chat|messages))/i, (ctx) => {
+	app.telegram.sendChatAction(ctx.chat.id, 'typing').then(v=>console.log('v',v), e=>console.error('e', e));
 	isVoiceVerboseMode = false;
 	ctx.reply('ok, I`ll be quiet')
 });
@@ -170,9 +172,9 @@ app.hears([/^(?:say\s+((.|\n)+))/im, /^(?:скажи\s+((.|\n)+))/mi], (ctx) => 
 */
 
 app.hears(/^(?:who\s+(is\s+)?at\+home\??|(все|кто)\s+(ли\s+)?дома\??)/i, (ctx) => {
-	console.log('wtf');
 	Promise.all([
 		ctx.reply('10 sec, please… 😅 '),
+		app.telegram.sendChatAction(ctx.chat.id, 'typing').then(v=>console.log('v',v), e=>console.error('e', e)),
 		whoAtHome(),
 	])
 	.then(([replyCtx, json]) => {
@@ -190,12 +192,15 @@ app.hears(/^(?:who\s+(is\s+)?at\+home\??|(все|кто)\s+(ли\s+)?дома\??
 */
 
 app.hears(/^(?:turn\s+light\s+on|включи\s+свет)/i, (ctx) => {
+	app.telegram.sendChatAction(ctx.chat.id, 'typing').then(v=>console.log('v',v), e=>console.error('e', e));
 	exec('light on').then(() => ctx.reply('ok')).catch(() => ctx.reply('нишмаглаа'));
 });
 app.hears(/^(?:turn\s+light\s+off|выключи\s+свет)/i, (ctx) => {
+	app.telegram.sendChatAction(ctx.chat.id, 'typing').then(v=>console.log('v',v), e=>console.error('e', e));
 	exec('light off').then(() => ctx.reply('ok')).catch(() => ctx.reply('нишмаглаа'));
 });
 app.hears(/^(?:is\s+light\s+on|light\s+status|включен(\s+ли)?\s+свет|свет\s+включен\??)/i, (ctx) => {
+	app.telegram.sendChatAction(ctx.chat.id, 'typing').then(v=>console.log('v',v), e=>console.error('e', e));
 	getLightStatus().then(status => {
 		ctx.reply('ok: ' + (status ? 'on' : 'off'));
 	}).catch(() => ctx.reply('нишмаглаа'));
@@ -206,6 +211,7 @@ app.hears(/^(?:is\s+light\s+on|light\s+status|включен(\s+ли)?\s+све�
 */
 
 app.hears(/^(?:(выключи|останови|выруби|убери)\s+(музыку|звук))/i, (ctx) => {
+	app.telegram.sendChatAction(ctx.chat.id, 'typing').then(v=>console.log('v',v), e=>console.error('e', e));
 	exec('has-music').then(hasMusic => {
 		if(hasMusic) {
 			exec('stop-music').then((stdout) => {
@@ -217,6 +223,7 @@ app.hears(/^(?:(выключи|останови|выруби|убери)\s+(му
 	}).catch(e =>{console.error(e); ctx.reply('Нимагуу');});
 })
 app.hears(/^(?:поставь на паузу|пауза$|pause(,\s+please!?)?)/i, (ctx) => {
+	app.telegram.sendChatAction(ctx.chat.id, 'typing').then(v=>console.log('v',v), e=>console.error('e', e));
 	exec('has-music').then(hasMusic => {
 		if(hasMusic) {
 			exec('pause-music').then((stdout) => {
@@ -228,6 +235,7 @@ app.hears(/^(?:поставь на паузу|пауза$|pause(,\s+please!?)?)/
 	}).catch(e =>{console.error(e); ctx.reply('Нимагуу');});
 })
 app.hears(/^(?:продолж(и|ай)\s+(воспроизведение|играть)|resume\s+playing)/i, (ctx) => {
+	app.telegram.sendChatAction(ctx.chat.id, 'typing').then(v=>console.log('v',v), e=>console.error('e', e));
 	exec('has-music').then(hasMusic => {
 		if(hasMusic) {
 			exec('resume-music').then((stdout) => {
@@ -239,11 +247,13 @@ app.hears(/^(?:продолж(и|ай)\s+(воспроизведение|игр�
 	}).catch(e =>{console.error(e); ctx.reply('Нимагуу');});
 })
 app.hears(/^(?:(сделай\s+)?(по)?тише|make(\s+(sound|music))?\s+quieter)/i, (ctx) => {
+	app.telegram.sendChatAction(ctx.chat.id, 'typing').then(v=>console.log('v',v), e=>console.error('e', e));
 	exec('v=$(get-vol); vol $(node -p "$v - 10") quieter').then((stdout) => {
 		ctx.reply(`ok, vol decreased`);
 	}).catch(e =>{console.error(e); ctx.reply('Нимагуу');});
 });
 app.hears(/^(?:(сделай\s+)?(по)?громче|make(\s+(sound|music))?\s+louder)/i, (ctx) => {
+	app.telegram.sendChatAction(ctx.chat.id, 'typing').then(v=>console.log('v',v), e=>console.error('e', e));
 	exec('v=$(get-vol); vol $(node -p "$v + 10") quieter').then((stdout) => {
 		ctx.reply(`ok, vol insreased`);
 	}).catch(e =>{console.error(e); ctx.reply('Нимагуу');});
@@ -263,9 +273,9 @@ app.hears(/^(?:(?:(?:сы|и)грай|воспроизведи|play)\s+((?:.|\n)
 */
 
 app.hears(/^(?:(?:какая\s+)?погода|что\s+с\s+погодой\??|что\s+обещают\??|(?:(?:(?:say|get|read)\s+)?(?:a\s+)?weather))/i, (ctx) => {
-	// app.telegram.sendChatAction(ctx.chat.id, 'typing').then(v=>console.log('v',v), e=>console.error('e', e))
 	Promise.all([
 		ctx.reply('10 sec, please… 😅'),
+		app.telegram.sendChatAction(ctx.chat.id, 'typing').then(v=>console.log('v',v), e=>console.error('e', e)),
 		exec(`get-weather`).then(res => JSON.parse(res)),
 	])
 	.then(([repCtx, weather]) => {
