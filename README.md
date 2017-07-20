@@ -13,11 +13,11 @@
 ## hardware
 * Any raspbery pi (I use Raspberry Pi Model B Rev 2)
 * Any light controller (I use very own one based on Reley(solid-state/thyristor omron-g3mb-202p))
-* Sound system (I use external rpi sound card *[HIFIBERRY DAC+](https://www.hifiberry.com/shop/boards/hifiberry-dacplus-phone/)* and usual amp+speakers system *Edifier R980T*)
+* Sound system (I use external rpi sound card *[HIFIBERRY DAC+](https://www.hifiberry.com/shop/boards/hifiberry-dacplus-phone/)* and usual amp+speakers system *Edifier R980T* and second linked sound system in another room)
 
 ## todo
 
-#### to copy to this repo
+#### to copy/port to this repo
 
 * nodejs airplay server (stream music from iphone)
 * nodejs homekit server (siri: `turn light on`)
