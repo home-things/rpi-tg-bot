@@ -10,6 +10,11 @@
 
 ![photo](https://user-images.githubusercontent.com/6201068/28364002-6750729a-6c8b-11e7-9bf0-0cffdf9242b9.jpg) 
 
+## hardware
+* Any raspbery pi (I use Raspberry Pi Model B Rev 2)
+* Any light controller (I use very own one based on Reley(solid-state/thyristor omron-g3mb-202p))
+* Sound system (I use external rpi sound card *[HIFIBERRY DAC+](https://www.hifiberry.com/shop/boards/hifiberry-dacplus-phone/)* and usual amp+speakers system *Edifier R980T*)
+
 ## todo
 
 #### to copy to this repo
@@ -24,7 +29,7 @@
 * `api.ai` for intent mining
 * split into modules
 * repeat, undo, ask detaild commands
-* learnings new commands synonims (— do magic — ... — I say to you, bot! — wow, do you mean 'switch magic on'?)
+* learnings new commands synonyms (— do magic — ... — I say to you, bot! — wow, do you mean 'switch magic on'?)
 * weather, jokes, reminders
 * programming state maschine transitions via `tg`
 * transcribing voice messages
