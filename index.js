@@ -68,6 +68,7 @@ const getIntro_ = debounce(() => {
 const getIntro = () => getIntro_() || '';
 
 const say = (text, ctx, isQuiet, noIntro) => {
+	if (!text) { console.log('тут и говорить нечего'); return;}
 	console.log(">>", text.trim().replace(/\n/g, ' '))
 	return exec(`tts "${ noIntro || getIntro() }, ${ text.replace(/\n/g, ' ') }"`).then((stdout) => {
 		console.log('say', stdout);
@@ -179,7 +180,7 @@ app.hears(/^(?:who\s+(is\s+)?at\+home\??|(все|кто)\s+(ли\s+)?дома\??
 		typing(ctx),
 		whoAtHome(),
 	])
-	.then(([replyCtx, json]) => {
+	.then(([replyCtx, _, json]) => {
 		const getStatus = (key) => json[key]
 		? `✅ ${ homemates.get(key, 'name') } ${ randList(['дома ', 'тута', 'где-то здесь']) }`
 		: `🔴 ${ homemates.get(key, 'name') } ${ key === 'lenya' ? randList(['— по бабам', '— опять по бабам']) : randList(['не дома', 'отсутствует', 'шляется']) }`
@@ -274,20 +275,20 @@ app.hears(/^(?:(?:(?:сы|и)грай|воспроизведи|play)\s+((?:.|\n)
  misc
 */
 
-app.hears(/^(?:(?:какая\s+)?погода|что\s+с\s+погодой\??|что\s+обещают\??|(?:(?:(?:say|get|read)\s+)?(?:a\s+)?weather))/i, (ctx) => {
+app.hears(/^(?:(?:какая\s+)?погода|что\s+с\s+погодой\??|что\s+обещают\??|что\s+с\s+погодой\??|(?:(?:(?:say|get|read)\s+)?(?:a\s+)?weather))/i, (ctx) => {
 	Promise.all([
 		ctx.reply('10 sec, please… 😅'),
 		typing(ctx),
 		exec(`get-weather`).then(res => JSON.parse(res)),
 	])
-	.then(([repCtx, weather]) => {
+	.then(([repCtx, _, weather]) => {
 		console.log(repCtx, weather)
 		const txt = weather.description && weather.temp && `Погода в ближайшее время: ${ weather.description }, ${ Math.floor(weather.temp) } градусов`;
 		edit(repCtx, txt || 'нишмагла');
 		weather.icon && app.telegram.sendPhoto(ctx.chat.id, `http://openweathermap.org/img/w/${ weather.icon }.png`, {disable_notification: true});
 		return [txt, weather];
 	})
-	.then(([txt]) => false && say(txt, ctx, true, true))
+	.then(([txt]) => ((new Date()).getHours() >= 9) && say(txt, ctx, true, true))
 	.catch(e => {console.error(e); ctx.reply('нишмагла');});
 });
 
