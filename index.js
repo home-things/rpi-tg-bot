@@ -34,7 +34,8 @@ let homemates = {
 		sasha: { presense: null, name: 'Саня', id: 147445817 },
 	},
 	get: function (key, field) { return this.list[key.toLowerCase()] && this.list[key.toLowerCase()][field]; },
-	setAll: function (field, object) { Object.keys(this.list).forEach((key) => this[key][field] = object[field]); },
+	set: function (key, field, val) { this.list[key][field] = val; return val; },
+	setAll: function (field, object) { Object.keys(this.list).forEach((key) => {this.set(key, field, object[field]);}); },
 	empty: function () { return Object.keys(this.list).every(key => !this.get(key, 'presense')); },
 	isMember: function (id) { Object.keys(this.list).some(key => this.get(key, 'id') === id); },
 }
