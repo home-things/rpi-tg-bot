@@ -11,12 +11,14 @@ const { Extra, Markup } = require('telegraf');
 const TOKEN = null;
 const token = process.env.BOT_TOKEN || TOKEN;
 
+const fs = require('fs');
 const util = require('util');
 const child_process = require('child_process');
 const exec = util.promisify(child_process.exec.bind(child_process));
 const getLightStatus = () => exec('gpio -1 read 22').then(l => parseInt(l, 10));
 const throttle = require('lodash.throttle');
 const debounce = require('just-debounce-it');
+const inflect = require('cyrillic-inflector');
 const randList = (list) => list[Math.floor(Math.random() * list.length)];
 const edit = (repCtx, txt) => app.telegram.editMessageText(repCtx.chat.id, repCtx.message_id, null, txt);
 const typing = (ctx) => app.telegram.sendChatAction(ctx.chat.id, 'typing').catch(e=>console.error('e', e));
@@ -70,7 +72,7 @@ const getIntro = () => getIntro_() || '';
 const say = (text, ctx, isQuiet, noIntro) => {
 	if (!text) { console.log('тут и говорить нечего'); return;}
 	console.log(">>", text.trim().replace(/\n/g, ' '))
-	return exec(`tts "${ noIntro || getIntro() }, ${ text.replace(/\n/g, ' ') }"`).then((stdout) => {
+	return exec(`tts "${ noIntro ? '' : getIntro() }, ${ text.replace(/\n/g, ' ') }"`).then((stdout) => {
 		console.log('say', stdout);
 		isQuiet || ctx.reply('я всё сказал');
 	}).catch(e => {
@@ -213,7 +215,7 @@ app.hears(/^(?:is\s+light\s+on|light\s+status|включен(\s+ли)?\s+све�
  music
 */
 
-app.hears(/^(?:(выключи|останови|выруби|убери)\s+(музыку|звук))/i, (ctx) => {
+app.hears(/^(?:(выключи|останови|выруби|убери)\s+(?:музыку|звук|воспроизведение)|не\s+играй|stop\s+playing)/i, (ctx) => {
 	typing(ctx);
 	exec('has-music').then(hasMusic => {
 		if(hasMusic) {
@@ -225,7 +227,7 @@ app.hears(/^(?:(выключи|останови|выруби|убери)\s+(му
 		}
 	}).catch(e =>{console.error(e); ctx.reply('Нимагуу');});
 })
-app.hears(/^(?:поставь на паузу|пауза$|pause(,\s+please!?)?)/i, (ctx) => {
+app.hears(/^(?:поставь\s+на\s+паузу|пауза$|pause(,\s+please!?)?)/i, (ctx) => {
 	typing(ctx);
 	exec('has-music').then(hasMusic => {
 		if(hasMusic) {
@@ -283,9 +285,13 @@ app.hears(/^(?:(?:какая\s+)?погода|что\s+с\s+погодой\??|ч
 	])
 	.then(([repCtx, _, weather]) => {
 		console.log(repCtx, weather)
-		const txt = weather.description && weather.temp && `Погода в ближайшее время: ${ weather.description }, ${ Math.floor(weather.temp) } градусов`;
+		const temp = Math.floor(weather.temp);
+		const units = inflect(temp, {one: 'градус', some: 'градуса', many: 'градусов'});
+		const txt = weather.description && weather.temp && `Погода в ближайшее время: ${ weather.description }, ${ temp } ${ units }`;
 		edit(repCtx, txt || 'нишмагла');
-		weather.icon && app.telegram.sendPhoto(ctx.chat.id, `http://openweathermap.org/img/w/${ weather.icon }.png`, {disable_notification: true});
+		//weather.icon && app.telegram.sendPhoto(ctx.chat.id, `http://openweathermap.org/img/w/${ weather.icon }.png`, {disable_notification: true});
+		//const url = `http://tg-bot-web.invntrm.ru/weathericons/${ weather.icon }.svg`;
+		//weather.icon && app.telegram.sendPhoto(ctx.chat.id, url, {disable_notification: true});
 		return [txt, weather];
 	})
 	.then(([txt]) => ((new Date()).getHours() >= 9) && say(txt, ctx, true, true))
