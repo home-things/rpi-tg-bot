@@ -386,7 +386,7 @@ const reportHomematesPresenseChange = async () => {
 const sendHomematesDiff = throttle((diff) => {
 	console.log('diff', diff);
 	app.telegram.sendMessage(VIGVAM_ID, '🏠↘︎↖︎\n'
-	+ diff.map(item => item.who + (item.before ? ' вернулся' : (Math.random() > .5 ? ' ушёл' : ' свалил'))));
+	+ diff.map(item => homemates.get(item.who, 'name') + (item.before ? ' вернулся' : (Math.random() > .5 ? ' ушёл' : ' свалил'))));
 }, 1000 * 60 * 60);
 
 const getHomematesPresenseChange = () => {
