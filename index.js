@@ -3,12 +3,11 @@
 const ANS_EXP = 8; // s
 const INTRO_DELAY = 20; // s
 const VIGVAM_ID = -158775326;
-const SASHA_ID = 147445817;
-const MISHA_ID = 210367273;
 
 require('dotenv').config(); // load BOT_TOKE from .env file
 
-const Telegraf = require('telegraf')
+const Telegraf = require('telegraf');
+const { Extra, Markup } = require('telegraf');
 const TOKEN = null;
 const token = process.env.BOT_TOKEN || TOKEN;
 
@@ -19,20 +18,25 @@ const getLightStatus = () => exec('gpio -1 read 22').then(l => parseInt(l, 10));
 const throttle = require('lodash.throttle');
 const debounce = require('just-debounce-it');
 const randList = (list) => list[Math.floor(Math.random() * list.length)];
-const edit = (repCtx, txt) => app.telegram.editMessageText(replyCtx.chat.id, replyCtx.message_id, null, txt);
+const edit = (repCtx, txt) => app.telegram.editMessageText(repCtx.chat.id, repCtx.message_id, null, txt);
 
-let homematesPresense = {
-	lenya: null,
-	misha: null,
-	sasha: null,
-	empty: function () { return !this.lenya && !this.misha && !this.sasha; },
-};
+const app = new Telegraf(token);
 
-const homematesMap = {
-	lenya: 'Лёня',
-	misha: 'Миша',
-	sasha: 'Саня',
-};
+app.telegram.getMe().then((botInfo) => {
+  app.options.username = botInfo.username
+});
+
+let homemates = {
+	list: {
+		lenya: { presense: null, name: 'Лёня', id: 234091889 },
+		misha: { presense: null, name: 'Миша', id: 210367273 },
+		sasha: { presense: null, name: 'Саня', id: 147445817 },
+	},
+	get: function (key, field) { return this.list[key.toLowerCase()][field]; },
+	setAll: function (field, object) { Object.keys(this).forEach((m) => this[m][field] = object[field]); },
+	empty: function () { return Object.keys(this.list).every(key => !this.get(key, 'presense')); },
+	isMember: function (id) { Object.keys(this.list).some(key => this.get(key, 'id') === id); },
+}
 
 const onChange = (type, signal, data) => {
 	switch(type) {
@@ -40,12 +44,12 @@ const onChange = (type, signal, data) => {
 		switch(signal) {
 		case('presense'):
 			if (data.sasha && data.sasha.before) getLightStatus().then(v=>{if(v.trim()) throw 'y'}).then(() => exec('light on')).then(() => {
-				app.telegram.sendMessage(SASHA_ID, 'Sasha came back ==> Light turned on');
+				app.telegram.sendMessage(homemates.get('sasha', 'id'), 'Sasha came back ==> Light turned on');
 			}).catch(() => {});
 			if (data.sasha && !data.sasha.before) getLightStatus().then(v=>{if(!v.trim()) throw 'n'}).then(() => exec('light off')).then(() => {
-				app.telegram.sendMessage(SASHA_ID, 'Sasha left ==> Light turned off');
+				app.telegram.sendMessage(homemates.get('sasha', 'id'), 'Sasha left ==> Light turned off');
 			}).catch(() => {});
-			if (homematesPresense.empty()) exec('has-music').then(v=>{if(!v.trim()) throw 'none'}).then(() => exec('stop-music')).then(() => {
+			if (homemates.empty()) exec('has-music').then(v=>{if(!v.trim()) throw 'none'}).then(() => exec('stop-music')).then(() => {
 				app.telegram.sendMessage(VIGVAM_ID, 'No body at home ==> Music stopped');
 			}).catch(() => {});
 		break;
@@ -119,34 +123,35 @@ const lastQuestion = {
 
 const commands = {
 	run: function (kind, name, ctx) {
-		const cmd = this[kind][name]
+		if (!this.accessRightsGuard()) return;
+		const cmd = this.list[kind][name];
 		cmd(ctx);
 		lastCommand.set(cmd);
 	},
-	voice: {
-		speech_chat: ctx => {
-			isVoiceVerboseMode = true;
-			ctx.reply('ok, I`ll say everything you post')
+	list: {
+		voice: {
+			voice_over: ctx => {
+				isVoiceVerboseMode = true;
+				ctx.reply('ok, I`ll say everything you post')
+			},
 		},
+		music: {},
+		light: {},
+		misc: {},
 	},
-	music: {},
-	light: {},
-	misc: {},
+	accessRightsGuard: function (id) {
+		const hasAccess = homemates.isMember(id);
+		if (!hasAccess) app.telegram.sendMessage(id, 'Бесправная скотина не может повелевать Ботом');
+		return hasAccess;
+	},
 };
-
-const app = new Telegraf(token)
-// const tg = Telegram.new(Telegram(token))
-
-app.telegram.getMe().then((botInfo) => {
-  app.options.username = botInfo.username
-})
 
 /*
  voice
 */
 
 app.hears(/^(?:(читай|зачитывай)\s+((входящие\s+)?сообшения|ч[ая]т)|read\s+(chat|messages))/i, (ctx) => {
-	commands.run('voice', 'speech_chat', ctx);
+	commands.run('voice', 'voice_over', ctx);
 });
 app.hears(/^(?:не\s+(читай|зачитывай)\s+((входящие\s+)?сообшения|ч[ая]т)|перестань\s+читать\s+ч[ая]т|no\s+read\s+(chat|messages))/i, (ctx) => {
 	isVoiceVerboseMode = false;
@@ -171,10 +176,10 @@ app.hears(/^(?:who\s+(is\s+)?at\+home\??|(все|кто)\s+(ли\s+)?дома\??
 		whoAtHome(),
 	])
 	.then(([replyCtx, json]) => {
-		const getStatus = (id) => json[id]
-			? `✅ ${ homematesMap[id] } ${ randList(['дома ', 'тута', 'где-то здесь']) }`
-			: `🔴 ${ homematesMap[id] } ${ id === 'lenya' ? randList(['— по бабам', '— опять по бабам']) : randList(['не дома', 'отсутствует', 'шляется']) }`
-		const txt = Object.keys(homematesMap).map((id) => getStatus(id)).join('\n');
+		const getStatus = (key) => json[key]
+		? `✅ ${ homemates.get(key, 'name') } ${ randList(['дома ', 'тута', 'где-то здесь']) }`
+		: `🔴 ${ homemates.get(key, 'name') } ${ key === 'lenya' ? randList(['— по бабам', '— опять по бабам']) : randList(['не дома', 'отсутствует', 'шляется']) }`
+		const txt = Object.keys(homemates.list).map((key) => getStatus(key)).join('\n');
 		edit(replyCtx, txt);
 	});
 });
@@ -257,15 +262,20 @@ app.hears(/^(?:(?:(?:сы|и)грай|воспроизведи|play)\s+((?:.|\n)
  misc
 */
 
-app.hears(/^(?:(?:какая\s+)?погода|что\s+с\s+погодой\??)/i, (ctx) => {
+app.hears(/^(?:(?:какая\s+)?погода|что\s+с\s+погодой\??|что\s+обещают\??|(?:(?:(?:say|get|read)\s+)?(?:a\s+)?weather))/i, (ctx) => {
+	// app.telegram.sendChatAction(ctx.chat.id, 'typing').then(v=>console.log('v',v), e=>console.error('e', e))
 	Promise.all([
-		ctx.reply('sec, please'),
-		exec(`get-weather | jq '"Погода: \(.description), \(.temp | floor) градусов"'`),	
+		ctx.reply('10 sec, please… 😅'),
+		exec(`get-weather`).then(res => JSON.parse(res)),
 	])
 	.then(([repCtx, weather]) => {
-		edit(repCtx, weather); return weather;
+		console.log(repCtx, weather)
+		const txt = weather.description && weather.temp && `Погода в ближайшее время: ${ weather.description }, ${ Math.floor(weather.temp) } градусов`;
+		edit(repCtx, txt || 'нишмагла');
+		weather.icon && app.telegram.sendPhoto(ctx.chat.id, `http://openweathermap.org/img/w/${ weather.icon }.png`, {disable_notification: true});
+		return [txt, weather];
 	})
-	.then((weather) => say(weather, ctx, true, true))
+	.then(([txt]) => false && say(txt, ctx, true, true))
 	.catch(e => {console.error(e); ctx.reply('нишмагла');});
 });
 
@@ -337,7 +347,7 @@ app.hears(/./, (ctx) => {
 	console.log(ctx.from)
 	if(!isVoiceVerboseMode) return;
 	const name = ctx.update.message.from.first_name;
-	say(`говорит ${ homematesMap[name.toLowerCase()] || name }: ${ ctx.match.input }`, ctx, true);
+	say(`говорит ${ homemates.get(name, 'name') || name }: ${ ctx.match.input }`, ctx, true);
 });
 
 const startHomematesePresensePolling = () => {
@@ -346,7 +356,7 @@ const startHomematesePresensePolling = () => {
 
 const reportHomematesePresenseChange = async () => {
 	if ((new Date()).getHours() < 9) return;
-	console.log('poll homemates presense', homematesPresense);
+	console.log('poll homemates presense');
 	const diff = await getHomematesePresenseChange();
 	if (diff.length) {
 		sendHomematesDiff(diff);
@@ -362,13 +372,13 @@ const sendHomematesDiff = throttle((diff) => {
 
 const getHomematesePresenseChange = () => {
 	const diff = whoAtHome().then(actualPresense => {
-		const diff = Object.keys(homematesMap).filter(m => {
-			return homematesPresense[m] !== null && homematesPresense[m] !== actualPresense[m];
+		const diff = Object.keys(homemates.list).filter(key => {
+			return homemates.get(key, 'presense') !== null && homemates.get(key, 'presense') !== actualPresense[m];
 		})
-		.map(m => {
-			return { who: m, after: homematesPresense[m], before: actualPresense[m] };
+		.map(key => {
+			return { who: key, after: homemates.get(key, 'presense'), before: actualPresense[key] };
 		});
-		Object.assign(homematesPresense, actualPresense);
+		homemates.setAll('presense', actualPresense);
 		return diff;
 	});
 	return diff;
