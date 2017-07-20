@@ -25,14 +25,33 @@
 * alfred workflow
 
 #### to write
-* `word2vec` for 1) command matching, 2) music search
-* `api.ai` for intent mining
-* split into modules
-* repeat, undo, ask detaild commands
-* learnings new commands synonyms (— do magic — ... — I say to you, bot! — wow, do you mean 'switch magic on'?)
-* weather, jokes, reminders
-* programming state maschine transitions via `tg`
-* transcribing voice messages
-* auto problem diagnosis
-* VAD+mics
-* integrate with - or write your own platform (e.g. http://hobbyquaker.github.io/ccu.io)
+* [x] light control, scrpts
+* [x] volume control, scrpts
+* [x] sound control: play by url, pause/resume/stop, scrpts
+* [x] voice over
+* [x] basic weather
+* [ ] `word2vec` for 1) command matching, 2) music search
+* [ ] `api.ai` for intent mining
+* [ ] split into modules
+* [ ] repeat, undo, ask detaild commands
+* [ ] learnings new commands synonyms (— do magic — ... — I say to you, bot! — wow, do you mean 'switch magic on'?)
+* [ ] weather (with icons)
+* [ ] jokes
+* [ ] reminders
+* [ ] programming state maschine transitions via `tg`
+* [ ] transcribing voice messages, interpret commands
+  * get tg audio -> `asr voice.ogg 'audio/ogg;codecs=opus'`
+* [ ] auto problem diagnosis
+* [ ] VAD+mics
+* [ ] integrate with - or write your own platform (e.g. http://hobbyquaker.github.io/ccu.io)
+* [x] ACL (control rights)
+* [ ] `/commands` for usual cases
+
+#### hardware
+* [ ] light toggle button
+* [ ] tablet screen
+* [ ] window blinds control (servo-drive)
+* [ ] separate sound control
+* [ ] microphones
+* [ ] presense sensors
+* [ ] external light intensity sensors
