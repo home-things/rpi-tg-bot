@@ -178,11 +178,10 @@ app.hears([/^(?:say\s+((.|\n)+))/im, /^(?:скажи\s+((.|\n)+))/mi], (ctx) => 
 
 app.hears(/^(?:who\s+(is\s+)?at\+home\??|(все|кто)\s+(ли\s+)?дома\??)/i, (ctx) => {
 	Promise.all([
-		ctx.reply('10 sec, please… 😅 '),
-		typing(ctx),
+		ctx.reply('10 sec, please… 😅 ').then(replyCtx => {typing(ctx); return replyCtx;}),
 		whoAtHome(),
 	])
-	.then(([replyCtx, _, json]) => {
+	.then(([replyCtx, json]) => {
 		const getStatus = (key) => json[key]
 		? `✅ ${ homemates.get(key, 'name') } ${ randList(['дома ', 'тута', 'где-то здесь']) }`
 		: `🔴 ${ homemates.get(key, 'name') } ${ key === 'lenya' ? randList(['— по бабам', '— опять по бабам']) : randList(['не дома', 'отсутствует', 'шляется']) }`
@@ -279,11 +278,10 @@ app.hears(/^(?:(?:(?:сы|и)грай|воспроизведи|play)\s+((?:.|\n)
 
 app.hears(/^(?:(?:какая\s+)?погода|что\s+с\s+погодой\??|что\s+обещают\??|что\s+с\s+погодой\??|(?:(?:(?:say|get|read)\s+)?(?:a\s+)?weather))/i, (ctx) => {
 	Promise.all([
-		ctx.reply('10 sec, please… 😅'),
-		typing(ctx),
+		ctx.reply('10 sec, please… 😅').then(repCtx => {typing(ctx); return repCtx; }),
 		exec(`get-weather`).then(res => JSON.parse(res)),
 	])
-	.then(([repCtx, _, weather]) => {
+	.then(([repCtx, weather]) => {
 		console.log(repCtx, weather)
 		const temp = Math.floor(weather.temp);
 		const units = inflect(temp, {one: 'градус', some: 'градуса', many: 'градусов'});
