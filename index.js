@@ -22,7 +22,7 @@ const debounce = require('just-debounce-it');
 const inflect = require('cyrillic-inflector');
 const randList = (list) => list[Math.floor(Math.random() * list.length)];
 const edit = (repCtx, txt) => app.telegram.editMessageText(repCtx.chat.id, repCtx.message_id, null, txt);
-const del = (repCtx) => {console.log(repCtx);app.telegram.deleteMessage(repCtx.chat.id, repCtx.message_id);};
+const del = (repCtx) => app.telegram.deleteMessage(repCtx.chat.id, repCtx.message_id);
 const typing = (ctx) => app.telegram.sendChatAction(ctx.chat.id, 'typing').catch(e=>console.error('e', e));
 
 const app = new Telegraf(token);
@@ -41,7 +41,7 @@ let homemates = {
 	set: function (key, field, val) { this.list[key][field] = val; return val; },
 	setAll: function (field, object) { Object.keys(this.list).forEach((key) => {this.set(key, field, object[key]);}); },
 	empty: function () { return Object.keys(this.list).every(key => !this.get(key, 'presense')); },
-	isMember: function (id) { Object.keys(this.list).some(key => this.get(key, 'id') === id); },
+	isMember: function (id) { return Object.keys(this.list).some(key => this.get(key, 'id') === id); },
 }
 
 const onChange = (type, signal, data) => {
@@ -179,7 +179,7 @@ const commands = {
 			action: ['wait_msg', (ctx, args) => {
 				return exec('has-music').then(hasMusic => {
 					if(hasMusic) return exec(`${ args[0] }-music`).then((stdout) => {
-						return ctx.reply('ok, music ${ args[0] }ed');
+						return ctx.reply(`ok, music ${ args[0] }ed`);
 					});
 					return ctx.reply('Нимагуу. You can make quieter');
 				});
@@ -187,17 +187,18 @@ const commands = {
 		},
 		vol: {
 			action: ['wait_msg', (ctx, args) => {
-				const dx = args[0] === 'louder' ? +1 : -1;
-				const  K = 10;
+				const up = ['louder', 'up', '+', 'increase']
+				const dx = up.includes(args[0].trim()) ? +1 : -1;
+				const K = 10;
 				return exec('get-vol')
-				.then((vol) => exec(`vol ${ vol + K * dx } ${ args[0] }`))
-				.then(() => ctx.reply(`ok, vol made ${ args[0] }`));
+				.then((vol) => exec(`vol ${ +vol + K * dx } ${ args[0] }`))
+				.then(() => ctx.reply(`ok, vol ${ dx > 0 ? 'increased' : 'decreased' }`));
 			}],
 		},
 		light: {
 			on: ctx => exec('light on').then(() => ctx.reply('ok')),
 			off: ctx => exec('light off').then(() => ctx.reply('ok')),
-			status: ctx => getLightStatus().then(status => ctx.reply('ok: ' + (status ? '🌖 on' : '🌘 off'))),
+			status: ctx => getLightStatus().then(status => ctx.reply(`ok: ${ (status ? '🌖 on' : '🌘 off') }`)),
 		},
 		weather: {
 			forecast: ['10 sec, please… 😅', (ctx) => {
@@ -219,8 +220,7 @@ const commands = {
 		misc: {},
 	},
 	accessRightsGuard: function (id) {
-		//const hasAccess = homemates.isMember(id);
-		const hasAccess = permittedChats.includes(id);
+		const hasAccess = permittedChats.includes(id) || homemates.isMember(id);
 		if (!hasAccess) app.telegram.sendMessage(id, 'Бесправная скотина не может повелевать Ботом');
 		return hasAccess;
 	},
@@ -237,7 +237,7 @@ app.hears(/^(?:(?:читай|зачитывай)\s+((входящие\s+)?соо
 app.hears(/^(?:не\s+(читай|зачитывай)\s+((входящие\s+)?сообшения|ч[ая]т)|перестань\s+читать\s+ч[ая]т|no\s+read\s+(chat|messages))/i, (ctx) => {
 	commands.run('voice', 'voice_over_stop', ctx);
 });
-app.hears([/^(?:say\s+((.|\n)+))/im, /^(?:скажи\s+((.|\n)+))/mi], (ctx) => {
+app.hears(/^(?:(?:say|скажи)\s+((?:.|\n)+))/im, (ctx) => {
 	commands.run('voice', 'say', ctx);
 });
 
@@ -325,8 +325,7 @@ app.hears(/^hi$/i, (ctx) => ctx.reply('Hey there!'))
 */
 
 const cmd = fn => ctx => {
-	const args = ctx.update.message.text.split(/\s+/).slice(1);
-	typing(ctx);
+	const args = ctx.update.message.text.split(/\s+/).slice(1).join(' ');
 	fn(ctx, args);
 };
 
