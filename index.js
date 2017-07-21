@@ -2,6 +2,7 @@
 
 const ANS_EXP = 8; // s
 const INTRO_DELAY = 20; // s
+const HOME_DIFF_DELAY = 60 * 30; // s
 const VIGVAM_ID = -158775326;
 const permittedChats = [-204486920, VIGVAM_ID];
 
@@ -58,6 +59,7 @@ const onChange = (type, signal, data) => {
 			if (homemates.empty()) exec('has-music').then(v=>{if(!v.trim()) throw 'none'}).then(() => exec('stop-music')).then(() => {
 				app.telegram.sendMessage(VIGVAM_ID, 'No body at home ==> Music stopped');
 			}).catch(() => {});
+			if (homemates.full()) app.telegram.sendMessage(VIGVAM_ID, 'all in the home. \n\n 😇 p.s. I don`t notify more often than every 30 minutes');
 		break;
 		}
 	break;
@@ -428,11 +430,11 @@ const reportHomematesPresenseChange = async () => {
 	}
 };
 
-const sendHomematesDiff = throttle((diff) => {
+const sendHomematesDiff = debounce((diff) => {
 	console.log('diff', diff);
 	app.telegram.sendMessage(VIGVAM_ID, '🏠↘︎↖︎\n'
 	+ diff.map(item => homemates.get(item.who, 'name') + (item.before ? ' вернулся' : (Math.random() > .5 ? ' ушёл' : ' свалил'))));
-}, 1000 * 60 * 60);
+}, 1000 * HOME_DIFF_DELAY, true);
 
 const getHomematesPresenseChange = () => {
 	const diff = whoAtHome().then(actualPresense => {
