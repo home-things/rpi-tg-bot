@@ -45,7 +45,7 @@
 * [ ] VAD+mics
 * [ ] integrate with - or write your own platform (e.g. http://hobbyquaker.github.io/ccu.io)
 * [x] ACL (control rights)
-* [ ] `/commands` for usual cases
+* [x] `/commands` for usual cases
 
 #### meta/refuctoring
 * [ ] tests
