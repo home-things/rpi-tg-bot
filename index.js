@@ -217,7 +217,11 @@ const commands = {
 				.then(([txt]) => ((new Date()).getHours() >= 9) && say(txt, ctx, true, true))
 			}],
 		},
-		misc: {},
+		misc: {
+			print: (ctx, args) => {
+				return app.telegram.sendMessage(VIGVAM_ID, args[0]);
+			},
+		},
 	},
 	accessRightsGuard: function (id) {
 		const hasAccess = permittedChats.includes(id) || homemates.isMember(id);
@@ -306,6 +310,10 @@ app.hears(/^(?:(сделай\s+)?(по)?громче|make(\s+(sound|music))?\s+l
 
 app.hears(/^(?:(?:какая\s+)?погода|что\s+с\s+погодой\??|что\s+обещают\??|что\s+с\s+погодой\??|(?:(?:(?:say|get|read)\s+)?(?:a\s+)?weather))/i, (ctx) => {
 	commands.run('weather', 'forecast', ctx);
+});
+
+app.hears(/^(?:text|print|напиши|наречатай)\s+((?:.|\n)+)$/im, (ctx) => {
+	commands.run('misc', 'print', ctx);
 });
 
 //app.on('sticker', (ctx) => ctx.reply(''))
