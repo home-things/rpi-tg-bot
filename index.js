@@ -281,7 +281,7 @@ app.hears(/^(?:продолж(и|ай)\s+(воспроизведение|игр�
 app.hears(/^(?:(?:(?:сы|и)грай|воспроизведи|play)\s+((?:.|\n)+))/i, (ctx) => {
 	console.log(ctx.match[1].trim());
 	ctx.reply('ok, I`ll try')
-	exec(`mplayer "${ ctx.match[1].trim() }"`).then((stdout) => {
+	exec(`stop-music; mplayer "${ ctx.match[1].trim() }"`).then((stdout) => {
 	}).catch((e) => {
 		console.error(e);
 		ctx.reply('нишмаглаа');
