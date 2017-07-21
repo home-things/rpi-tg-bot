@@ -57,7 +57,7 @@ const onChange = (type, signal, data) => {
 				app.telegram.sendMessage(homemates.get('sasha', 'id'), 'Sasha left ==> Light turned off');
 			}).catch(() => {});
 			if (homemates.empty()) exec('has-music').then(v=>{if(!v.trim()) throw 'none'}).then(() => exec('stop-music')).then(() => {
-				app.telegram.sendMessage(VIGVAM_ID, 'No body at home ==> Music stopped');
+				app.telegram.sendMessage(VIGVAM_ID, 'Nobody at home ==> Music stopped');
 			}).catch(() => {});
 			if (homemates.full()) app.telegram.sendMessage(VIGVAM_ID, 'all in the home. \n\n 😇 p.s. I don`t notify more often than every 30 minutes');
 		break;
