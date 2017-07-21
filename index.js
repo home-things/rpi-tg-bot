@@ -64,11 +64,9 @@ const onChange = (type, signal, data) => {
 	}
 };
 
-let lastMessageTime = null;
-
 const getIntro_ = debounce(() => {
 	return randList(['ааааа','вигв+аме','кар+оч','сл+ушайте','эт с+амое']) + ', ... &&& ... — ';
-}, INTRO_DELAY, true);
+}, INTRO_DELAY * 1000, true);
 const getIntro = () => getIntro_() || '';
 
 const say = (text, ctx, isQuiet, noIntro) => {
