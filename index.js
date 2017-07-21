@@ -3,6 +3,7 @@
 const ANS_EXP = 8; // s
 const INTRO_DELAY = 20; // s
 const VIGVAM_ID = -158775326;
+const permittedChats = [-204486920, VIGVAM_ID];
 
 require('dotenv').config(); // load BOT_TOKE from .env file
 
@@ -21,6 +22,7 @@ const debounce = require('just-debounce-it');
 const inflect = require('cyrillic-inflector');
 const randList = (list) => list[Math.floor(Math.random() * list.length)];
 const edit = (repCtx, txt) => app.telegram.editMessageText(repCtx.chat.id, repCtx.message_id, null, txt);
+const del = (repCtx) => {console.log(repCtx);app.telegram.deleteMessage(repCtx.chat.id, repCtx.message_id);};
 const typing = (ctx) => app.telegram.sendChatAction(ctx.chat.id, 'typing').catch(e=>console.error('e', e));
 
 const app = new Telegraf(token);
@@ -127,25 +129,98 @@ const lastQuestion = {
 };
 
 const commands = {
-	run: function (kind, name, ctx) {
-		if (!this.accessRightsGuard()) return;
+	run: function (kind, name, ctx, args = []) {
+		console.log('chat_id', ctx.update.message.chat.id);
+		if (!this.accessRightsGuard(ctx.update.message.chat.id)) return;
 		const cmd = this.list[kind][name];
-		cmd(ctx);
+		if (!cmd) { console.error(kind, name, cmd, 'no_cmd'); return}
+		const args_ = [].concat(args).concat(ctx.match && ctx.match.slice(1));
+		const onError = (e) => { console.error(kind, name, '->', e); ctx.reply(randList(['нишмаглаа', 'Нимагуу']));};
+		if (!Array.isArray(cmd)) {
+			typing(ctx);
+			cmd(ctx, args_).catch(onError);
+		} else {
+			const repCtx = ctx.reply(cmd[0] !== 'wait_msg' ? cmd[0] : 'Ok, wait, please…', { disable_notification: true });
+			repCtx.then(() => typing(ctx));
+			Promise.all([repCtx, cmd[1](ctx, args_)]).then(([repCtx]) => del(repCtx)).catch(onError);
+		}
 		lastCommand.set(cmd);
 	},
 	list: {
 		voice: {
 			voice_over: ctx => {
 				isVoiceVerboseMode = true;
-				ctx.reply('ok, I`ll say everything you post')
+				console.log(ctx);
+				return ctx.reply('ok, I`ll say everything you post', { disable_notification: true })
 			},
+			voice_over_stop: ctx => {
+				isVoiceVerboseMode = false;
+				return ctx.reply('ok, I`ll be quiet', { disable_notification: true })
+			},
+			say: ['wait_msg', (ctx, args) => {
+				return say(args[0], ctx);
+			}],
 		},
-		music: {},
-		light: {},
+		home: {
+			presense: ['10 sec, please… 😅', (ctx) => {
+				return whoAtHome()
+				.then((json) => {
+					const name = (key) => homemates.get(key, 'name');
+					const here = (key) => randList(['дома ', 'тута', 'где-то здесь']);
+					const outside = (key) => randList(['не дома', 'отсутствует', 'шляется']);
+					const outside_ = (key) => key === 'lenya' ? randList(['— по бабам', '— опять по бабам']) : outside(key);
+					const getStatus = (key) => json[key] ? `✅ ${ name(key) } ${ here(key) }` : `🔴 ${ name(key) } ${ outside_(key) }`;
+					const txt = Object.keys(homemates.list).map((key) => getStatus(key)).join('\n');
+					return ctx.reply(txt, { disable_notification: true });
+				});
+			}],
+		},
+		music: {
+			action: ['wait_msg', (ctx, args) => {
+				return exec('has-music').then(hasMusic => {
+					if(hasMusic) return exec(`${ args[0] }-music`).then((stdout) => {
+						return ctx.reply('ok, music ${ args[0] }ed');
+					});
+					return ctx.reply('Нимагуу. You can make quieter');
+				});
+			}],
+		},
+		vol: {
+			action: ['wait_msg', (ctx, args) => {
+				const dx = args[0] === 'louder' ? +1 : -1;
+				const  K = 10;
+				return exec('get-vol')
+				.then((vol) => exec(`vol ${ vol + K * dx } ${ args[0] }`))
+				.then(() => ctx.reply(`ok, vol made ${ args[0] }`));
+			}],
+		},
+		light: {
+			on: ctx => exec('light on').then(() => ctx.reply('ok')),
+			off: ctx => exec('light off').then(() => ctx.reply('ok')),
+			status: ctx => getLightStatus().then(status => ctx.reply('ok: ' + (status ? '🌖 on' : '🌘 off'))),
+		},
+		weather: {
+			forecast: ['10 sec, please… 😅', (ctx) => {
+				return exec(`get-weather`).then(res => JSON.parse(res))
+				.then((weather) => {
+					console.log(weather)
+					const temp = Math.floor(weather.temp);
+					const units = inflect(temp, {one: 'градус', some: 'градуса', many: 'градусов'});
+					const txt = weather.description && weather.temp && `Погода в ближайшее время: ${ weather.description }, ${ temp } ${ units }`;
+					ctx.reply(txt || 'нишмагла');
+					//weather.icon && app.telegram.sendPhoto(ctx.chat.id, `http://openweathermap.org/img/w/${ weather.icon }.png`, {disable_notification: true});
+					//const url = `http://tg-bot-web.invntrm.ru/weathericons/${ weather.icon }.svg`;
+					//weather.icon && app.telegram.sendPhoto(ctx.chat.id, url, {disable_notification: true});
+					return [txt, weather];
+				})
+				.then(([txt]) => ((new Date()).getHours() >= 9) && say(txt, ctx, true, true))
+			}],
+		},
 		misc: {},
 	},
 	accessRightsGuard: function (id) {
-		const hasAccess = homemates.isMember(id);
+		//const hasAccess = homemates.isMember(id);
+		const hasAccess = permittedChats.includes(id);
 		if (!hasAccess) app.telegram.sendMessage(id, 'Бесправная скотина не может повелевать Ботом');
 		return hasAccess;
 	},
@@ -155,20 +230,15 @@ const commands = {
  voice
 */
 
-app.hears(/^(?:(читай|зачитывай)\s+((входящие\s+)?сообшения|ч[ая]т)|read\s+(chat|messages))/i, (ctx) => {
-	typing(ctx);
+app.hears(/^(?:(?:читай|зачитывай)\s+((входящие\s+)?сообшения|ч[ая]т)|read\s+(?:chat|messages))/i, (ctx) => {
+	console.log('wtf', ctx);
 	commands.run('voice', 'voice_over', ctx);
 });
 app.hears(/^(?:не\s+(читай|зачитывай)\s+((входящие\s+)?сообшения|ч[ая]т)|перестань\s+читать\s+ч[ая]т|no\s+read\s+(chat|messages))/i, (ctx) => {
-	typing(ctx);
-	isVoiceVerboseMode = false;
-	ctx.reply('ok, I`ll be quiet')
+	commands.run('voice', 'voice_over_stop', ctx);
 });
 app.hears([/^(?:say\s+((.|\n)+))/im, /^(?:скажи\s+((.|\n)+))/mi], (ctx) => {
-	console.log(ctx.match);
-	ctx.reply('ok, wait please');
-	say(ctx.match[1], ctx);
-	console.log('sent');
+	commands.run('voice', 'say', ctx);
 });
 
 
@@ -177,17 +247,7 @@ app.hears([/^(?:say\s+((.|\n)+))/im, /^(?:скажи\s+((.|\n)+))/mi], (ctx) => 
 */
 
 app.hears(/^(?:who\s+(is\s+)?at\+home\??|(все|кто)\s+(ли\s+)?дома\??)/i, (ctx) => {
-	Promise.all([
-		ctx.reply('10 sec, please… 😅 ').then(replyCtx => {typing(ctx); return replyCtx;}),
-		whoAtHome(),
-	])
-	.then(([replyCtx, json]) => {
-		const getStatus = (key) => json[key]
-		? `✅ ${ homemates.get(key, 'name') } ${ randList(['дома ', 'тута', 'где-то здесь']) }`
-		: `🔴 ${ homemates.get(key, 'name') } ${ key === 'lenya' ? randList(['— по бабам', '— опять по бабам']) : randList(['не дома', 'отсутствует', 'шляется']) }`
-		const txt = Object.keys(homemates.list).map((key) => getStatus(key)).join('\n');
-		edit(replyCtx, txt);
-	});
+	commands.run('home', 'presense', ctx);
 });
 
 
@@ -196,18 +256,13 @@ app.hears(/^(?:who\s+(is\s+)?at\+home\??|(все|кто)\s+(ли\s+)?дома\??
 */
 
 app.hears(/^(?:turn\s+light\s+on|включи\s+свет)/i, (ctx) => {
-	typing(ctx);
-	exec('light on').then(() => ctx.reply('ok')).catch(() => ctx.reply('нишмаглаа'));
+	commands.run('light', 'on', ctx);
 });
 app.hears(/^(?:turn\s+light\s+off|выключи\s+свет)/i, (ctx) => {
-	typing(ctx);
-	exec('light off').then(() => ctx.reply('ok')).catch(() => ctx.reply('нишмаглаа'));
+	commands.run('light', 'off', ctx);
 });
 app.hears(/^(?:is\s+light\s+on|light\s+status|включен(\s+ли)?\s+свет|свет\s+включен\??)/i, (ctx) => {
-	typing(ctx);
-	getLightStatus().then(status => {
-		ctx.reply('ok: ' + (status ? 'on' : 'off'));
-	}).catch(() => ctx.reply('нишмаглаа'));
+	commands.run('light', 'status', ctx);
 });
 
 /*
@@ -215,53 +270,14 @@ app.hears(/^(?:is\s+light\s+on|light\s+status|включен(\s+ли)?\s+све�
 */
 
 app.hears(/^(?:(выключи|останови|выруби|убери)\s+(?:музыку|звук|воспроизведение)|не\s+играй|stop\s+playing)/i, (ctx) => {
-	typing(ctx);
-	exec('has-music').then(hasMusic => {
-		if(hasMusic) {
-			exec('stop-music').then((stdout) => {
-				ctx.reply('ok, music stopped');
-			}).catch(e => {console.error(e); ctx.reply('нишмаглааа');});
-		} else {
-			ctx.reply('Нимагуу. You can make quieter');
-		}
-	}).catch(e =>{console.error(e); ctx.reply('Нимагуу');});
+	commands.run('music', 'action', ctx, 'stop');
 })
 app.hears(/^(?:поставь\s+на\s+паузу|пауза$|pause(,\s+please!?)?)/i, (ctx) => {
-	typing(ctx);
-	exec('has-music').then(hasMusic => {
-		if(hasMusic) {
-			exec('pause-music').then((stdout) => {
-				ctx.reply('Done, music paused');
-			}).catch((e) => {console.error(e); ctx.reply('I cannot :/');});
-		} else {
-			ctx.reply('Нимагуу. You can make quieter');
-		}
-	}).catch(e =>{console.error(e); ctx.reply('Нимагуу');});
+	commands.run('music', 'action', ctx, 'pause');
 })
 app.hears(/^(?:продолж(и|ай)\s+(воспроизведение|играть)|resume\s+playing)/i, (ctx) => {
-	typing(ctx);
-	exec('has-music').then(hasMusic => {
-		if(hasMusic) {
-			exec('resume-music').then((stdout) => {
-				ctx.reply('Done, music resumed');
-			}).catch((e) => {console.error(e); ctx.reply('I cannot :/');});
-		} else {
-			ctx.reply('Нимагуу. You can make quieter');
-		}
-	}).catch(e =>{console.error(e); ctx.reply('Нимагуу');});
+	commands.run('music', 'action', ctx, 'resume');
 })
-app.hears(/^(?:(сделай\s+)?(по)?тише|make(\s+(sound|music))?\s+quieter)/i, (ctx) => {
-	typing(ctx);
-	exec('v=$(get-vol); vol $(node -p "$v - 10") quieter').then((stdout) => {
-		ctx.reply(`ok, vol decreased`);
-	}).catch(e =>{console.error(e); ctx.reply('Нимагуу');});
-});
-app.hears(/^(?:(сделай\s+)?(по)?громче|make(\s+(sound|music))?\s+louder)/i, (ctx) => {
-	typing(ctx);
-	exec('v=$(get-vol); vol $(node -p "$v + 10") quieter').then((stdout) => {
-		ctx.reply(`ok, vol insreased`);
-	}).catch(e =>{console.error(e); ctx.reply('Нимагуу');});
-});
 app.hears(/^(?:(?:(?:сы|и)грай|воспроизведи|play)\s+((?:.|\n)+))/i, (ctx) => {
 	console.log(ctx.match[1].trim());
 	ctx.reply('ok, I`ll try')
@@ -272,36 +288,28 @@ app.hears(/^(?:(?:(?:сы|и)грай|воспроизведи|play)\s+((?:.|\n)
 	});
 });
 
+
+/*
+ vol
+*/
+
+app.hears(/^(?:(сделай\s+)?(по)?тише|make(\s+(sound|music))?\s+quieter)/i, (ctx) => {
+	commands.run('vol', 'action', ctx, 'quieter');
+});
+app.hears(/^(?:(сделай\s+)?(по)?громче|make(\s+(sound|music))?\s+louder)/i, (ctx) => {
+	commands.run('vol', 'action', ctx, 'louder');
+});
+
 /*
  misc
 */
 
 app.hears(/^(?:(?:какая\s+)?погода|что\s+с\s+погодой\??|что\s+обещают\??|что\s+с\s+погодой\??|(?:(?:(?:say|get|read)\s+)?(?:a\s+)?weather))/i, (ctx) => {
-	Promise.all([
-		ctx.reply('10 sec, please… 😅').then(repCtx => {typing(ctx); return repCtx; }),
-		exec(`get-weather`).then(res => JSON.parse(res)),
-	])
-	.then(([repCtx, weather]) => {
-		console.log(repCtx, weather)
-		const temp = Math.floor(weather.temp);
-		const units = inflect(temp, {one: 'градус', some: 'градуса', many: 'градусов'});
-		const txt = weather.description && weather.temp && `Погода в ближайшее время: ${ weather.description }, ${ temp } ${ units }`;
-		edit(repCtx, txt || 'нишмагла');
-		//weather.icon && app.telegram.sendPhoto(ctx.chat.id, `http://openweathermap.org/img/w/${ weather.icon }.png`, {disable_notification: true});
-		//const url = `http://tg-bot-web.invntrm.ru/weathericons/${ weather.icon }.svg`;
-		//weather.icon && app.telegram.sendPhoto(ctx.chat.id, url, {disable_notification: true});
-		return [txt, weather];
-	})
-	.then(([txt]) => ((new Date()).getHours() >= 9) && say(txt, ctx, true, true))
-	.catch(e => {console.error(e); ctx.reply('нишмагла');});
+	commands.run('weather', 'forecast', ctx);
 });
 
 //app.on('sticker', (ctx) => ctx.reply(''))
-app.command('start', (props) => {
-  const { from, reply } = props;
-  console.log('start', from, props)
-  return reply('Welcome!')
-})
+
 app.hears(/^hi$/i, (ctx) => ctx.reply('Hey there!'))
 
 //app.telegram.sendMessage(VIGVAM_ID, 'Привет человеки');
@@ -311,6 +319,48 @@ app.hears(/^hi$/i, (ctx) => ctx.reply('Hey there!'))
 //  //props.replyWithMarkdown('Hey there!');
 //  //answerInputTextMessageContent([{message_text:'Hey there!'}]);
 //});
+
+/*
+ /commands
+*/
+
+const cmd = fn => ctx => {
+	const args = ctx.update.message.text.split(/\s+/).slice(1);
+	typing(ctx);
+	fn(ctx, args);
+};
+
+app.command('start', (props) => {
+  const { from, reply } = props;
+  console.log('start', from, props)
+  return reply('Welcome!')
+})
+
+app.command('voice_over', cmd((ctx, args) => {
+	if (['off', 'stop'].includes(args[0])) commands.run('voice', 'voice_over_stop', ctx);
+	commands.run('voice', 'voice_over', ctx);
+}));
+
+app.command('voice_over_stop', cmd((ctx, args) => {
+	commands.run('voice', 'voice_over_stop', ctx);
+}));
+
+app.command('say', cmd((ctx, args) => commands.run('voice', 'say', ctx, args)));
+
+app.command('vol', cmd((ctx, args) => commands.run('vol', 'action', ctx, args)));
+app.command('louder', cmd((ctx, args) => commands.run('vol', 'action', ctx, 'louder')));
+app.command('quieter', cmd((ctx, args) => commands.run('vol', 'action', ctx, 'quieter')));
+
+app.command('music', cmd((ctx, args) => commands.run('music', 'action', ctx, args)));
+app.command('pause', cmd((ctx, args) => commands.run('music', 'action', ctx, 'pause')));
+app.command('resume', cmd((ctx, args) => commands.run('music', 'action', ctx, 'resume')));
+app.command('stop', cmd((ctx, args) => commands.run('music', 'action', ctx, 'stop')));
+
+app.command('home', cmd((ctx, args) => commands.run('home', 'presense', ctx)));
+
+app.command('light', cmd((ctx, args) => commands.run('light', args[0], ctx)));
+
+app.command('weath', cmd((ctx, args) => commands.run('weather', 'forecast', ctx)));
 
 /*
  universal
@@ -361,7 +411,7 @@ app.hears(/^(?:no|nope|N|нет|не-а)/i, (ctx) => {
 });
 
 app.hears(/./, (ctx) => {
-	console.log(ctx.from)
+	//console.log(ctx.from)
 	if(!isVoiceVerboseMode) return;
 	const name = ctx.update.message.from.first_name;
 	say(`говорит ${ homemates.get(name, 'name') || name }: ${ ctx.match.input }`, ctx, true);
