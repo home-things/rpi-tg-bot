@@ -1,3 +1,4 @@
 .env
 pid
 node_modules
+/jokes.json

@@ -4,7 +4,7 @@ const ANS_EXP = 8; // s
 const INTRO_DELAY = 20; // s
 const HOME_DIFF_DELAY = 60 * 30; // s
 const VIGVAM_ID = -158775326;
-const permittedChats = [-204486920, VIGVAM_ID];
+const permittedChats = [ -204486920, VIGVAM_ID ];
 
 require('dotenv').config(); // load BOT_TOKE from .env file
 
@@ -15,6 +15,8 @@ const token = process.env.BOT_TOKEN || TOKEN;
 
 const fs = require('fs');
 const util = require('util');
+const read = (name, content) => util.promisify(fs.readFile)(name, 'utf8');
+const write = (name, content) => util.promisify(fs.writeFile)(name, typeof content === 'string' ? content : JSON.stringify(content, null, '\t'), 'utf8');
 const child_process = require('child_process');
 const exec = util.promisify(child_process.exec.bind(child_process));
 const getLightStatus = () => exec('gpio -1 read 22').then(l => parseInt(l, 10));
@@ -25,6 +27,14 @@ const randList = (list) => list[Math.floor(Math.random() * list.length)];
 const edit = (repCtx, txt) => app.telegram.editMessageText(repCtx.chat.id, repCtx.message_id, null, txt);
 const del = (repCtx) => app.telegram.deleteMessage(repCtx.chat.id, repCtx.message_id);
 const typing = (ctx) => app.telegram.sendChatAction(ctx.chat.id, 'typing').catch(e=>console.error('e', e));
+
+const fetch = require('isomorphic-fetch');
+const open = (uri) => fetch(uri).then(r => r.status >= 400 ? thrw (r.status) : r.text());
+const parse = html => new (require('jsdom').JSDOM)(html);
+
+const decode = (str) => (new require('html-entities').XmlEntities).decode(str)
+
+let jokes = fs.existsSync('./jokes.json') ? require('./jokes.json') : { i: -1, page: -1, list: [] };
 
 const app = new Telegraf(token);
 
@@ -42,6 +52,7 @@ let homemates = {
 	set: function (key, field, val) { this.list[key][field] = val; return val; },
 	setAll: function (field, object) { Object.keys(this.list).forEach((key) => {this.set(key, field, object[key]);}); },
 	empty: function () { return Object.keys(this.list).every(key => !this.get(key, 'presense')); },
+	full: function () { return Object.keys(this.list).every(key => this.get(key, 'presense')); },
 	isMember: function (id) { return Object.keys(this.list).some(key => this.get(key, 'id') === id); },
 }
 
@@ -59,7 +70,7 @@ const onChange = (type, signal, data) => {
 			if (homemates.empty()) exec('has-music').then(v=>{if(!v.trim()) throw 'none'}).then(() => exec('stop-music')).then(() => {
 				app.telegram.sendMessage(VIGVAM_ID, 'Nobody at home ==> Music stopped');
 			}).catch(() => {});
-			if (homemates.full()) app.telegram.sendMessage(VIGVAM_ID, 'all in the home. \n\n 😇 p.s. I don`t notify more often than every 30 minutes');
+			if (homemates.full()) app.telegram.sendMessage(VIGVAM_ID, randList(['С возвращением!', 'all in the home.']) + '\n\n 😇 p.s. I don`t notify more often than every 30 minutes');
 		break;
 		}
 	break;
@@ -137,14 +148,15 @@ const commands = {
 		const args_ = [].concat(args).concat(ctx.match && ctx.match.slice(1));
 		const onError = (e) => { console.error(kind, name, '->', e); ctx.reply(randList(['нишмаглаа', 'Нимагуу']));};
 		if (!Array.isArray(cmd)) {
+			lastCommand.set(cmd);
 			typing(ctx);
-			cmd(ctx, args_).catch(onError);
+			return cmd(ctx, args_).catch(onError);
 		} else {
+			lastCommand.set(cmd[1]);
 			const repCtx = ctx.reply(cmd[0] !== 'wait_msg' ? cmd[0] : 'Ok, wait, please…', { disable_notification: true });
 			repCtx.then(() => typing(ctx));
-			Promise.all([repCtx, cmd[1](ctx, args_)]).then(([repCtx]) => del(repCtx)).catch(onError);
+			return Promise.all([repCtx, cmd[1](ctx, args_)]).then(([repCtx, res]) => { del(repCtx); return res; }).catch(onError);
 		}
-		lastCommand.set(cmd);
 	},
 	list: {
 		voice: {
@@ -222,6 +234,24 @@ const commands = {
 				return app.telegram.sendMessage(VIGVAM_ID, args[0]);
 			},
 		},
+		jokes: {
+			joke: ['wait_msg', (ctx) => {
+				return (jokes.list.length > (jokes.i + 1) ? Promise.resolve(jokes) : commands.run('jokes', 'update', ctx))
+				.then(jokes_ => {
+					jokes = jokes_ // global
+					console.log(jokes.i+1, jokes.list.length, jokes.list[jokes.i+1])
+					setTimeout(() => write('./jokes.json', jokes), 1000);
+					return ctx.reply(jokes.list[++jokes.i]);
+				});
+			}],
+			update: (ctx) => {
+				console.log('update jokes', jokes.i+1, jokes.list.length, jokes.list[jokes.i+1]);
+				return open('http://bash.im/byrating/' + (++jokes.page)).then(html => parse(html))
+				.then(({window:{document}}) => Array.from(document.querySelectorAll('.quote .text')).map(e => decode(e.innerHTML.replace(/<[^>]+>/g,'\n'))))
+				.then(list => Object.assign({}, jokes, { list, i: -1 }))
+				.then(jokes => { write('./jokes.json', jokes); return jokes; });
+			},
+		},
 	},
 	accessRightsGuard: function (id) {
 		const hasAccess = permittedChats.includes(id) || homemates.isMember(id);
@@ -250,7 +280,7 @@ app.hears(/^(?:(?:say|скажи)\s+((?:.|\n)+))/im, (ctx) => {
  home
 */
 
-app.hears(/^(?:who\s+(is\s+)?at\+home\??|(все|кто)\s+(ли\s+)?дома\??)/i, (ctx) => {
+app.hears(/^(?:who\s+(is\s+)?at\+home\??|(все|кто)\s+(ли\s+)?(дома|здесь)\??)/i, (ctx) => {
 	commands.run('home', 'presense', ctx);
 });
 
@@ -285,7 +315,7 @@ app.hears(/^(?:продолж(и|ай)\s+(воспроизведение|игр�
 app.hears(/^(?:(?:(?:сы|и)грай|воспроизведи|play)\s+((?:.|\n)+))/i, (ctx) => {
 	console.log(ctx.match[1].trim());
 	ctx.reply('ok, I`ll try')
-	exec(`stop-music; mplayer "${ ctx.match[1].trim() }"`).then((stdout) => {
+	exec(`stop-music || :; mplayer "${ ctx.match[1].trim() }"`).then((stdout) => {
 	}).catch((e) => {
 		console.error(e);
 		ctx.reply('нишмаглаа');
@@ -315,6 +345,11 @@ app.hears(/^(?:(?:какая\s+)?погода|что\s+с\s+погодой\??|ч
 app.hears(/^(?:text|print|напиши|наречатай)\s+((?:.|\n)+)$/im, (ctx) => {
 	commands.run('misc', 'print', ctx);
 });
+
+app.hears(/^(?:(?:(?:get|tell|next)\s+)?joke|(?:(?:(?:расскажи|давай)\s+)?(?:шутку|анекдот)|пошути|шуткуй))/i, (ctx) => {
+	commands.run('jokes', 'joke', ctx);
+});
+
 
 //app.on('sticker', (ctx) => ctx.reply(''))
 
@@ -368,6 +403,8 @@ app.command('home', cmd((ctx, args) => commands.run('home', 'presense', ctx)));
 app.command('light', cmd((ctx, args) => commands.run('light', args[0], ctx)));
 
 app.command('weath', cmd((ctx, args) => commands.run('weather', 'forecast', ctx)));
+
+app.command('joke', cmd((ctx, args) => commands.run('jokes', 'joke', ctx)));
 
 /*
  universal
