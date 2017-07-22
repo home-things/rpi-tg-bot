@@ -36,7 +36,8 @@
 * [ ] repeat, undo, ask detaild commands
 * [ ] learnings new commands synonyms (— do magic — ... — I say to you, bot! — wow, do you mean 'switch magic on'?)
 * [ ] weather (with icons)
-* [ ] jokes
+* [x] jokes
+ * [ ] jokes random schedule
 * [ ] reminders
 * [ ] programming state maschine transitions via `tg`
 * [ ] transcribing voice messages, interpret commands
