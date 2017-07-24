@@ -497,4 +497,4 @@ const getHomematesPresenseChange = () => {
 
 
 app.startPolling();
-startHomematesPresensePolling();
+// startHomematesPresensePolling();
