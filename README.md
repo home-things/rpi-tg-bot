@@ -19,10 +19,14 @@
 
 #### to copy/port to this repo
 
-* nodejs airplay server (stream music from iphone)
+* https://github.com/mikebrady/shairport-sync — nodejs airplay server (stream music from iphone)
 * nodejs homekit server (siri: `turn light on`)
 * cron jobs & bash scripts (download & play podcasts, light scripts)
-* alfred workflow
+* alfred light control workflow
+* https://github.com/a-x-/megapolist-podcast-crawler — any podcast crawler & player
+* https://github.com/a-x-/stupid-light-server — stupid light control http-server
+* https://github.com/vysheng/tg.git — telegram cli
+ * [installation hack](https://github.com/vysheng/tg/issues/1070)
 
 #### to write
 * [x] light control, scrpts
