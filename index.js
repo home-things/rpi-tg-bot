@@ -5,7 +5,7 @@ const ANS_EXP = 8; // s
 const INTRO_DELAY = 20; // s
 const HOME_DIFF_DELAY = 60 * 30; // s
 const VIGVAM_ID = -1001122123367;//-158775326;
-const permittedChats = [ -204486920, VIGVAM_ID ];
+const permittedChats = [ -1001104339392, VIGVAM_ID ];
 
 require('dotenv').config(); // load BOT_TOKE from .env file
 
@@ -42,6 +42,8 @@ const app = new Telegraf(token);
 app.telegram.getMe().then((botInfo) => {
   app.options.username = botInfo.username
 });
+
+app.use(Telegraf.log());
 
 let homemates = {
 	list: {
@@ -95,14 +97,23 @@ const say = (text, ctx, isQuiet, noIntro) => {
 	});
 };
 
-const whoAtHome = () => {
-	return exec('who-at-home')
+const whoAtHomeRequest = () => {
+	//exec("curl --basic --user 'admin:lun#Din0' http://192.168.1.254/index.htm 2>/dev/null | grep 'var device_array'")
+	//.then((stdout) => eval('var device = Array;' + stdout + ';device_array'));
+	//.then((res) => { })
+
+	return exec('who-at-home2')
 	.then((stdout) => {
 		const j = JSON.parse(stdout)
-		j.lenya = j.lenya === 'Y';
-		j.misha = j.misha === 'Y';
-		j.sasha = j.sasha === 'Y';
+		console.log('whoAtHome info', stdout, j)
 		return j;
+	});
+};
+const whoAtHome = () => {
+	return whoAtHomeRequest()
+	.catch((e) => {
+		console.error('whoAtHome error', e);
+		return whoAtHomeRequest(); // try again once
 	});
 };
 
@@ -143,7 +154,7 @@ const lastQuestion = {
 const commands = {
 	run: function (kind, name, ctx, args = []) {
 		console.log('chat_id', ctx.update.message.chat.id);
-		if (!this.accessRightsGuard(ctx.update.message.chat.id)) return;
+		if (!this.accessRightsGuard(ctx.update.message.chat.id, ctx.update.message.from.id)) return;
 		const cmd = this.list[kind][name];
 		if (!cmd) { console.error(kind, name, cmd, 'no_cmd'); return}
 		const args_ = [].concat(args).concat(ctx.match && ctx.match.slice(1));
@@ -258,14 +269,14 @@ const commands = {
 		},
 		fixes: {
 			airplay: (ctx) => {
-				exec('sudo systemctl restart shairport-sync')
+				return exec('sudo systemctl restart shairport-sync')
 				.then(() => ctx.reply('ok'))
 				.catch((e) => { console.error(e); ctx.reply('fail'); });
 			}
 		},
 	},
-	accessRightsGuard: function (id) {
-		const hasAccess = permittedChats.includes(id) || homemates.isMember(id);
+	accessRightsGuard: function (id, userId) {
+		const hasAccess = permittedChats.includes(id) || homemates.isMember(userId);
 		if (!hasAccess) app.telegram.sendMessage(id, 'Бесправная скотина не может повелевать Ботом');
 		if (!hasAccess) console.error('ACL decline', id)
 		return hasAccess;
