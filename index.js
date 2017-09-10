@@ -1,9 +1,10 @@
+#!/usr/bin/env node
 // vim: set ts=4
 
 const ANS_EXP = 8; // s
 const INTRO_DELAY = 20; // s
 const HOME_DIFF_DELAY = 60 * 30; // s
-const VIGVAM_ID = -158775326;
+const VIGVAM_ID = -1001122123367;//-158775326;
 const permittedChats = [ -204486920, VIGVAM_ID ];
 
 require('dotenv').config(); // load BOT_TOKE from .env file
@@ -146,7 +147,10 @@ const commands = {
 		const cmd = this.list[kind][name];
 		if (!cmd) { console.error(kind, name, cmd, 'no_cmd'); return}
 		const args_ = [].concat(args).concat(ctx.match && ctx.match.slice(1));
-		const onError = (e) => { console.error(kind, name, '->', e); ctx.reply(randList(['нишмаглаа', 'Нимагуу']));};
+		const onError = (e) => {
+			console.error(kind, name, '->', e);
+			ctx.reply(randList(['нишмаглаа', 'Нимагуу']) + '\n' + e.message);
+		};
 		if (!Array.isArray(cmd)) {
 			lastCommand.set(cmd);
 			typing(ctx);
@@ -252,10 +256,18 @@ const commands = {
 				.then(jokes => { write('./jokes.json', jokes); return jokes; });
 			},
 		},
+		fixes: {
+			airplay: (ctx) => {
+				exec('sudo systemctl restart shairport-sync')
+				.then(() => ctx.reply('ok'))
+				.catch((e) => { console.error(e); ctx.reply('fail'); });
+			}
+		},
 	},
 	accessRightsGuard: function (id) {
 		const hasAccess = permittedChats.includes(id) || homemates.isMember(id);
 		if (!hasAccess) app.telegram.sendMessage(id, 'Бесправная скотина не может повелевать Ботом');
+		if (!hasAccess) console.error('ACL decline', id)
 		return hasAccess;
 	},
 };
@@ -280,7 +292,7 @@ app.hears(/^(?:(?:say|скажи)\s+((?:.|\n)+))/im, (ctx) => {
  home
 */
 
-app.hears(/^(?:who\s+(is\s+)?at\+home\??|(все|кто)\s+(ли\s+)?(дома|здесь)\??)/i, (ctx) => {
+app.hears(/^(?:who\s+(is\s+)?at\+home\??|(есть\s)?(все|кто)\s+(ли\s+)?(дома|здесь)\??)/i, (ctx) => {
 	commands.run('home', 'presense', ctx);
 });
 
@@ -350,6 +362,9 @@ app.hears(/^(?:(?:(?:get|tell|next)\s+)?joke|(?:(?:(?:расскажи|дава�
 	commands.run('jokes', 'joke', ctx);
 });
 
+app.hears(/^fix airplay/, (ctx) => {
+	commands.run('fixes', 'airplay', ctx);
+});
 
 //app.on('sticker', (ctx) => ctx.reply(''))
 
