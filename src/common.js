@@ -1,7 +1,7 @@
 const Telegraf = require('telegraf');
 const { Extra, Markup } = require('telegraf');
-const config = require('./config');
-const consts = require('./consts')(config);
+const config = require('../config');
+const consts = require('../consts')(config);
 const TOKEN = null;
 const token = process.env.BOT_TOKEN || TOKEN;
 const util = require('util');
@@ -34,7 +34,7 @@ const sendHomematesDiff = debounce((diff) => {
   console.log('diff', diff);
   app.telegram.sendMessage(VIGVAM_ID, '🏠↘︎↖︎\n'
   + diff.map(item => homemates.get(item.who, 'name') + (item.before ? ' вернулся' : (Math.random() > .5 ? ' ушёл' : ' свалил'))));
-}, 1000 * HOME_DIFF_DELAY, true);
+}, 1000 * 60 * consts.HOME_DIFF_DELAY, true);
 
 const getHomematesPresenseChange = () => {
   const diff = whoAtHome().then(actualPresense => {
@@ -70,6 +70,8 @@ module.exports = {
   open,
   parse,
   decode,
+	config,
+	consts,
 
   reportHomematesPresenseChange,
 };

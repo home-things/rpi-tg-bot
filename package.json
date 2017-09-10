@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cron": "^1.2.1",
     "cyrillic-inflector": "^1.0.5",
     "dotenv": "^4.0.0",
     "express": "^4.15.3",

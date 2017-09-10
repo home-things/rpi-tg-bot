@@ -39,7 +39,7 @@ app.telegram.getMe().then((botInfo) => {
 app.use(Telegraf.log());
 
 let homemates = {
-  list: config.homemates.list,
+  list: config.commands.list.home.data.homemates.list,
   get: function (key, field) { return this.list[key.toLowerCase()] && this.list[key.toLowerCase()][field]; },
   set: function (key, field, val) { this.list[key][field] = val; return val; },
   setAll: function (field, object) { Object.keys(this.list).forEach((key) => { this.set(key, field, object[key]); }); },
@@ -60,9 +60,9 @@ const onChange = (type, signal, data) => {
             app.telegram.sendMessage(homemates.get('sasha', 'id'), 'Sasha left ==> Light turned off');
           }).catch(() => { });
           if (homemates.empty()) exec('has-music').then(v => { if (!v.trim()) throw 'none' }).then(() => exec('stop-music')).then(() => {
-            app.telegram.sendMessage(VIGVAM_ID, 'Nobody at home ==> Music stopped');
+            app.telegram.sendMessage(consts.VIGVAM_ID, 'Nobody at home ==> Music stopped');
           }).catch(() => { });
-          if (homemates.full()) app.telegram.sendMessage(VIGVAM_ID, randList(['С возвращением!', 'all in the home.']) + '\n\n 😇 p.s. I don`t notify more often than every 30 minutes');
+          if (homemates.full()) app.telegram.sendMessage(consts.VIGVAM_ID, randList(['С возвращением!', 'all in the home.']) + '\n\n 😇 p.s. I don`t notify more often than every 30 minutes');
           break;
       }
       break;
@@ -71,7 +71,7 @@ const onChange = (type, signal, data) => {
 
 const getIntro_ = debounce(() => {
   return randList(['ааааа', 'вигв+аме', 'кар+оч', 'сл+ушайте', 'эт с+амое']) + ', ... &&& ... — ';
-}, INTRO_DELAY * 1000, true);
+}, config.commands.list.voice.list.say.intro_delay * 1000, true);
 const getIntro = () => getIntro_() || '';
 
 const say = (text, ctx, isQuiet, noIntro) => {
@@ -106,7 +106,7 @@ const whoAtHome = () => {
 let isVoiceVerboseMode = false;
 let _isIn1wordAnsExpecting = false;
 const isIn1wordAnsExpecting = () => {
-  return _isIn1wordAnsExpecting ? (Date.now() - _isIn1wordAnsExpecting < 1000 * ANS_EXP) : false;
+  return _isIn1wordAnsExpecting ? (Date.now() - _isIn1wordAnsExpecting < 1000 * consts.ANS_EXP) : false;
 };
 
 const lastCommand = {
@@ -231,7 +231,7 @@ const commands = {
     },
     misc: {
       print: (ctx, args) => {
-        return app.telegram.sendMessage(VIGVAM_ID, args[0]);
+        return app.telegram.sendMessage(consts.VIGVAM_ID, args[0]);
       },
     },
     jokes: {
@@ -263,8 +263,8 @@ const commands = {
       }
     },
   },
-  accessRightsGuard: function (id) {
-    const hasAccess = permittedChats.includes(id) || homemates.isMember(userId);
+  accessRightsGuard: function (id, userId) {
+    const hasAccess = consts.permittedChats.includes(id) || homemates.isMember(userId);
     if (!hasAccess) {
       app.telegram.sendMessage(id, 'Бесправная скотина не может повелевать Ботом');
       console.error('ACL decline', id);
@@ -370,7 +370,7 @@ app.hears(/^fix airplay/, (ctx) => {
 
 app.hears(/^hi$/i, (ctx) => ctx.reply('Hey there!'))
 
-//app.telegram.sendMessage(VIGVAM_ID, 'Привет человеки');
+//app.telegram.sendMessage(consts.VIGVAM_ID, 'Привет человеки');
 //app.on('inline_query', (props) => {
 //  const { inlineQuery } = props;
 //  console.log('aa?', props);
@@ -477,4 +477,4 @@ app.hears(/./, (ctx) => {
 
 app.startPolling();
 
-jobs();
+//jobs();
