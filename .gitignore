@@ -1,4 +1,6 @@
-.env
-pid
-node_modules
+/.env
+/config.js
+/consts.js
+/pid
+/node_modules
 /jokes.json
