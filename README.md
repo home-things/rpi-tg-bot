@@ -8,7 +8,10 @@
 | ![screen shot 2017-07-19 at 13 26 46](https://user-images.githubusercontent.com/6201068/28362820-a6ed78b2-6c86-11e7-8c66-f4a5aa143325.png) | |
 | | ![alfred](https://user-images.githubusercontent.com/6201068/28365373-fc7a4a8a-6c90-11e7-9d79-8b1775fa2f3d.jpg) **macos alfred** |
 
-![photo](https://user-images.githubusercontent.com/6201068/28364002-6750729a-6c8b-11e7-9bf0-0cffdf9242b9.jpg) 
+| | | |
+| --- | --- | --- |
+| ![photo](https://user-images.githubusercontent.com/6201068/28364002-6750729a-6c8b-11e7-9bf0-0cffdf9242b9.jpg) | ![img_0283](https://user-images.githubusercontent.com/6201068/30253637-dbe9d3aa-9691-11e7-93f2-0d25d15fe183.jpg) | ![img_1060](https://user-images.githubusercontent.com/6201068/30253658-27aeca98-9692-11e7-9b3c-01bc5d51aa36.jpg) |
+| ![img_0289](https://user-images.githubusercontent.com/6201068/30253638-dbea0442-9691-11e7-95eb-0fbd032f7f0a.jpg) | ![img_0290](https://user-images.githubusercontent.com/6201068/30253640-dbeadbd8-9691-11e7-96c1-90863718b0d1.jpg) | ![img_0292](https://user-images.githubusercontent.com/6201068/30253636-dbe8d0fe-9691-11e7-988b-fd320f2d523a.jpg) |
 
 ## hardware
 * Any raspbery pi (I use Raspberry Pi Model B Rev 2)
