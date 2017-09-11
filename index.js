@@ -366,7 +366,33 @@ app.hears(/^fix airplay/, (ctx) => {
   commands.run('fixes', 'airplay', ctx);
 });
 
-//app.on('sticker', (ctx) => ctx.reply(''))
+app.hears(/^((find|search|look up) (torrent|rutracker|serial|film)|(ищи|найди|искать|ищи) (торрент|на рутрекере|на rutracker|фильм|сериал))/i, (ctx) => {
+	commands.run('torrents', 'search', ctx);
+});
+
+app.on('audio', (ctx) => {
+	app.telegram.getFileLink(ctx.message.audio.file_id)
+  .then(async (link) => {
+		const name = `/tmp/tg-bot-audio.${ link.match(/\w+$/)[0] }`;
+		console.log('link', link)
+    await exec(`wget -O ${ name } ${ link }`);
+    exec(`stop-music || :; mplayer "${ name }"`).then((stdout) => {
+			ctx.reply('ok');
+    }).catch((e) => {
+      console.error(e);
+      ctx.reply('нишмаглаа');
+    });
+  });
+});
+
+app.on('voice', (ctx) => {
+	if (!ctx.message.voice) return;
+	app.telegram.getFileLink(ctx.message.voice.file_id)
+	.then(async (voiceLink) => {
+		await exec(`wget -O /tmp/tg-bot-voice.oga ${ voiceLink }`);
+		//exec(`asr /tmp/tg-bot-voice.oga`)
+	});
+});
 
 app.hears(/^hi$/i, (ctx) => ctx.reply('Hey there!'))
 
@@ -478,3 +504,4 @@ app.hears(/./, (ctx) => {
 app.startPolling();
 
 //jobs();
+
