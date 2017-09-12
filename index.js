@@ -262,6 +262,29 @@ const commands = {
           .catch((e) => { console.error(e); ctx.reply('fail'); });
       }
     },
+		torrents: {
+			search: ['wait_msg', async (ctx, args) => {
+				const query = args.join(' ').trim();
+				const res = JSON.parse(await exec(`search-rutracker ${ query }`));
+				if (!res || !res.length) return ctx.reply('nothing');
+				res.forEach(async res => {
+					ctx.replyWithHTML(`
+📕  ${ res.category } <b>${ res.size_h }</b>.
+seeds: <b>${ res.seeds }</b> / leechs: ${ res.leechs }
+<b># ${ res.id }</b>
+🌐 ${ res.url.replace(/^https?:\/\//, '') }
+					`, Markup.inlineKeyboard([Markup.callbackButton('Download', `torrent download ${ res.id }`)]).extra());
+					/*
+						Markup
+					    .keyboard([`/torrent ${ res.id }`])
+					    .oneTime()
+					    .resize()
+					    .extra()
+					  );
+					*/
+				});
+			}],
+		},
   },
   accessRightsGuard: function (id, userId) {
     const hasAccess = consts.permittedChats.includes(id) || homemates.isMember(userId);
@@ -366,7 +389,7 @@ app.hears(/^fix airplay/, (ctx) => {
   commands.run('fixes', 'airplay', ctx);
 });
 
-app.hears(/^((find|search|look up) (torrent|rutracker|serial|film)|(ищи|найди|искать|ищи) (торрент|на рутрекере|на rutracker|фильм|сериал))/i, (ctx) => {
+app.hears(/^(?:(?:find|search|look up) (?:torrent|rutracker|serial|film)|(?:поищи|ищи|найди|искать|ищи) (?:торрент|на рутрекере|на rutracker|фильм|сериал))(.+)/i, (ctx) => {
 	commands.run('torrents', 'search', ctx);
 });
 
@@ -501,7 +524,21 @@ app.hears(/./, (ctx) => {
   say(`говорит ${homemates.get(name, 'name') || name}: ${ctx.match.input}`, ctx, true);
 });
 
+app.action(/.+/, (ctx) => {
+	let m;
+	if (m = ctx.match && ctx.match[0].match(/^torrent download (\d+)/)) {
+		ctx.reply('start downloading...');
+		console.log('start downloading...');
+		exec(`download-rutracker ${ m[1] }`).then(() => ctx.reply('done')).catch(e=> {
+			console.error('torrent download error', e);
+			ctx.reply('torrent download error \n' + e.message);
+		});
+	}
+  return ctx.answerCallbackQuery(`Oh, ${ctx.match[0]}! Great choise`)
+})
+
 app.startPolling();
 
 //jobs();
 
+//setInterval(() => commands.run('jokes', 'joke', { reply: msg => app.telegram.sendMessage(VIGVAM_ID, msg }), 1000*60*60*24);
