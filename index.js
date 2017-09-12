@@ -275,22 +275,29 @@ const commands = {
 				const res = JSON.parse(await exec(`search-rutracker ${ query }`));
 				if (!res || !res.length) return ctx.reply('nothing');
 				res.forEach(async res => {
-					ctx.replyWithHTML(`
-📕  ${ res.category } <b>${ res.size_h }</b>.
-seeds: <b>${ res.seeds }</b> / leechs: ${ res.leechs }
-<b># ${ res.id }</b>
-🌐 ${ res.url.replace(/^https?:\/\//, '') }
+					ctx.replyWithHTML(unindent`
+            📕 ${ res.category } <b>${ res.size_h }</b>.
+            seeds: <b>${ res.seeds }</b> / leechs: ${ res.leechs }
+            <b># ${ res.id }</b>
+            🌐 ${ res.url.replace(/^https?:\/\//, '') }
 					`, Markup.inlineKeyboard([Markup.callbackButton('Download', `torrent download ${ res.id }`)]).extra());
-					/*
-						Markup
-					    .keyboard([`/torrent ${ res.id }`])
-					    .oneTime()
-					    .resize()
-					    .extra()
-					  );
-					*/
 				});
-			}],
+      }],
+      download: ['wait_msg', ({ reply }, args) => {
+        reply('start downloading...');
+        console.log('start downloading...');
+        try {
+          await exec(`download-rutracker ${ args[0] }`);
+          reply('done')
+        } catch(e) {
+          console.error('torrent download error', e);
+          reply('torrent download error \n' + e.message);
+        }
+      }],
+      status: async ({ reply }) => {
+        const info = await exec('deluge-console info');
+        reply(info);
+      }
 		},
   },
   accessRightsGuard: function (id, userId) {
@@ -534,12 +541,7 @@ app.hears(/./, (ctx) => {
 app.action(/.+/, (ctx) => {
 	let m;
 	if (m = ctx.match && ctx.match[0].match(/^torrent download (\d+)/)) {
-		ctx.reply('start downloading...');
-		console.log('start downloading...');
-		exec(`download-rutracker ${ m[1] }`).then(() => ctx.reply('done')).catch(e=> {
-			console.error('torrent download error', e);
-			ctx.reply('torrent download error \n' + e.message);
-		});
+    commands.run('torrents', 'download', ctx, m[1]);
 	}
   return ctx.answerCallbackQuery(`Oh, ${ctx.match[0]}! Great choise`)
 })

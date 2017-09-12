@@ -50,6 +50,16 @@ const getHomematesPresenseChange = () => {
   return diff;
 };
 
+// weirdTag`1${ 2 }3` --> '123'
+const weirdTag = (strings, ...values) =>
+  strings.reduce((res, str, i) => res + values[i - 1] + str);
+
+  // unindent`
+//  123
+//` ---> '\n123\n'
+const unindent = (strings, ...values) =>
+  weirdTag(strings, ...values).split(/\n/).map(s=>s.trim()).join('\n');
+
 
 module.exports = {
   Telegraf,
@@ -71,7 +81,8 @@ module.exports = {
   parse,
   decode,
 	config,
-	consts,
+  consts,
+  unindent,
 
   reportHomematesPresenseChange,
 };
