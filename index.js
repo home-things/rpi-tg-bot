@@ -283,7 +283,7 @@ const commands = {
 					`, Markup.inlineKeyboard([Markup.callbackButton('Download', `torrent download ${ res.id }`)]).extra());
 				});
       }],
-      download: ['wait_msg', ({ reply }, args) => {
+      download: ['wait_msg', async ({ reply }, args) => {
         reply('start downloading...');
         console.log('start downloading...');
         try {
