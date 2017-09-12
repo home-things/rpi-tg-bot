@@ -139,8 +139,7 @@ const lastQuestion = {
 
 const commands = {
   run: function (kind, name, ctx, args = []) {
-    console.log('chat_id', ctx.update.message.chat.id, 'user_id', ctx.update.message.from.id);
-    if (!this.accessRightsGuard(ctx.update.message.chat.id, ctx.update.message.from.id)) return;
+    if (!ctx.isSystem && !this.accessRightsGuard(ctx.update.message.chat.id, ctx.update.message.from.id)) return;
     const cmd = this.list[kind][name];
     if (!cmd) { console.error(kind, name, cmd, 'no_cmd'); return }
     const args_ = [].concat(args).concat(ctx.match && ctx.match.slice(1));
@@ -159,6 +158,14 @@ const commands = {
       return Promise.all([repCtx, cmd[1](ctx, args_)]).then(([repCtx, res]) => { del(repCtx); return res; }).catch(onError);
     }
   },
+	runSys: function (kind, name, args = []) {
+		const ctx = {
+			isSystem: true,
+			chat: { id: VIGVAM_ID },
+			reply: msg => app.telegram.sendMessage(VIGVAM_ID, msg),
+		};
+		return this.run(kind, name, ctx, args = []);
+	},
   list: {
     voice: {
       voice_over: ctx => {
@@ -541,4 +548,4 @@ app.startPolling();
 
 //jobs();
 
-//setInterval(() => commands.run('jokes', 'joke', { reply: msg => app.telegram.sendMessage(VIGVAM_ID, msg }), 1000*60*60*24);
+setInterval(() => commands.runSys('jokes', 'joke'), 1000*60*60*24);
