@@ -161,8 +161,8 @@ const commands = {
 	runSys: function (kind, name, args = []) {
 		const ctx = {
 			isSystem: true,
-			chat: { id: VIGVAM_ID },
-			reply: msg => app.telegram.sendMessage(VIGVAM_ID, msg),
+			chat: { id: consts.VIGVAM_ID },
+			reply: msg => app.telegram.sendMessage(consts.VIGVAM_ID, msg),
 		};
 		return this.run(kind, name, ctx, args = []);
 	},
@@ -478,7 +478,7 @@ app.command('stop', cmd((ctx, args) => commands.run('music', 'action', ctx, 'sto
 
 app.command('home', cmd((ctx, args) => commands.run('home', 'presense', ctx)));
 
-app.command('light', cmd((ctx, args) => commands.run('light', args[0], ctx)));
+app.command('light', cmd((ctx, args) => commands.run('light', args, ctx)));
 
 app.command('weath', cmd((ctx, args) => commands.run('weather', 'forecast', ctx)));
 
