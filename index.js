@@ -19,6 +19,7 @@ const {
   decode,
   config,
   consts,
+  unindent,
 } = require('./src/common');
 
 require('dotenv').config(); // load BOT_TOKE from .env file
