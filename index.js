@@ -141,7 +141,8 @@ const lastQuestion = {
 
 const commands = {
   run: function (kind, name, ctx, args = []) {
-    if (!ctx.isSystem && !this.accessRightsGuard(ctx.update.message.chat.id, ctx.update.message.from.id)) return;
+		const data = ctx.update || ctx.callback_query;
+    if (!ctx.isSystem && data.message && !this.accessRightsGuard(data.message.chat.id, data.message.from.id)) return;
     const cmd = this.list[kind][name];
     if (!cmd) { console.error(kind, name, cmd, 'no_cmd'); return }
     const args_ = [].concat(args).concat(ctx.match && ctx.match.slice(1));
@@ -276,12 +277,13 @@ const commands = {
 				const query = args.join(' ').trim();
 				const res = JSON.parse(await exec(`search-rutracker ${ query }`));
 				if (!res || !res.length) return ctx.reply('nothing');
+
+		    // 🌐 ${ res.url.replace(/^https?:\/\//, '') }
 				res.forEach(async res => {
 					ctx.replyWithHTML(unindent`
-            📕 ${ res.category } <b>${ res.size_h }</b>.
-            seeds: <b>${ res.seeds }</b> / leechs: ${ res.leechs }
-            <b># ${ res.id }</b>
-            🌐 ${ res.url.replace(/^https?:\/\//, '') }
+            📕 ${ res.category }.
+            <b>${ res.size_h }</b>. seeds: <b>${ res.seeds }</b> / leechs: ${ res.leechs }
+            ${ res.title } <b> # ${ res.id }</b>
 					`, Markup.inlineKeyboard([Markup.callbackButton('Download', `torrent download ${ res.id }`)]).extra());
 				});
       }],
@@ -297,8 +299,10 @@ const commands = {
         }
       }],
       status: async ({ reply }) => {
-        const info = await exec('deluge-console info');
-        reply(info);
+        const info = await exec('ssh pi@rpi3 deluge-console info -s Downloading --sort=time_added')
+				const info_ = info.replace(/^(ID|State|Seeds|Seed time|Tracker status|Size):.+\n/gm, "").trim()
+        info_ && reply(info_);
+				reply(info_ ? 'Остальное скачалось' : 'Всё скачалось, господа');
       }
 		},
   },
@@ -389,7 +393,7 @@ app.hears(/^(?:(сделай\s+)?(по)?громче|make(\s+(sound|music))?\s+l
  misc
 */
 
-app.hears(/^(?:(?:какая\s+)?погода|что\s+с\s+погодой\??|что\s+обещают\??|что\s+с\s+погодой\??|(?:(?:(?:say|get|read)\s+)?(?:a\s+)?weather))/i, (ctx) => {
+app.hears(/^(?:(?:какая\s+)?погода|что\s+(там\s+)?с\s+погодой\??|что\s+обещают\??|что\s+с\s+погодой\??|(?:(?:(?:say|get|read)\s+)?(?:a\s+)?weather))/i, (ctx) => {
   commands.run('weather', 'forecast', ctx);
 });
 
@@ -401,37 +405,105 @@ app.hears(/^(?:(?:(?:get|tell|next)\s+)?joke|(?:(?:(?:расскажи|дава�
   commands.run('jokes', 'joke', ctx);
 });
 
-app.hears(/^fix airplay/, (ctx) => {
+app.hears(/fix\s+airplay/i, (ctx) => {
   commands.run('fixes', 'airplay', ctx);
 });
 
-app.hears(/^(?:(?:find|search|look up) (?:torrent|rutracker|serial|film)|(?:поищи|ищи|найди|искать|ищи) (?:торрент|на рутрекере|на rutracker|фильм|сериал))(.+)/i, (ctx) => {
+app.hears(/(?:(?:find|search|look up) (?:torrent|rutracker|serial|film)|(?:поищи|ищи|найди|искать|ищи) (?:торрент|на рутрекере|на rutracker|фильм|сериал))(.+)/i, (ctx) => {
 	commands.run('torrents', 'search', ctx);
 });
 
+app.hears(/(?:(?:status|get|check) (?:torrent|rutracker|serial|film)s?|(?:проверь|что там с|как там|статус) (?:торрент(ы|ами)?|рутрекер(ом|а)?|на rutracker|фильм(ы|ами)?|сериал(ы|ами)?|закачк(а|и|ами)))(.+)/i, (ctx) => {
+	commands.run('torrents', 'status', ctx);
+});
+
+app.hears(/([^ ]+\.torrent)/, (ctx) => {
+		sendTorrent(ctx.match[1], ctx);
+});
+
+app.hears(/([^ ]+\.(jpg|png))/, (ctx) => {
+		return sendPhoto(ctx.match[1], 'from-chat-link' + new Date().getTime(), ctx);
+});
+
+app.hears(/([^ ]+\.mp3)/, (ctx) => {
+		return playAudio(ctx.match[1], ctx);
+});
+
+app.hears(/(https?:[^ ]+)/, (ctx) => {
+		return sendLinkHref(ctx.match[1], ctx).catch(e=>ctx.reply('нишмагла', e))
+});
+
 app.on('audio', (ctx) => {
-	app.telegram.getFileLink(ctx.message.audio.file_id)
+	return app.telegram.getFileLink(ctx.message.audio.file_id)
   .then(async (link) => {
-		const name = `/tmp/tg-bot-audio.${ link.match(/\w+$/)[0] }`;
-		console.log('link', link)
-    await exec(`wget -O ${ name } ${ link }`);
-    exec(`stop-music || :; mplayer "${ name }"`).then((stdout) => {
-			ctx.reply('ok');
-    }).catch((e) => {
-      console.error(e);
-      ctx.reply('нишмаглаа');
-    });
+		return playAudio(link, ctx).catch(e=>ctx.reply('нишмагла', e));
   });
+});
+
+app.on('document', (ctx) => {
+  if (!ctx.message.document || !ctx.message.document.file_name.endsWith('.torrent')) return;
+	return app.telegram.getFileLink(ctx.message.document.file_id)
+	.then(async (torrentLink) => {
+		return sendTorrent(torrentLink, ctx).catch(e=>ctx.reply('нишмагла', e));
+	});
+});
+
+app.on('photo', (ctx) => {
+	const data = ctx.message.photo && ctx.message.photo[ctx.message.photo.length - 1];
+	if (!data) return;
+	return app.telegram.getFileLink(data.file_id)
+	.then(async (imageLink) => {
+		return sendPhoto(imageLink, data.file_id, ctx).catch(e=>ctx.reply('нишмагла', e));
+	});
 });
 
 app.on('voice', (ctx) => {
 	if (!ctx.message.voice) return;
-	app.telegram.getFileLink(ctx.message.voice.file_id)
+	return app.telegram.getFileLink(ctx.message.voice.file_id)
 	.then(async (voiceLink) => {
 		await exec(`wget -O /tmp/tg-bot-voice.oga ${ voiceLink }`);
 		//exec(`asr /tmp/tg-bot-voice.oga`)
 	});
 });
+
+
+async function sendTorrent(torrentLink, { reply }) {
+		const tmpFile = '/tmp/tg-bot.torrent';
+		await exec(`wget -O ${ tmpFile } ${ torrentLink }`);
+		await exec(`scp ${ tmpFile } pi@rpi3:~/Downloads`);
+		reply('Поставлено на закачку');
+}
+
+async function sendPhoto(imageLink, name, { reply }) {
+		const tmpFileName = `tg-bot.${ name }.jpg`;
+		const tmpFilePath = `/tmp/${ tmpFileName }`;
+		const targetFilePath = `~/Downloads/${ tmpFileName }`;
+
+		await exec(`wget -O "${ tmpFilePath }" ${ imageLink }`);
+		await exec(`scp "${ tmpFilePath }" "pi@rpi3:${ targetFilePath }"`);
+		exec(`ssh pi@rpi3 DISPLAY=:0.0 gpicview "${ targetFilePath }" &`);
+
+		reply('Картинка открыта на мониторе');
+}
+
+async function playAudio(audioLink, ctx) {
+		const name = `/tmp/tg-bot-audio.${ link.match(/\w+$/)[0] }`;
+		console.log('link', link)
+    await exec(`wget -O ${ name } ${ link }`);
+		exec('pause-music')
+    exec(`pause-music || :; mplayer "${ name }"`).then((stdout) => {
+			exec('resume-music')
+    }).catch((e) => {
+      console.error(e);
+      ctx.reply('нишмаглаа');
+    });
+    ctx.reply('Музон в ваши уши');
+}
+
+async function sendLinkHref(link, ctx) {
+	await exec(`ssh pi@rpi3 DISPLAY=:0.0 chromium-browser "${ link }"`);
+	  ctx.reply('Ссылка открыта на станции');
+}
 
 app.hears(/^hi$/i, (ctx) => ctx.reply('Hey there!'))
 
