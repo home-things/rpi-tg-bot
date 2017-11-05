@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 // vim: set ts=4
 
+const path = require('path');
+
+console.log(path.resolve(__dirname, './jokes.json'))
+
 const {
   Telegraf,
   Extra, Markup,
@@ -30,7 +34,55 @@ const typing = (ctx) => app.telegram.sendChatAction(ctx.chat.id, 'typing').catch
 
 const jobs = require('./src/jobs');
 
-let jokes = fs.existsSync('./jokes.json') ? require('./jokes.json') : { i: -1, page: -1, list: [] };
+const joker = {
+	list: [],
+	page: -1,
+	i: -1,
+	_dbPath: path.resolve(__dirname, './jokes.json'),
+
+	init: function init() {
+		this._loadDb();
+	},
+	next: async function nextJoke () {
+    const jokes = await this._getList();
+		++this.i;
+    console.log('nextJoke', this.i, this.list.length, this.list[this.i])
+		this._updateDb()
+		return this.list[this.i];
+	},
+
+	_getList: function _getList() {
+		if (this.list.length <= (this.i + 1)) return this._loadNewPage();
+		return this.list;
+	},
+	_loadNewPage: async function _loadNewPage () {
+		++this.page;
+    console.log('load new jokes', this.page);
+    const html = await open('http://bash.im/byrating/' + this.page);
+		const { window: { document } } = parse(html);
+    const list = Array.from(document.querySelectorAll('.quote .text'))
+	    .map(e => decode(e.innerHTML.replace(/<[^>]+>/g, '\n')))
+		this.list = list;
+		this.i = -1;
+		this._updateDb();
+		return list;
+	},
+	_updateDb: function _updateDb () {
+		console.log('_updateDb');
+    write(this._dbPath, { i: this.i, page: this.page, list: this.list });
+		console.log('jokes db updated', this.page, this.i);
+	},
+	_loadDb: function _loadDb () {
+		console.log('_loadDb', process.cwd());
+		if (!fs.existsSync(this._dbPath)) return;
+		const jokes = require('./jokes');
+		console.log('jokes db loaded', jokes.page, jokes.i, jokes.list.length)
+		this.list = jokes.list;
+		this.page = jokes.page;
+		this.i = jokes.i;
+	}
+};
+joker.init();
 
 const app = new Telegraf(token);
 
@@ -245,24 +297,11 @@ const commands = {
       },
     },
     jokes: {
-      joke: ['wait_msg', (ctx) => {
-        return (jokes.list.length > (jokes.i + 1) ? Promise.resolve(jokes) : commands.run('jokes', 'update', ctx))
-          .then(jokes_ => {
-            jokes = jokes_ // global
-            console.log(jokes.i + 1, jokes.list.length, jokes.list[jokes.i + 1])
-            setTimeout(() => write('./jokes.json', jokes), 1000);
-            return ctx.reply(jokes.list[++jokes.i]);
-          });
+      joke: ['wait_msg', async (ctx) => {
+        return ctx.reply(await joker.next());
       }],
       update: (ctx) => {
-        console.log('update jokes', jokes.i + 1, jokes.list.length, jokes.list[jokes.i + 1]);
-        return open('http://bash.im/byrating/' + (++jokes.page)).then(html => parse(html))
-          .then(({ window: { document } }) => {
-            return Array.from(document.querySelectorAll('.quote .text'))
-              .map(e => decode(e.innerHTML.replace(/<[^>]+>/g, '\n')))
-          })
-          .then(list => Object.assign({}, jokes, { list, i: -1 }))
-          .then(jokes => { write('./jokes.json', jokes); return jokes; });
+				return joker._loadNewPage();
       },
     },
     fixes: {
