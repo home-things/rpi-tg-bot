@@ -18,11 +18,12 @@ const {
   // decode,
   config,
   consts,
-  say,
   combo,
   Joker,
   unindent,
 } = require('./common');
+
+const { say } = require('./plugins/speech');
 
 require('dotenv').config(); // load BOT_TOKE from .env file
 
@@ -159,7 +160,7 @@ const commands = {
         const query = args.join(' ').trim();
         const res = JSON.parse(await exec(`search-rutracker ${ query }`));
         if (!res || !res.length) return ctx.reply('nothing');
-        res.forEach(async (res) => {
+        res.forEach(async (res) => { // eslint-disable-line no-shadow
           ctx.replyWithHTML(unindent`
             📕 ${ res.category } <b>${ res.size_h }</b>.
             seeds: <b>${ res.seeds }</b> / leechs: ${ res.leechs }
@@ -167,6 +168,7 @@ const commands = {
             🌐 ${ res.url.replace(/^https?:\/\//, '') }
           `, Markup.inlineKeyboard([Markup.callbackButton('Download', `torrent download ${ res.id }`)]).extra());
         });
+        return undefined;
       }, {
         phrases: [
           ...combo(['find', 'search', 'look up'], ['torrent', 'rutracker', 'on rutracker', 'searial', 'film']),
@@ -446,11 +448,11 @@ app.hears(/./, (ctx) => {
 });
 
 app.action(/.+/, (ctx) => {
-  let m;
-  if (m = ctx.match && ctx.match[0].match(/^torrent download (\d+)/)) {
+  const m = ctx.match;
+  if (m && m[0].match(/^torrent download (\d+)/)) {
     commands.run('torrents', 'download', ctx, m[1]);
   }
-  return ctx.answerCallbackQuery(`Oh, ${ ctx.match[0] }! Great choise`);
+  return ctx.answerCallbackQuery(`Oh, ${ m[0] }! Great choise`);
 });
 
 app.startPolling();

@@ -1,5 +1,13 @@
 const path = require('path');
-const { open } = require('../common');
+
+const {
+  open,
+  parse,
+  decode,
+  write,
+} = require('../common');
+
+const { existsSync } = require('fs');
 
 /**
  * take next bash.org joke
@@ -36,7 +44,7 @@ class Joker {
   async _loadNewPage() {
     ++this.page;
     console.info('load new jokes', this.page);
-    const html = await open(`http://bash.im/byrating/${  this.page}`);
+    const html = await open(`http://bash.im/byrating/${ this.page }`);
     const { window: { document } } = parse(html);
     const list = Array.from(document.querySelectorAll('.quote .text'))
       .map(e => decode(e.innerHTML.replace(/<[^>]+>/g, '\n')));
@@ -46,19 +54,20 @@ class Joker {
     return list;
   }
   _updateDb() {
-    console.log('_updateDb');
+    console.info('_updateDb');
     write(this._dbPath, { i: this.i, page: this.page, list: this.list });
-    console.log('jokes db updated', this.page, this.i);
+    console.info('jokes db updated', this.page, this.i);
   }
   _loadDb() {
-    console.log('_loadDb', process.cwd());
-    if (!fs.existsSync(this._dbPath)) return;
-    const jokes = require('./jokes');
-    console.log('jokes db loaded', jokes.page, jokes.i, jokes.list.length);
+    console.info('_loadDb', process.cwd());
+    if (!existsSync(this._dbPath)) return;
+    const jokes = require('../../jokes');
+    console.info('jokes db loaded', jokes.page, jokes.i, jokes.list.length);
     this.list = jokes.list;
     this.page = jokes.page;
     this.i = jokes.i;
   }
 }
 
+// eslint-disable-next-line
 export default dbPath => Joker._instance || (Joker._instance = new joker(dbPath));
