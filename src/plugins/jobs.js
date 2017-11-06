@@ -1,15 +1,16 @@
 // cron
 
-const { reportHomematesPresenseChange } = require('./common');
+const { reportHomematesPresenseChange } = require('./homemates');
 const cron = require('cron').CronJob;
+
 const cronTasks = (strings) => {
   strings[0].split(/\n/)
-  .map(line => line.trim())
-  .filter(line => lint)
-  .map(task => {
-    const [s, m, h, dom, mon, dow, ...cmd] = task.split(/\s+/);
-    cron([s, m, h, dom, mon, dow].join(' '), exec(cmd.join(' ')));
-  });
+    .map(line => line.trim())
+    .filter(line => line)
+    .forEach((task) => {
+      const [s, m, h, dom, mon, dow, ...cmd] = task.split(/\s+/);
+      cron([s, m, h, dom, mon, dow].join(' '), exec(cmd.join(' ')));
+    });
 };
 
 /*
@@ -30,6 +31,6 @@ cronTasks`
 
 28  9 *   *   *     get-weather | jq '"Погода: \(.description), \(.temp | floor) градусов"' | tts
 59 11 *   *   *     get-weather | jq '"Погода: \(.description), \(.temp | floor) градусов"' | tts
-`*/
+` */
 
 // setInterval(reportHomematesPresenseChange, 1000 * 60 * 1);

@@ -1,4 +1,5 @@
 const path = require('path');
+const { open } = require('../common');
 
 /**
  * take next bash.org joke
@@ -8,21 +9,20 @@ const path = require('path');
  */
 
 class Joker {
-  list = []
-  page = -1
-  i = -1
-  _dbPath = null
-
   constructor(dbPath = './jokes.json') {
-    this._dbPath = path.resolve(__dirname, dbPath)
+    this._dbPath = path.resolve(__dirname, dbPath);
     this._loadDb();
+    this.list = [];
+    this.page = -1;
+    this.i = -1;
+    this._dbPath = null;
   }
 
   async nextJoke() {
     const jokes = await this._getList();
     ++this.i;
-    console.log('nextJoke', this.i, this.list.length, this.list[this.i])
-    this._updateDb()
+    console.info('nextJoke', this.i, this.list.length, this.list[this.i]);
+    this._updateDb();
     return this.list[this.i];
   }
 
@@ -35,11 +35,11 @@ class Joker {
 
   async _loadNewPage() {
     ++this.page;
-    console.log('load new jokes', this.page);
-    const html = await open('http://bash.im/byrating/' + this.page);
+    console.info('load new jokes', this.page);
+    const html = await open(`http://bash.im/byrating/${  this.page}`);
     const { window: { document } } = parse(html);
     const list = Array.from(document.querySelectorAll('.quote .text'))
-      .map(e => decode(e.innerHTML.replace(/<[^>]+>/g, '\n')))
+      .map(e => decode(e.innerHTML.replace(/<[^>]+>/g, '\n')));
     this.list = list;
     this.i = -1;
     this._updateDb();
@@ -54,13 +54,11 @@ class Joker {
     console.log('_loadDb', process.cwd());
     if (!fs.existsSync(this._dbPath)) return;
     const jokes = require('./jokes');
-    console.log('jokes db loaded', jokes.page, jokes.i, jokes.list.length)
+    console.log('jokes db loaded', jokes.page, jokes.i, jokes.list.length);
     this.list = jokes.list;
     this.page = jokes.page;
     this.i = jokes.i;
   }
-
-  static _instance = null
 }
 
-export default (dbPath) => Joker._instance || (Joker._instance = new joker(dbPath));
+export default dbPath => Joker._instance || (Joker._instance = new joker(dbPath));
