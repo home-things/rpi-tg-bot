@@ -54,12 +54,33 @@ const getHomematesPresenseChange = () => {
 const weirdTag = (strings, ...values) =>
   strings.reduce((res, str, i) => res + values[i - 1] + str);
 
-  // unindent`
+// unindent`
 //  123
 //` ---> '\n123\n'
 const unindent = (strings, ...values) =>
   weirdTag(strings, ...values).split(/\n/).map(s=>s.trim()).join('\n');
 
+const getIntro_ = debounce(() => {
+  return randList(['ааааа', 'вигв+аме', 'кар+оч', 'сл+ушайте', 'эт с+амое']) + ', ... &&& ... — ';
+}, config.commands.list.voice.list.say.intro_delay * 1000, true);
+
+const getIntro = () => getIntro_() || '';
+
+const say = (text, ctx, isQuiet, noIntro) => {
+  if (!text) { console.log('тут и говорить нечего'); return; }
+  console.log(">>", text.trim().replace(/\n/g, ' '))
+  return exec(`tts "${noIntro ? '' : getIntro()}, ${text.replace(/\n/g, ' ')}"`).then((stdout) => {
+    console.log('say', stdout);
+    isQuiet || ctx.reply('я всё сказал');
+  }).catch(e => {
+    console.error('say error', e);
+    isQuiet || ctx.reply('нишмаглаа /');
+  });
+};
+
+const combo = (...variants) => {
+  throw new Error('not implemented yet')
+};
 
 module.exports = {
   Telegraf,
@@ -83,6 +104,7 @@ module.exports = {
 	config,
   consts,
   unindent,
+  say,
 
   reportHomematesPresenseChange,
 };

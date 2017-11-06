@@ -18,6 +18,9 @@ const {
   decode,
   config,
   consts,
+  say,
+  combo,
+  Joker,
 } = require('./src/common');
 
 require('dotenv').config(); // load BOT_TOKE from .env file
@@ -28,7 +31,7 @@ const typing = (ctx) => app.telegram.sendChatAction(ctx.chat.id, 'typing').catch
 
 const jobs = require('./src/jobs');
 
-let jokes = fs.existsSync('./jokes.json') ? require('./jokes.json') : { i: -1, page: -1, list: [] };
+const joker = Joker();
 
 const app = new Telegraf(token);
 
@@ -67,23 +70,6 @@ const onChange = (type, signal, data) => {
       }
       break;
   }
-};
-
-const getIntro_ = debounce(() => {
-  return randList(['ааааа', 'вигв+аме', 'кар+оч', 'сл+ушайте', 'эт с+амое']) + ', ... &&& ... — ';
-}, config.commands.list.voice.list.say.intro_delay * 1000, true);
-const getIntro = () => getIntro_() || '';
-
-const say = (text, ctx, isQuiet, noIntro) => {
-  if (!text) { console.log('тут и говорить нечего'); return; }
-  console.log(">>", text.trim().replace(/\n/g, ' '))
-  return exec(`tts "${noIntro ? '' : getIntro()}, ${text.replace(/\n/g, ' ')}"`).then((stdout) => {
-    console.log('say', stdout);
-    isQuiet || ctx.reply('я всё сказал');
-  }).catch(e => {
-    console.error('say error', e);
-    isQuiet || ctx.reply('нишмаглаа /');
-  });
 };
 
 const whoAtHomeRequest = () => {
@@ -139,7 +125,8 @@ const lastQuestion = {
 
 const commands = {
   run: function (kind, name, ctx, args = []) {
-    if (!ctx.isSystem && !this.accessRightsGuard(ctx.update.message.chat.id, ctx.update.message.from.id)) return;
+    const data = ctx.update || ctx.callback_query;
+    if (!ctx.isSystem && data.message && !this.accessRightsGuard(data.message.chat.id, data.message.from.id)) return;
     const cmd = this.list[kind][name];
     if (!cmd) { console.error(kind, name, cmd, 'no_cmd'); return }
     const args_ = [].concat(args).concat(ctx.match && ctx.match.slice(1));
@@ -158,148 +145,101 @@ const commands = {
       return Promise.all([repCtx, cmd[1](ctx, args_)]).then(([repCtx, res]) => { del(repCtx); return res; }).catch(onError);
     }
   },
-	runSys: function (kind, name, args = []) {
-		const ctx = {
-			isSystem: true,
-			chat: { id: VIGVAM_ID },
-			reply: msg => app.telegram.sendMessage(VIGVAM_ID, msg),
-		};
-		return this.run(kind, name, ctx, args = []);
-	},
+  runSys: function (kind, name, args = []) {
+    const ctx = {
+      isSystem: true,
+      chat: { id: VIGVAM_ID },
+      reply: msg => app.telegram.sendMessage(VIGVAM_ID, msg),
+    };
+    return this.run(kind, name, ctx, args = []);
+  },
   list: {
-    voice: {
-      voice_over: ctx => {
-        isVoiceVerboseMode = true;
-        return ctx.reply('ok, I`ll say everything you post', { disable_notification: true })
-      },
-      voice_over_stop: ctx => {
-        isVoiceVerboseMode = false;
-        return ctx.reply('ok, I`ll be quiet', { disable_notification: true })
-      },
-      say: ['wait_msg', (ctx, args) => {
-        return say(args[0], ctx);
-      }],
-    },
-    home: {
-      presense: ['10 sec, please… 😅', (ctx) => {
-        return whoAtHome()
-          .then((json) => {
-            const name = (key) => homemates.get(key, 'name');
-            const here = (key) => randList(['дома ', 'тута', 'где-то здесь']);
-            const outside = (key) => randList(['не дома', 'отсутствует', 'шляется']);
-            const outside_ = (key) => key === 'lenya' ? randList(['— по бабам', '— опять по бабам']) : outside(key);
-            const getStatus = (key) => json[key] ? `✅ ${name(key)} ${here(key)}` : `🔴 ${name(key)} ${outside_(key)}`;
-            const txt = Object.keys(homemates.list).map((key) => getStatus(key)).join('\n');
-            return ctx.reply(txt, { disable_notification: true });
-          });
-      }],
-    },
-    music: {
-      action: ['wait_msg', (ctx, args) => {
-        return exec('has-music').then(hasMusic => {
-          if (hasMusic) return exec(`${args[0]}-music`).then((stdout) => {
-            return ctx.reply(`ok, music ${args[0]}ed`);
-          });
-          return ctx.reply('Нимагуу. You can make quieter');
-        });
-      }],
-    },
-    vol: {
-      action: ['wait_msg', (ctx, args) => {
-        const up = ['louder', 'up', '+', 'increase']
-        const dx = up.includes(args[0].trim()) ? +1 : -1;
-        const K = 10;
-        return exec('get-vol')
-          .then((vol) => exec(`vol ${+vol + K * dx} ${args[0]}`))
-          .then(() => ctx.reply(`ok, vol ${dx > 0 ? 'increased' : 'decreased'}`));
-      }],
-    },
-    light: {
-      on: ctx => exec('light on').then(() => ctx.reply('ok')),
-      off: ctx => exec('light off').then(() => ctx.reply('ok')),
-      status: ctx => getLightStatus().then(status => ctx.reply(`ok: ${(status ? '🌖 on' : '🌘 off')}`)),
-    },
-    weather: {
-      forecast: ['10 sec, please… 😅', (ctx) => {
-        return exec(`get-weather`).then(res => JSON.parse(res))
-          .then((weather) => {
-            console.log(weather)
-            const temp = Math.floor(weather.temp);
-            const units = inflect(temp, { one: 'градус', some: 'градуса', many: 'градусов' });
-            const txt = weather.description && weather.temp && `Погода в ближайшее время: ${weather.description}, ${temp} ${units}`;
-            ctx.reply(txt || 'нишмагла');
-            //weather.icon && app.telegram.sendPhoto(ctx.chat.id, `http://openweathermap.org/img/w/${ weather.icon }.png`, {disable_notification: true});
-            //const url = `http://tg-bot-web.invntrm.ru/weathericons/${ weather.icon }.svg`;
-            //weather.icon && app.telegram.sendPhoto(ctx.chat.id, url, {disable_notification: true});
-            return [txt, weather];
-          })
-          .then(([txt]) => ((new Date()).getHours() >= 9) && say(txt, ctx, true, true))
-      }],
-    },
     misc: {
-      print: (ctx, args) => {
+      write: [(ctx, args) => {
         return app.telegram.sendMessage(consts.VIGVAM_ID, args[0]);
-      },
+      }, {
+        phrases: [
+          'text', 'write',
+          'напиши', 'напечатай',
+        ], command: 'write'
+      }],
     },
+
+
     jokes: {
-      joke: ['wait_msg', (ctx) => {
-        return (jokes.list.length > (jokes.i + 1) ? Promise.resolve(jokes) : commands.run('jokes', 'update', ctx))
-          .then(jokes_ => {
-            jokes = jokes_ // global
-            console.log(jokes.i + 1, jokes.list.length, jokes.list[jokes.i + 1])
-            setTimeout(() => write('./jokes.json', jokes), 1000);
-            return ctx.reply(jokes.list[++jokes.i]);
-          });
+      joke: ['wait_msg', async (ctx) => {
+        return ctx.reply(await joker.next());
       }],
       update: (ctx) => {
-        console.log('update jokes', jokes.i + 1, jokes.list.length, jokes.list[jokes.i + 1]);
-        return open('http://bash.im/byrating/' + (++jokes.page)).then(html => parse(html))
-          .then(({ window: { document } }) => {
-            return Array.from(document.querySelectorAll('.quote .text'))
-              .map(e => decode(e.innerHTML.replace(/<[^>]+>/g, '\n')))
-          })
-          .then(list => Object.assign({}, jokes, { list, i: -1 }))
-          .then(jokes => { write('./jokes.json', jokes); return jokes; });
+        return joker._loadNewPage();
       },
     },
+
+
     fixes: {
-      airplay: (ctx) => {
+      airplay: [(ctx) => {
         return exec('sudo systemctl restart shairport-sync')
           .then(() => ctx.reply('ok'))
           .catch((e) => { console.error(e); ctx.reply('fail'); });
-      }
+      }, {
+        phrases: [
+          'fix airplay',
+          'почини airplay'
+        ], command: 'fix_airplay'
+      }]
     },
-		torrents: {
-			search: ['wait_msg', async (ctx, args) => {
-				const query = args.join(' ').trim();
-				const res = JSON.parse(await exec(`search-rutracker ${ query }`));
-				if (!res || !res.length) return ctx.reply('nothing');
-				res.forEach(async res => {
-					ctx.replyWithHTML(unindent`
-            📕 ${ res.category } <b>${ res.size_h }</b>.
-            seeds: <b>${ res.seeds }</b> / leechs: ${ res.leechs }
-            <b># ${ res.id }</b>
-            🌐 ${ res.url.replace(/^https?:\/\//, '') }
-					`, Markup.inlineKeyboard([Markup.callbackButton('Download', `torrent download ${ res.id }`)]).extra());
-				});
-      }],
+
+
+    torrents: {
+      search: ['wait_msg', async (ctx, args) => {
+        const query = args.join(' ').trim();
+        const res = JSON.parse(await exec(`search-rutracker ${query}`));
+        if (!res || !res.length) return ctx.reply('nothing');
+        res.forEach(async res => {
+          ctx.replyWithHTML(unindent`
+            📕 ${ res.category} <b>${res.size_h}</b>.
+            seeds: <b>${ res.seeds}</b> / leechs: ${res.leechs}
+            <b># ${ res.id}</b>
+            🌐 ${ res.url.replace(/^https?:\/\//, '')}
+					`, Markup.inlineKeyboard([Markup.callbackButton('Download', `torrent download ${res.id}`)]).extra());
+        });
+      }, {
+        phrases: [
+          ...combo(['find', 'search', 'look up'], ['torrent', 'rutracker', 'on rutracker', 'searial', 'film']),
+          ...combo(['поищи', 'ищи', 'найди', 'искать'], ['торрент', 'на рутрекере', 'на rutracker', 'фильм', 'сериал']),
+        ], command: 'torrent_search'
+        }],
+
       download: ['wait_msg', async ({ reply }, args) => {
         reply('start downloading...');
         console.log('start downloading...');
         try {
-          await exec(`download-rutracker ${ args[0] }`);
+          await exec(`download-rutracker ${args[0]}`);
           reply('done')
-        } catch(e) {
+        } catch (e) {
           console.error('torrent download error', e);
           reply('torrent download error \n' + e.message);
         }
-      }],
-      status: async ({ reply }) => {
+      }, {
+        phrases: [
+          'download torrent',
+          'скачай торрент', 'закачай торрент',
+        ], command: 'torrent_download'
+        }],
+
+      status: [async ({ reply }) => {
         const info = await exec('deluge-console info');
         reply(info);
-      }
-		},
+      }, {
+        phrases: [
+          'torrents status',
+          'что там с торрентами', 'как там торренты',
+          'статус торрентов', 'дай статус торрентов'
+        ], command: 'torrents'
+      }]
+    },
   },
+
   accessRightsGuard: function (id, userId) {
     const hasAccess = consts.permittedChats.includes(id) || homemates.isMember(userId);
     if (!hasAccess) {
@@ -391,8 +331,8 @@ app.hears(/^(?:(?:какая\s+)?погода|что\s+с\s+погодой\??|ч
   commands.run('weather', 'forecast', ctx);
 });
 
-app.hears(/^(?:text|print|напиши|наречатай)\s+((?:.|\n)+)$/im, (ctx) => {
-  commands.run('misc', 'print', ctx);
+app.hears(/^(?:text|print|напиши|напечатай)\s+((?:.|\n)+)$/im, (ctx) => {
+  commands.run('misc', 'write', ctx);
 });
 
 app.hears(/^(?:(?:(?:get|tell|next)\s+)?joke|(?:(?:(?:расскажи|давай)\s+)?(?:шутку|анекдот)|пошути|шуткуй))/i, (ctx) => {
@@ -404,31 +344,31 @@ app.hears(/^fix airplay/, (ctx) => {
 });
 
 app.hears(/^(?:(?:find|search|look up) (?:torrent|rutracker|serial|film)|(?:поищи|ищи|найди|искать|ищи) (?:торрент|на рутрекере|на rutracker|фильм|сериал))(.+)/i, (ctx) => {
-	commands.run('torrents', 'search', ctx);
+  commands.run('torrents', 'search', ctx);
 });
 
 app.on('audio', (ctx) => {
-	app.telegram.getFileLink(ctx.message.audio.file_id)
-  .then(async (link) => {
-		const name = `/tmp/tg-bot-audio.${ link.match(/\w+$/)[0] }`;
-		console.log('link', link)
-    await exec(`wget -O ${ name } ${ link }`);
-    exec(`stop-music || :; mplayer "${ name }"`).then((stdout) => {
-			ctx.reply('ok');
-    }).catch((e) => {
-      console.error(e);
-      ctx.reply('нишмаглаа');
+  app.telegram.getFileLink(ctx.message.audio.file_id)
+    .then(async (link) => {
+      const name = `/tmp/tg-bot-audio.${link.match(/\w+$/)[0]}`;
+      console.log('link', link)
+      await exec(`wget -O ${name} ${link}`);
+      exec(`stop-music || :; mplayer "${name}"`).then((stdout) => {
+        ctx.reply('ok');
+      }).catch((e) => {
+        console.error(e);
+        ctx.reply('нишмаглаа');
+      });
     });
-  });
 });
 
 app.on('voice', (ctx) => {
-	if (!ctx.message.voice) return;
-	app.telegram.getFileLink(ctx.message.voice.file_id)
-	.then(async (voiceLink) => {
-		await exec(`wget -O /tmp/tg-bot-voice.oga ${ voiceLink }`);
-		//exec(`asr /tmp/tg-bot-voice.oga`)
-	});
+  if (!ctx.message.voice) return;
+  app.telegram.getFileLink(ctx.message.voice.file_id)
+    .then(async (voiceLink) => {
+      await exec(`wget -O /tmp/tg-bot-voice.oga ${voiceLink}`);
+      //exec(`asr /tmp/tg-bot-voice.oga`)
+    });
 });
 
 app.hears(/^hi$/i, (ctx) => ctx.reply('Hey there!'))
@@ -478,7 +418,7 @@ app.command('stop', cmd((ctx, args) => commands.run('music', 'action', ctx, 'sto
 
 app.command('home', cmd((ctx, args) => commands.run('home', 'presense', ctx)));
 
-app.command('light', cmd((ctx, args) => commands.run('light', args[0], ctx)));
+app.command('light', cmd((ctx, args) => commands.run('light', args, ctx)));
 
 app.command('weath', cmd((ctx, args) => commands.run('weather', 'forecast', ctx)));
 
@@ -539,10 +479,10 @@ app.hears(/./, (ctx) => {
 });
 
 app.action(/.+/, (ctx) => {
-	let m;
-	if (m = ctx.match && ctx.match[0].match(/^torrent download (\d+)/)) {
+  let m;
+  if (m = ctx.match && ctx.match[0].match(/^torrent download (\d+)/)) {
     commands.run('torrents', 'download', ctx, m[1]);
-	}
+  }
   return ctx.answerCallbackQuery(`Oh, ${ctx.match[0]}! Great choise`)
 })
 
@@ -550,4 +490,4 @@ app.startPolling();
 
 //jobs();
 
-setInterval(() => commands.runSys('jokes', 'joke'), 1000*60*60*24);
+setInterval(() => commands.runSys('jokes', 'joke'), 1000 * 60 * 60 * 24);
