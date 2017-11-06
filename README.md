@@ -58,12 +58,17 @@
 * [ ] auto problem diagnosis
 * [ ] VAD+mics
 * [ ] integrate with - or write your own platform (e.g. http://hobbyquaker.github.io/ccu.io)
+    * [ ] signals rest api
+    * [ ] integrate netrowrk of a few RPIs
+    * [ ] ...
 
-#### meta/refuctoring
+#### todo: meta/refuctoring
 * [ ] tests
 * [ ] split into modules
+* [ ] docker-based installer
+    * [draft](https://github.com/a-x-/tg-rpi-smart-home-bot/wiki/Installation-everything-DRAFT)
 
-#### hardware
+#### todo: add hardware
 * [ ] light toggle button
 * [ ] tablet screen
 * [ ] window blinds control (servo-drive)
