@@ -24,12 +24,14 @@
 
 * https://github.com/mikebrady/shairport-sync — nodejs airplay server (stream music from iphone)
 * nodejs homekit server (siri: `turn light on`)
-* cron jobs & bash scripts (download & play podcasts, light scripts)
+* cron jobs & [bash scripts] (download & play podcasts, light scripts)
 * alfred light control workflow
 * https://github.com/a-x-/megapolist-podcast-crawler — any podcast crawler & player
 * https://github.com/a-x-/stupid-light-server — stupid light control http-server
 * https://github.com/vysheng/tg.git — telegram cli
   * [installation](https://gist.github.com/a-x-/2530f94f838f7fc910563786269ebe03)
+
+[bash scripts]: https://github.com/a-x-/rpi-bin
 
 #### to write
 * [x] light control, scrpts
@@ -37,12 +39,16 @@
 * [x] sound control: play by url, pause/resume/stop, scrpts
 * [x] voice over
 * [x] basic weather
+* [ ] weather (with icons and smart things)
+* [x] ACL (control rights)
+* [x] `/commands` for usual cases
 * [x] basic presense control
+* [x] handle photos, voice-records, music, torrent-files and links
+* [ ] mini-bank
 * [ ] `word2vec` for 1) command matching, 2) music search
 * [ ] `api.ai` for intent mining
 * [ ] repeat, undo, ask detaild commands
 * [ ] learnings new commands synonyms (— do magic — ... — I say to you, bot! — wow, do you mean 'switch magic on'?)
-* [ ] weather (with icons)
 * [x] jokes
  * [ ] jokes random schedule
 * [ ] reminders
@@ -52,8 +58,6 @@
 * [ ] auto problem diagnosis
 * [ ] VAD+mics
 * [ ] integrate with - or write your own platform (e.g. http://hobbyquaker.github.io/ccu.io)
-* [x] ACL (control rights)
-* [x] `/commands` for usual cases
 
 #### meta/refuctoring
 * [ ] tests
