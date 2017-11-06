@@ -29,7 +29,7 @@
 * https://github.com/a-x-/megapolist-podcast-crawler — any podcast crawler & player
 * https://github.com/a-x-/stupid-light-server — stupid light control http-server
 * https://github.com/vysheng/tg.git — telegram cli
- * [installation hack](https://github.com/vysheng/tg/issues/1070)
+  * [installation](https://gist.github.com/a-x-/2530f94f838f7fc910563786269ebe03)
 
 #### to write
 * [x] light control, scrpts
