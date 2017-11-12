@@ -107,7 +107,7 @@ const commands = {
       off: () => exec('light off'),
       status: async () => {
         const status = await getLightStatus()
-        return { okMsg: `ok: ${ status ? '🌖 on' : '🌘 off' }` }
+        return { resMsg: status ? '🌖 on' : '🌘 off' }
       },
     },
     weather: {
