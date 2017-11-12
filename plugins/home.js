@@ -1,7 +1,8 @@
 // todo
 
 const bindAll = require('lodash.bindall')
-const { randList } = require('../src/common')
+const { getLandList } = require('../src/common')
+const { getLightStatus } = require('./light')
 
 const onChange = (type, signal, data) => {
   switch (type) {
@@ -17,7 +18,7 @@ const onChange = (type, signal, data) => {
           if (homemates.empty()) exec('has-music').then(v => { if (!v.trim()) throw 'none' }).then(() => exec('stop-music')).then(() => {
             app.telegram.sendMessage(consts.VIGVAM_ID, 'Nobody at home ==> Music stopped')
           }).catch(() => { })
-          if (homemates.full()) app.telegram.sendMessage(consts.VIGVAM_ID, randList(['С возвращением!', 'all in the home.']) + '\n\n 😇 p.s. I don`t notify more often than every 30 minutes');
+          if (homemates.full()) app.telegram.sendMessage(consts.VIGVAM_ID, getLandList(['С возвращением!', 'all in the home.']) + '\n\n 😇 p.s. I don`t notify more often than every 30 minutes');
           break;
       }
       break;

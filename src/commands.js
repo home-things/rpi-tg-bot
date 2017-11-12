@@ -1,6 +1,6 @@
 const bindAll = require('lodash.bindall')
 
-const { randList, join } = require('./common')
+const { getLandList, join } = require('./common')
 
 module.exports = ({
   list,
@@ -58,7 +58,7 @@ module.exports = ({
   },
 
   _normalizeCmd (cmd) {
-    const [waitMsg_, cmd_, okMsg_ = randList(['done', 'ok'])] = Array.isArray(cmd) ? cmd : [null, cmd, null]
+    const [waitMsg_, cmd_, okMsg_ = getLandList(['done', 'ok'])] = Array.isArray(cmd) ? cmd : [null, cmd, null]
     return { waitMsg_, cmd_, okMsg_ }
   },
 
@@ -93,9 +93,9 @@ module.exports = ({
     return (e) => {
       const uniqId = e.uniqId || `${ + new Date() }.${ Math.floor(Math.random() * Math.pow(2, 16)) }` // ts{ms}.rand{2^16}
       const techError = join(this._buildTitle({ kind, name, args }), ` -> error:\n${ e.stack }`, `\n(err# ${ uniqId })`)
-      const userError = `${ e instanceof UserError && e.message || randList(['нишмаглаа', 'Нимагуу', 'fail', 'error', 'да, ё моё :(']) }\n(err# ${ uniqId })`
+      const userError = `${ e instanceof UserError && e.message || getLandList(['нишмаглаа', 'Нимагуу', 'fail', 'error', 'да, ё моё :(']) }\n(err# ${ uniqId })`
       console.error(techError);
-      ctx && ctx.reply(randList(['🔴', '❌', '🧟‍♂️', '🤷‍♂️', '🙊', '🐛', '🌚', '🤖👎']) + ' ' + userError);
+      ctx && ctx.reply(getLandList(['🔴', '❌', '🧟‍♂️', '🤷‍♂️', '🙊', '🐛', '🌚', '🤖👎']) + ' ' + userError);
       sendMsgStderrChat(techError)
     }
   },

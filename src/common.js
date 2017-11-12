@@ -2,34 +2,70 @@ const Telegraf = require('telegraf');
 const { Extra, Markup } = require('telegraf');
 const config = require('../config');
 const consts = require('../consts')(config);
-const TOKEN = null;
-const token = process.env.BOT_TOKEN || TOKEN;
-const util = require('util');
-const fs = require('fs');
-  const read = (name, content) => util.promisify(fs.readFile)(name, 'utf8');
-  const write = (name, content) => util.promisify(fs.writeFile)(name, typeof content === 'string' ? content : JSON.stringify(content, null, '\t'), 'utf8');
-const child_process = require('child_process');
-  const exec = util.promisify(child_process.exec.bind(child_process));
-const getLightStatus = () => exec('gpio -1 read 22').then(l => parseInt(l, 10));
 const throttle = require('lodash.throttle');
 const debounce = require('just-debounce-it');
 const inflect = require('cyrillic-inflector');
-const randList = (list) => list[Math.floor(Math.random() * list.length)];
-const fetch = require('isomorphic-fetch');
-  const open = (uri) => fetch(uri).then(r => r.status >= 400 ? thrw (r.status) : r.text());
-  const parse = html => new (require('jsdom').JSDOM)(html);
-const decode = (str) => (new require('html-entities').XmlEntities).decode(str);
+const thrw = require('throw');
+
+const { util, pify } = (() => {
+  const util = require('util'); // eslint-disable-line
+  return { util, pify: util.promisify.bind(util) };
+})();
+
+const { read, write } = (() => {
+  const fs = require('fs');
+  const j2s = j => JSON.stringify(j, null, '\t');
+  const writeFile = pify(fs.writeFile);
+  const read = name => pify(fs.readFile)(name, 'utf8'); // eslint-disable-line
+  // eslint-disable-next-line
+  const write = (name, content) => writeFile(name, typeof content === 'string' ? content : j2s(content), 'utf8');
+  return { read, write };
+})();
+
+const parse = (() => {
+  const { JSDOM: Jsdom } = require('jsdom');
+  return html => new Jsdom(html);
+})();
+
+const open = (() => {
+  const fetch = require('isomorphic-fetch');
+  return uri => fetch(uri).then(r => r.status >= 400 ? thrw(r.status) : r.text());
+})();
+
+const exec = (() => {
+  const childProcess = require('child_process');
+  return pify(childProcess.exec.bind(childProcess));
+})();
+
+const decode = (() => {
+  const { XmlEntities } = require('html-entities');
+  return str => new XmlEntities().decode(str);
+})();
+
+const getRandList = list => list[Math.floor(Math.random() * list.length)];
+
+const isDefined = val => val !== undefined && val !== null;
+
+const TOKEN = null;
+const token = process.env.BOT_TOKEN || TOKEN;
+
 
 // weirdTag`1${ 2 }3` --> '123'
 const weirdTag = (strings, ...values) =>
   strings.reduce((res, str, i) => res + values[i - 1] + str);
 
-  // unindent`
+// unindent`
 //  123
-//` ---> '\n123\n'
+// ` ---> '\n123\n'
 const unindent = (strings, ...values) =>
-  weirdTag(strings, ...values).split(/\n/).map(s=>s.trim()).join('\n');
+  weirdTag(strings, ...values).split(/\n/).map(s => s.trim()).join('\n');
 
+// TODO: combo
+const combo = (...variants) => {
+  throw new Error('not implemented yet');
+};
+
+const getLandList = (list) => list[Math.floor(Math.random() * list.length)];
 
 class UserError extends Error {
   constructor(message) {
@@ -47,12 +83,12 @@ function join(...args) {
 }
 
 function getOkIcon() {
-  return randList(['✅', '👌', '🆗', '🤖👍', '👏', '🤘', '💪', '😺', '👻', '🙏', '✨'])
+  return getLandList(['✅', '👌', '🆗', '🤖👍', '👏', '🤘', '💪', '😺', '👻', '🙏', '✨'])
 }
 
 const getIntro = (() => {
   const getIntro_ = debounce(() => {
-    return randList(['ааааа', 'вигв+аме', 'кар+оч', 'сл+ушайте', 'эт с+амое']) + ', ... &&& ... — '
+    return getLandList(['ааааа', 'вигв+аме', 'кар+оч', 'сл+ушайте', 'эт с+амое']) + ', ... &&& ... — '
   }, config.commands.list.voice.list.say.intro_delay * 1000, true)
   return () => getIntro_() || ''
 })()
@@ -61,22 +97,16 @@ function openRpi3(cmd, isX11) {
   return exec(`ssh pi@rpi3 '${ isX11 ? 'DISPLAY=:0.0 ' : '' } ${ cmd.replace(/'/g, '\'') }'`)
 }
 
-
 module.exports = {
   Telegraf,
   Extra, Markup,
   token,
-  util,
-  fs,
-  read,
-  write,
-  child_process,
+  util, read, write,
   exec,
-  getLightStatus,
   throttle,
   debounce,
   inflect,
-  randList,
+  getLandList,
   fetch,
   open,
   parse,
@@ -84,6 +114,7 @@ module.exports = {
 	config,
   consts,
   unindent,
+  combo,
   UserError,
   join,
   getOkIcon,

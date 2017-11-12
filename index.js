@@ -11,11 +11,10 @@ const {
   read,
   write,
   exec,
-  getLightStatus,
   throttle,
   debounce,
   inflect,
-  randList,
+  getLandList,
   open,
   parse,
   decode,
@@ -28,6 +27,8 @@ const {
   getIntro,
   openRpi3,
 } = require('./src/common')
+
+const { getLightStatus } = require('./plugins/light')
 
 require('dotenv').config() // load BOT_TOKE from .env file
 
@@ -66,9 +67,9 @@ const commands = {
         const status = await whoAtHome()
 
         const name = (key) => homemates.get(key, 'name')
-        const here = (key) => randList(['дома ', 'тута', 'где-то здесь'])
-        const outside = (key) => randList(['не дома', 'отсутствует', 'шляется'])
-        const outside_ = (key) => key === 'lenya' ? randList(['— по бабам', '— опять по бабам']) : outside(key)
+        const here = (key) => getLandList(['дома ', 'тута', 'где-то здесь'])
+        const outside = (key) => getLandList(['не дома', 'отсутствует', 'шляется'])
+        const outside_ = (key) => key === 'lenya' ? getLandList(['— по бабам', '— опять по бабам']) : outside(key)
         const hereStatus = (key) => `✅ ${ name(key) } ${ here(key) }`
         const outsideStatus = (key) => `🔴 ${ name(key) } ${ outside_(key) }`
         const getStatus = (key) => status[key] ? hereStatus(key) : outsideStatus(key)
