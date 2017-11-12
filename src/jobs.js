@@ -1,6 +1,6 @@
 // cron
 
-const { reportHomematesPresenseChange } = require('./common');
+// const { reportHomematesPresenseChange } = require('../plugins/home');
 const cron = require('cron').CronJob;
 const cronTasks = (strings) => {
   strings[0].split(/\n/)
