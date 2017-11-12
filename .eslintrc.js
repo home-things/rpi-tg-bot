@@ -1,6 +1,23 @@
 module.exports = {
   extends: 'airbnb-base',
+  env: {
+    'browser': true,
+    'commonjs': true,
+    'node': true,
+    'es6': true
+  },
+  parser: 'babel-eslint',
+  parserOptions: {
+    'ecmaVersion': 6,
+    'ecmaFeatures': {
+      'experimentalObjectRestSpread': true,
+      'experimentalDecorators': true,
+      'experimentalOptionalChaining': true,
+    },
+    'sourceType': 'module'
+  },
   rules: {
+    'prefer-arrow-callback': ['off'],
     'no-unused-vars': ['warn'],
     'max-len': ['warn', 120],
     'no-underscore-dangle': ['off'],

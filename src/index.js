@@ -43,17 +43,6 @@ app.telegram.getMe().then((botInfo) => {
 
 app.use(Telegraf.log());
 
-const homemates = {
-  list: config.commands.list.home.data.homemates.list,
-  get(key, field) { return this.list[key.toLowerCase()] && this.list[key.toLowerCase()][field]; },
-  set(key, field, val) { this.list[key][field] = val; return val; },
-  setAll(field, object) { Object.keys(this.list).forEach((key) => { this.set(key, field, object[key]); }); },
-  empty() { return Object.keys(this.list).every(key => !this.get(key, 'presense')); },
-  full() { return Object.keys(this.list).every(key => this.get(key, 'presense')); },
-  isMember(id) { return Object.keys(this.list).some(key => this.get(key, 'id') === id); },
-};
-
-
 const isVoiceVerboseMode = false;
 let _isIn1wordAnsExpecting = false;
 const isIn1wordAnsExpecting = () => {
