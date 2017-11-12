@@ -96,11 +96,12 @@ const commands = {
         const up = ['louder', 'up', '+', 'increase']
         const dx = up.includes(args[0].trim()) ? +1 : -1
         const K = 10
-        const vol = await exec('get-vol')
+        const vol = Number(await exec('get-vol'))
+        const newVal = typeof args[1] === 'number' ? args[1] : vol + K * dx
 
-        await exec(`vol ${+vol + K * dx} ${args[0]}`)
+        await exec(`vol ${ newVal } ${ args[0] }`)
 
-        return { okMsg: `ok, vol ${dx > 0 ? 'increased' : 'decreased'}` }
+        return { okMsg: `ok, vol ${ dx > 0 ? 'increased' : 'decreased' }` }
       }],
     },
     light: {
@@ -256,10 +257,10 @@ app.hears(/^(?:(?:(?:сы|и)грай|воспроизведи|play)\s+((?:.|\n)
  vol
 */
 
-app.hears(/^(?:(сделай\s+)?(по)?тише|make(\s+(sound|music))?\s+quieter)/i, (ctx) => {
+app.hears(/^(?:(?:сделай\s+)?(?:по)?тише|make(?:\s+(?:sound|music))?\s+quieter)/i, (ctx) => {
   commands.run('vol', 'action', ctx, 'quieter')
 })
-app.hears(/^(?:(сделай\s+)?(по)?громче|make(\s+(sound|music))?\s+louder)/i, (ctx) => {
+app.hears(/^(?:(?:сделай\s+)?(?:по)?громче|make(\s+(?:sound|music))?\s+louder)/i, (ctx) => {
   commands.run('vol', 'action', ctx, 'louder')
 })
 
@@ -559,9 +560,4 @@ async function playAudioLink(link) {
 
 app.startPolling()
 
-//jobs()
-
-const DAY = 1000 * 60 * 60 * 24
-
-setInterval(() => commands.runSys('jokes', 'joke'), DAY)
-
+jobs({ commands })
