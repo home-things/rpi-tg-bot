@@ -25,7 +25,7 @@ module.exports = ({
       const okMsg__ = res && res.okMsg || okMsg_
       const resMsg = res && res.resMsg
       resMsg && ctx.reply(resMsg)
-      if (!ctx.isSystem || resMsg) {
+      if (!ctx.isSystem && !resMsg) {
         ctx.reply(getOkIcon() + ' ' + okMsg__, { 'disable_notification': true })
       }
 
