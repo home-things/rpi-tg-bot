@@ -1,18 +1,19 @@
 const bindAll = require('lodash.bindall')
-const path = require('path')
-const fs = require('fs')
+const { resolve } = require('path')
+const { existsSync } = require('fs')
+const { open, decode, parse, write } = require('./common')
 
 let instance = null
 
 module.exports = ({
-  dbPath = './jokes.json'
+  dbPath = '../jokes.json'
 } = {}) => {
   class Joker {
     constructor () {
       this.list = []
       this.page = -1
       this.i = -1
-      this._dbPath = path.resolve(__dirname, dbPath)
+      this._dbPath = resolve(__dirname, dbPath)
 
       this._loadDb()
     }
@@ -20,7 +21,7 @@ module.exports = ({
     async next () {
       const jokes = await this._getList();
       ++this.i;
-      console.log('nextJoke', this.i, jokes.length, jokes[this.i])
+      console.log('nextJoke', 'i', this.i, 'len', jokes.length, 'p', this.page)
       this._updateDb()
       return jokes[this.i];
     }
@@ -50,9 +51,9 @@ module.exports = ({
     }
 
     _loadDb () {
-      console.log('_loadDb', process.cwd());
-      if (!fs.existsSync(this._dbPath)) return;
-      const jokes = require('./jokes');
+      console.log('_loadDb', 'cwd', process.cwd(), 'path', __dirname, 'dbPath', this._dbPath);
+      if (!existsSync(this._dbPath)) return;
+      const jokes = require(this._dbPath);
       console.log('jokes db loaded', jokes.page, jokes.i, jokes.list.length)
       this.list = jokes.list;
       this.page = jokes.page;
