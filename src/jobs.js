@@ -2,7 +2,7 @@
 
 // const { reportHomematesPresenseChange } = require('../plugins/home');
 
-const cron = require('cron').CronJob
+const cron = (...args) => new (require('cron').CronJob)(...args, null, 'Russia/Moscow')
 
 const HOUR = 1000 * 60 * 60
 const DAY = HOUR * 24
@@ -28,7 +28,7 @@ module.exports = ({ commands }) => {
   //    ss mm hh dom mon dow
   cron('00 00  1 *   *   *  ', () => commands.runSys('light', 'off'))
   cron('00 30  9 *   *   *  ', () => commands.runSys('light', 'on'))
-  cron('00 00 12 *   *   *  ', () => commands.runSys('light', 'off'))
+  cron('00 10 12 *   *   *  ', () => commands.runSys('light', 'off'))
 
   cron('00 30 09 *   *   *  ', () => commands.runSys('vol', 'action', 'louder',  80 ))
   cron('00 00 10 *   *   *  ', () => commands.runSys('vol', 'action', 'louder',  90 ))
@@ -38,6 +38,7 @@ module.exports = ({ commands }) => {
   cron('00 00 02 *   *   *  ', () => commands.runSys('vol', 'action', 'quieter', 70 ))
 
   cron('00 28 09 *   *   *  ', () => commands.runSys('weather', 'forecast'))
+  cron('00 06 12 *   *   *  ', () => commands.runSys('weather', 'forecast'))
 
   cron('00 00 09 *   *   *  ', () => setTimeout(() => commands.runSys('jokes', 'joke'), randRange(HOUR, 8 * HOUR)))
 
