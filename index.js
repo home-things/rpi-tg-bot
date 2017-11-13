@@ -102,7 +102,8 @@ const commands = {
         const newVal = typeof args[1] === 'number' ? args[1] : vol + K * dx
 
         try { await exec(`vol ${ newVal } ${ args[0] }`) } catch (e) {
-          if (e.message.includes('vol_limit')) throw new UserError('Недопустимая громкость', e)
+          console.error('wtf',e.message, 'hm\n', e.stderr, e.stdout)
+          if (e.message.includes('vol_limit.')) throw new UserError('Недопустимая громкость', e)
           throw e
         }
 

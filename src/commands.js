@@ -91,13 +91,22 @@ module.exports = ({
 
   _createOnError ({ ctx, cmd: { kind, name, args } } = {}) {
     return (e) => {
-      const isUserError = e instanceof UserError
+      const isUserSourceError = e instanceof UserError
       const uniqId = e.uniqId || `${ + new Date() }.${ Math.floor(Math.random() * Math.pow(2, 16)) }` // ts{ms}.rand{2^16}
-      const techError = join(this._buildTitle({ kind, name, args }), ` -> error:\n${ isUserError && e.orig ? e.orig.stack : e.stack }`, `\n(err# ${ uniqId })`)
-      const userError = `${ isUserError ? e.message : getLandList(['нишмаглаа', 'Нимагуу', 'fail', 'error', 'да, ё моё :(']) }\n(err# ${ uniqId })`
-      console.error(techError);
-      ctx && ctx.reply( isUserError ? '🤖👎' : getLandList(['🔴', '❌', '🧟‍♂️', '🤷‍♂️', '🙊', '🐛', '🌚']) + ' ' + userError);
-      sendMsgStderrChat(techError)
+      const techTargetText = isUserSourceError && e.orig ? e.orig.stack : e.stack
+      const techTargetTitle = this._buildTitle({ kind, name, args })
+      const techTargetError = join(techTargetTitle, ` -> error:\n${ techTargetText }`, `\n(err# ${ uniqId })`)
+
+      const userTargetText = e.message + (e.orig ? '\n\n' + e.orig.message : '')
+      const techSourceUserTargetText = getLandList(['нишмаглаа', 'Нимагуу', 'fail', 'error', 'да, ё моё :('])
+      const userTargetError = `${ isUserSourceError ? userTargetText : techSourceUserTargetText }\n(err# ${ uniqId })`
+
+      console.error(techTargetError);
+
+      const icon = isUserSourceError ? '🤖👎' : getLandList(['🔴', '❌', '🧟‍♂️', '🤷‍♂️', '🙊', '🐛', '🌚'])
+      ctx && ctx.reply(icon + ' ' + userTargetError);
+
+      sendMsgStderrChat(icon + ' ' + techTargetError)
     }
   },
 
