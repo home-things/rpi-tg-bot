@@ -3,7 +3,7 @@
 // const { reportHomematesPresenseChange } = require('../plugins/home');
 
 const cron = (...args) => new (require('cron').CronJob)(...args, null, 'Russia/Moscow')
-
+const randRange = (from, to) => Math.floor(Math.random() * (to - from)) + from
 const HOUR = 1000 * 60 * 60
 const DAY = HOUR * 24
 
