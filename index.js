@@ -123,7 +123,7 @@ const commands = {
         const weather = await exec(`get-weather`).then(res => JSON.parse(res))
 
         const temp = Math.floor(weather.temp)
-        const units = inflect(temp, { one: 'градус', some: 'градуса', many: 'градусов' })
+        const units = inflect(temp, { zero: 'градусов', one: 'градус', some: 'градуса', many: 'градусов' })
         const formattedWeather = weather.description && weather.temp && `Погода в ближайшее время: ${weather.description}, ${temp} ${units}`
         if (!formattedWeather) throw new Error('no_data')
 
