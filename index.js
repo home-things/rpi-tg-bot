@@ -93,13 +93,18 @@ const commands = {
     },
     vol: {
       action: ['wait_msg', async ({ reply }, args) => {
+        const vol = Number(await exec('get-vol'))
+        if (args[0] === 'get') return { resMsg: vol }
+
         const up = ['louder', 'up', '+', 'increase']
         const dx = up.includes(args[0].trim()) ? +1 : -1
         const K = 10
-        const vol = Number(await exec('get-vol'))
         const newVal = typeof args[1] === 'number' ? args[1] : vol + K * dx
 
-        await exec(`vol ${ newVal } ${ args[0] }`)
+        try { await exec(`vol ${ newVal } ${ args[0] }`) } catch (e) {
+          if (e.message.includes('vol_limit')) throw new UserError('Недопустимая громкость', e)
+          throw e
+        }
 
         return { okMsg: `ok, vol ${ dx > 0 ? 'increased' : 'decreased' }` }
       }],

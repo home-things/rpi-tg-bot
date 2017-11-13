@@ -68,10 +68,12 @@ const combo = (...variants) => {
 const getLandList = (list) => list[Math.floor(Math.random() * list.length)];
 
 class UserError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = 'UserError';
-    this.uniqId =`${ + new Date() }.${ Math.floor(Math.random() * Math.pow(2, 16)) }`;
+  constructor(message, origError) {
+    super(message)
+
+    this.name = 'UserError'
+    this.uniqId =`${ + new Date() }.${ Math.floor(Math.random() * Math.pow(2, 16)) }`
+    if (origError) this.orig = origError
   }
 }
 

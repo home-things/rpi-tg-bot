@@ -91,11 +91,12 @@ module.exports = ({
 
   _createOnError ({ ctx, cmd: { kind, name, args } } = {}) {
     return (e) => {
+      const isUserError = e instanceof UserError
       const uniqId = e.uniqId || `${ + new Date() }.${ Math.floor(Math.random() * Math.pow(2, 16)) }` // ts{ms}.rand{2^16}
-      const techError = join(this._buildTitle({ kind, name, args }), ` -> error:\n${ e.stack }`, `\n(err# ${ uniqId })`)
-      const userError = `${ e instanceof UserError && e.message || getLandList(['нишмаглаа', 'Нимагуу', 'fail', 'error', 'да, ё моё :(']) }\n(err# ${ uniqId })`
+      const techError = join(this._buildTitle({ kind, name, args }), ` -> error:\n${ isUserError && e.orig ? e.orig.stack : e.stack }`, `\n(err# ${ uniqId })`)
+      const userError = `${ isUserError ? e.message : getLandList(['нишмаглаа', 'Нимагуу', 'fail', 'error', 'да, ё моё :(']) }\n(err# ${ uniqId })`
       console.error(techError);
-      ctx && ctx.reply(getLandList(['🔴', '❌', '🧟‍♂️', '🤷‍♂️', '🙊', '🐛', '🌚', '🤖👎']) + ' ' + userError);
+      ctx && ctx.reply( isUserError ? '🤖👎' : getLandList(['🔴', '❌', '🧟‍♂️', '🤷‍♂️', '🙊', '🐛', '🌚']) + ' ' + userError);
       sendMsgStderrChat(techError)
     }
   },
