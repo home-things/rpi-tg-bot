@@ -104,7 +104,7 @@ module.exports = ({
       console.error(techTargetError)
 
       const icon = isUserSourceError ? '🤖👎' : getLandList(['🔴', '❌', '🧟‍♂️', '🤷‍♂️', '🙊', '🐛', '🌚'])
-      ctx && ctx.reply(icon + ' ' + userTargetError);
+      if (ctx && !ctx.isSystem) ctx.reply(icon + ' ' + userTargetError)
 
       sendMsgStderrChat(icon + ' ' + techTargetError)
     }
