@@ -40,7 +40,7 @@ module.exports = ({
       chat: { id: consts.VIGVAM_ID },
       reply: msg => sendMsgDefaultChat(msg),
     };
-    return this.run(kind, name, ctx, args = []);
+    return this.run(kind, name, ctx, args);
   },
 
   _retreiveCmd (ctx, kind, name) {
