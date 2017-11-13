@@ -30,7 +30,7 @@ module.exports = ({
       }
 
     } catch (e) {
-      this._createOnError({ ctx, cmd: { kind, name, args: args_ }})(e);
+      this._createOnError({ ctx, cmd: { kind, name, args: args_ }})(e)
     }
   },
 
@@ -39,15 +39,15 @@ module.exports = ({
       isSystem: true,
       chat: { id: consts.VIGVAM_ID },
       reply: msg => sendMsgDefaultChat(msg),
-    };
-    return this.run(kind, name, ctx, args);
+    }
+    return this.run(kind, name, ctx, args)
   },
 
   _retreiveCmd (ctx, kind, name) {
-    const data = ctx.update || ctx.callback_query;
-    if (!ctx.isSystem && data.message && !this._accessRightsGuard(data.message.chat.id, data.message.from.id)) return;
+    const data = ctx.update || ctx.callback_query
+    if (!ctx.isSystem && data.message && !this._accessRightsGuard(data.message.chat.id, data.message.from.id)) return
 
-    const cmd = list[kind][name];
+    const cmd = list[kind][name]
     if (!cmd) throw new UserError('no_cmd. No such command')
 
     return cmd
@@ -82,11 +82,11 @@ module.exports = ({
   },
 
   _accessRightsGuard (id, userId, cmd) {
-    const hasAccess = consts.permittedChats.includes(id) || homemates.isMember(userId);
+    const hasAccess = consts.permittedChats.includes(id) || homemates.isMember(userId)
     if (!hasAccess) {
       throw new UserError('acl_deny. Не можешь повелевать Ботом ты')
     }
-    return hasAccess;
+    return hasAccess
   },
 
   _createOnError ({ ctx, cmd: { kind, name, args } } = {}) {
@@ -101,7 +101,7 @@ module.exports = ({
       const techSourceUserTargetText = getLandList(['нишмаглаа', 'Нимагуу', 'fail', 'error', 'да, ё моё :('])
       const userTargetError = `${ isUserSourceError ? userTargetText : techSourceUserTargetText }\n(err# ${ uniqId })`
 
-      console.error(techTargetError);
+      console.error(techTargetError)
 
       const icon = isUserSourceError ? '🤖👎' : getLandList(['🔴', '❌', '🧟‍♂️', '🤷‍♂️', '🙊', '🐛', '🌚'])
       ctx && ctx.reply(icon + ' ' + userTargetError);
@@ -121,14 +121,17 @@ bindAll({
   _command: null,
   type: null,
   set (type, command) {
-    this.type = type;
-    this._command = command;
+    this.type = type
+    this._command = command
   },
   has () {
-    return this._command;
+    return this._command
   },
   repeat () {
-    if (!this.has()) { console.error('hm, there is not command'); return; }
+    if (!this.has()) {
+      console.error('hm, there is not command')
+      return
+    }
     this._command(...this._args)
   },
 })
