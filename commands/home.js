@@ -2,19 +2,15 @@ const bindAll = require('lodash.bindall')
 const { randFromList, exec } = require('../src/common')
 // const { getLightStatus } = require('./light')
 
-module.exports = ({ config }) => ({
-  ...bindAll({
-    list: config.commands.list.home.data.homemates.list,
-    get (key, field) { return this.list[key.toLowerCase()] && this.list[key.toLowerCase()][field] },
-    set (key, field, val) { return this.list[key][field] = val },
-    setAll (field, object) { Object.keys(this.list).forEach((key) => { this.set(key, field, object[key]); }) },
-    empty () { return Object.keys(this.list).every(key => !this.get(key, 'presense')) },
-    full () { return Object.keys(this.list).every(key => this.get(key, 'presense')) },
-    isMember (id) { return Object.keys(this.list).some(key => this.get(key, 'id') === id) },
-    format () { return format(this) },
-  }),
-  format,
-  whoAtHome,
+module.exports = ({ config }) => bindAll({
+  list: config.commands.list.home.data.homemates.list,
+  get (key, field) { return this.list[key.toLowerCase()] && this.list[key.toLowerCase()][field] },
+  set (key, field, val) { return this.list[key][field] = val },
+  setAll (field, object) { Object.keys(this.list).forEach((key) => { this.set(key, field, object[key]); }) },
+  empty () { return Object.keys(this.list).every(key => !this.get(key, 'presense')) },
+  full () { return Object.keys(this.list).every(key => this.get(key, 'presense')) },
+  isMember (id) { return Object.keys(this.list).some(key => this.get(key, 'id') === id) },
+  format () { return format(this) },
 })
 
 async function format (homemates) {
