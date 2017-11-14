@@ -140,7 +140,7 @@ app.hears(/^(?:(?:say|скажи)\s+((?:.|\n)+))/im, (ctx) => {
  home
 */
 
-app.hears(/^(?:who\s+(is\s+)?at\+home\??|(есть\s)?(все|кто)\s+(ли\s+)?(дома|здесь)\??)/i, (ctx) => {
+app.hears(/^(?:who\s+(?:is\s+)?at\+home\??|(?:есть\s)?(?:все|кто)\s+(?:ли\s+)?(?:дома|здесь)\??)/i, (ctx) => {
   commands.run('home', 'presense', ctx)
 })
 
