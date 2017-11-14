@@ -209,6 +209,10 @@ app.hears(/fix\s+airplay/i, (ctx) => {
   commands.run('fixes', 'airplay', ctx)
 })
 
+app.hears(/(play\s+)?(megapolis|music\s+podcast)/i, (ctx) => {
+  commands.run('music', 'podcast', ctx)
+})
+
 app.hears(/(?:(?:find|search|look up) (?:torrent|rutracker|serial|film)|(?:поищи|ищи|найди|искать|ищи) (?:торрент|на рутрекере|на rutracker|фильм|сериал))(.+)/i, (ctx) => {
 	commands.run('torrents', 'search', ctx)
 })
