@@ -60,6 +60,7 @@ const commands = {
       pause:  [null, () => music.pause(), 'ok, music paused'],
       resume: [null, () => music.resume(), 'ok, music resumed'],
       play:   ['ok, I`ll try', (_, [link]) => music.play(link)],
+      podcast:() => ['long_wait_msg', exec('music-podcast')],
     },
     vol: {
       louder: [null, () => vol.delta(+10), 'ok, volume increased'],
@@ -100,7 +101,7 @@ const commands = {
     },
     delivery: {
       water: () => exec('send-tg-msg @makemetired "воды б"')
-    }
+    },
   },
 }
 
