@@ -34,6 +34,8 @@
 [bash scripts]: https://github.com/a-x-/rpi-bin
 
 #### to write
+* [ ] no-interactive actions debug_chat log
+* [ ] run on any machine (rpi2, rpi3)
 * [x] light control, scrpts
 * [x] volume control, scrpts
 * [x] sound control: play by url, pause/resume/stop, scrpts

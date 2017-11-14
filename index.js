@@ -1,34 +1,18 @@
 #!/usr/bin/env node
 // vim: set ts=4
 
-const path = require('path')
-
 const {
   Telegraf,
   Extra, Markup,
   token,
-  fs,
-  read,
-  write,
   exec,
-  throttle,
-  debounce,
-  inflect,
-  getLandList,
-  open,
-  parse,
-  decode,
   config,
   consts,
-  unindent,
   UserError,
-  join,
   getOkIcon,
   getIntro,
   openRpi3,
 } = require('./src/common')
-
-const { getLightStatus } = require('./plugins/light')
 
 require('dotenv').config() // load BOT_TOKE from .env file
 
@@ -46,7 +30,12 @@ const { edit, del, typing, sendMsgDefaultChat, sendMsgStderrChat } = require('./
 
 const Commands = require('./src/commands')
 
-const homemates = require('./plugins/home')({ config })
+const homemates = require('./commands/home')({ config })
+const light     = require('./commands/light')()
+const music     = require('./commands/music')()
+const torrents  = require('./commands/torrents')()
+const vol       = require('./commands/vol')()
+const weather   = require('./commands/weather')()
 
 //
 // commands declaration
@@ -58,127 +47,46 @@ const commands = {
   last: Commands.lastCommand,
   list: {
     voice: {
-      voice_over: [null, ctx => { isVoiceVerboseMode = true }, 'I`ll say everything you post'],
-      voice_over_stop: [null, ctx => { isVoiceVerboseMode = false }, 'I`ll be quiet'],
-      say: ['long_wait_msg', (ctx, args) => say(args[0], ctx)],
+      'voice_over':       [null, () => { isVoiceVerboseMode = true }, 'I`ll say everything you post'],
+      'voice_over_stop':  [null, () => { isVoiceVerboseMode = false }, 'I`ll be quiet'],
+      'say':              ['long_wait_msg', (ctx, [text]) => say(text, ctx)],
     },
     home: {
-      presense: ['long_wait_msg', async (ctx) => {
-        const status = await whoAtHome()
-
-        const name = (key) => homemates.get(key, 'name')
-        const here = (key) => getLandList(['дома ', 'тута', 'где-то здесь'])
-        const outside = (key) => getLandList(['не дома', 'отсутствует', 'шляется'])
-        const outside_ = (key) => key === 'lenya' ? getLandList(['— по бабам', '— опять по бабам']) : outside(key)
-        const hereStatus = (key) => `✅ ${ name(key) } ${ here(key) }`
-        const outsideStatus = (key) => `🔴 ${ name(key) } ${ outside_(key) }`
-        const getStatus = (key) => status[key] ? hereStatus(key) : outsideStatus(key)
-        const formattedStatus = Object.keys(homemates.list).map((key) => getStatus(key)).join('\n')
-
-        return { resMsg: formattedStatus }
-      }],
+      presense: ['long_wait_msg', async () => ({ resMsg: await homemates.format() })],
     },
     music: {
-      action: ['wait_msg', async ({ reply }, args) => {
-        const hasMusic = await exec('has-music')
-        if (!hasMusic) throw new UserError('No music detected. You can ask /quieter')
-        await exec(`${ args[0] }-music`)
-        return { okMsg: `ok, music ${args[0]}ed` }
-      }],
-      play: ['ok, I`ll try', async (ctx, args) => {
-        await exec(`pause-music || :`)
-        await exec(`mplayer "${ args[1].trim() }"`)
-        await exec(`resume-music || :`)
-      }],
+      stop:   [null, music.stop, 'ok, music stopped'],
+      pause:  [null, music.pause, 'ok, music paused'],
+      resume: [null, music.resume, 'ok, music resumed'],
+      play:   ['ok, I`ll try', (_, [link]) => music.play(link)],
     },
     vol: {
-      action: ['wait_msg', async ({ reply }, args) => {
-        const vol = Number(await exec('get-vol'))
-        if (args[0] === 'get') return { resMsg: vol }
-
-        const up = ['louder', 'up', '+', 'increase']
-        const dx = up.includes(args[0].trim()) ? +1 : -1
-        const K = 10
-        const newVal = typeof args[1] === 'number' ? args[1] : vol + K * dx
-
-        try { await exec(`vol ${ newVal } ${ args[0] }`) } catch (e) {
-          console.error('wtf',e.message, 'hm\n', e.stderr, e.stdout)
-          if (e.message.includes('vol_limit.')) throw new UserError('Недопустимая громкость', e)
-          throw e
-        }
-
-        return { okMsg: `ok, vol ${ dx > 0 ? 'increased' : 'decreased' }` }
-      }],
+      louder: [null, () => vol.delta(+10), 'ok, volume increased'],
+      quieter:[null, () => vol.delta(-10), 'ok, volume decreased'],
+      get:    async () => ({ resMsg: await vol.get() }),
     },
     light: {
       on: () => exec('light on'),
       off: () => exec('light off'),
-      status: async () => {
-        const status = await getLightStatus()
-        return { resMsg: status ? '🌖 on' : '🌘 off' }
-      },
+      status: async () => ({ resMsg: await light.status() ? '🌖 on' : '🌘 off' }),
     },
     weather: {
-      forecast: ['long_wait_msg', async (ctx) => {
-        const weather = await exec(`get-weather`).then(res => JSON.parse(res))
-
-        const temp = Math.floor(weather.temp)
-        const units = inflect(temp, { zero: 'градусов', one: 'градус', some: 'градуса', many: 'градусов' })
-        const formattedWeather = weather.description && weather.temp && `Погода в ближайшее время: ${weather.description}, ${temp} ${units}`
-        if (!formattedWeather) throw new Error('no_data')
-
-        // weather.icon && app.telegram.sendPhoto(ctx.chat.id, `http://openweathermap.org/img/w/${ weather.icon }.png`, {disable_notification: true})
-        // const url = `http://tg-bot-web.invntrm.ru/weathericons/${ weather.icon }.svg`
-        // weather.icon && app.telegram.sendPhoto(ctx.chat.id, url, {disable_notification: true})
-
-        if ((new Date()).getHours() >= 9) say(formattedWeather, ctx, true, true)
-
-        return { resMsg: formattedWeather }
-      }],
+      forecast: ['long_wait_msg', (ctx) => weatherForecast(ctx)],
     },
     misc: {
-      print: (ctx, args) => {
-        return sendMsgDefaultChat(args[0])
-      },
+      print: (_, [text]) => sendMsgDefaultChat(text),
     },
     jokes: {
-      joke: ['wait_msg', async (ctx) => {
-        return ctx.reply(await joker.next())
-      }],
-      update: (ctx) => {
-				return joker._loadNewPage()
-      },
+      joke: async () => ({ resMsg: await joker.next() }),
+      update: () => joker._loadNewPage(),
     },
     fixes: {
-      airplay: (ctx) => {
-        return exec('sudo systemctl restart shairport-sync')
-      },
+      airplay: () => exec('sudo systemctl restart shairport-sync'),
     },
 		torrents: {
-			search: ['wait_msg', async (ctx, args) => {
-				const query = args.join(' ').trim()
-				const res = JSON.parse(await exec(`search-rutracker ${ query }`))
-				if (!res || !res.length) return ctx.reply('nothing')
-
-		    // 🌐 ${ res.url.replace(/^https?:\/\//, '') }
-				res.forEach(res => {
-					ctx.replyWithHTML(unindent`
-            📕 ${ res.category }.
-            <b>${ res.size_h }</b>. seeds: <b>${ res.seeds }</b> / leechs: ${ res.leechs }
-            ${ res.title } <b> # ${ res.id }</b>
-					`, Markup.inlineKeyboard([Markup.callbackButton('Download', `torrent download ${ res.id }`)]).extra())
-				})
-      }],
-      download: ['start downloading…', ({ reply }, args) => {
-        return exec(`download-rutracker ${ args[0] }`)
-      }],
-      status: async ({ reply }) => {
-        const info = await openRpi3('deluge-console info -s Downloading --sort=time_added')
-				const info_ = info.replace(/^(ID|State|Seeds|Seed time|Tracker status|Size):.+\n/gm, "").trim()
-        info_ && reply(info_)
-
-				return { resMsg: info_ ? 'Остальное скачалось' : 'Всё скачалось, господа' }
-      }
+			search: ['wait_msg', (ctx, args) => searchTorrent(ctx, args.join(' ').trim())],
+      download: ['start downloading…', (_, [id]) => exec(`download-rutracker ${ id }`)],
+      status: async ({ reply }) => ({ resMsg: await torrents.status() })
 		},
     fileReactions: {
       audio:   [null, (_, [link]) => playAudioLink(link), 'Музон в ваши уши'],
@@ -201,6 +109,10 @@ const _commands = Commands({
 
 //
 // listeners
+//
+// TODO: use intent system api.io etc
+// TODO: use word2vel
+// TODO: use phrase examples instead of RegExps
 //
 
 /*
@@ -246,13 +158,13 @@ app.hears(/^(?:is\s+light\s+on|light\s+status|включен(\s+ли)?\s+све�
 */
 
 app.hears(/^(?:(выключи|останови|выруби|убери)\s+(?:музыку|звук|воспроизведение)|не\s+играй|stop\s+playing|stop\s+music)/i, (ctx) => {
-  commands.run('music', 'action', ctx, 'stop')
+  commands.run('music', 'stop', ctx)
 })
 app.hears(/^(?:поставь\s+на\s+паузу|пауза$|pause(,\s+please!?)?)/i, (ctx) => {
-  commands.run('music', 'action', ctx, 'pause')
+  commands.run('music', 'pause', ctx)
 })
 app.hears(/^(?:продолж(и|ай)\s+(воспроизведение|играть)|resume\s+playing)/i, (ctx) => {
-  commands.run('music', 'action', ctx, 'resume')
+  commands.run('music', 'resume', ctx)
 })
 app.hears(/^(?:(?:(?:сы|и)грай|воспроизведи|play)\s+((?:.|\n)+))/i, (ctx) => {
   commands.run('music', 'play', ctx)
@@ -264,10 +176,10 @@ app.hears(/^(?:(?:(?:сы|и)грай|воспроизведи|play)\s+((?:.|\n)
 */
 
 app.hears(/^(?:(?:сделай\s+)?(?:по)?тише|make(?:\s+(?:sound|music))?\s+quieter)/i, (ctx) => {
-  commands.run('vol', 'action', ctx, 'quieter')
+  commands.run('vol', 'quieter', ctx)
 })
 app.hears(/^(?:(?:сделай\s+)?(?:по)?громче|make(\s+(?:sound|music))?\s+louder)/i, (ctx) => {
-  commands.run('vol', 'action', ctx, 'louder')
+  commands.run('vol', 'louder', ctx)
 })
 
 /*
@@ -365,25 +277,25 @@ app.command('start', (props) => {
   return reply('Welcome!')
 })
 
-app.command('voice_over', cmd((ctx, args) => {
-  if (['off', 'stop'].includes(args[0])) commands.run('voice', 'voice_over_stop', ctx)
+app.command('voice_over', cmd((ctx, [cmd]) => {
+  if (['off', 'stop'].includes(cmd)) commands.run('voice', 'voice_over_stop', ctx)
   commands.run('voice', 'voice_over', ctx)
 }))
 
-app.command('voice_over_stop', cmd((ctx, args) => {
+app.command('voice_over_stop', cmd((ctx) => {
   commands.run('voice', 'voice_over_stop', ctx)
 }))
 
 app.command('say', cmd((ctx, args) => commands.run('voice', 'say', ctx, args)))
 
-app.command('vol', cmd((ctx, args) => commands.run('vol', 'action', ctx, args)))
-app.command('louder', cmd((ctx, args) => commands.run('vol', 'action', ctx, 'louder')))
-app.command('quieter', cmd((ctx, args) => commands.run('vol', 'action', ctx, 'quieter')))
+app.command('vol', cmd((ctx, [cmd]) => commands.run('vol', cmd, ctx)))
+app.command('louder', cmd((ctx, args) => commands.run('vol', 'louder', ctx)))
+app.command('quieter', cmd((ctx, args) => commands.run('vol', 'quieter', ctx)))
 
-app.command('music', cmd((ctx, args) => commands.run('music', 'action', ctx, args)))
-app.command('pause', cmd((ctx, args) => commands.run('music', 'action', ctx, 'pause')))
-app.command('resume', cmd((ctx, args) => commands.run('music', 'action', ctx, 'resume')))
-app.command('stop', cmd((ctx, args) => commands.run('music', 'action', ctx, 'stop')))
+app.command('music', cmd((ctx, [cmd]) => commands.run('music', cmd, ctx)))
+app.command('pause', cmd((ctx, args) => commands.run('music', 'pause', ctx)))
+app.command('resume', cmd((ctx, args) => commands.run('music', 'resume', ctx)))
+app.command('stop', cmd((ctx, args) => commands.run('music', 'stop', ctx)))
 
 app.command('home', cmd((ctx, args) => commands.run('home', 'presense', ctx)))
 
@@ -476,39 +388,33 @@ app.action(/.+/, (ctx) => {
 // helpers
 //
 
-
-/**
- * home
- */
-
-function whoAtHomeRequest () {
-  return exec('who-at-home2')
-    .then((stdout) => {
-      const j = JSON.parse(stdout)
-      console.log('whoAtHome info', stdout, j)
-      return j
-    })
+async function searchTorrent (ctx, query) {
+  const list = await torrents.search(query)
+  list.forEach(torrent => {
+    ctx.replyWithHTML(torrents.printable(torrent),
+      Markup.inlineKeyboard([Markup.callbackButton('Download', `torrent download ${ torrent.id }`)]).extra()
+    )
+  })
 }
 
-function whoAtHome () {
-  return whoAtHomeRequest()
-    .catch((e) => {
-      console.error('whoAtHome error', e)
-      return whoAtHomeRequest() // try again once
-    })
+async function weatherForecast (ctx) {
+  const formattedWeather = await weather.forecast()
+  if ((new Date()).getHours() >= 9) say(formattedWeather, ctx, true, true)
+  return { resMsg: formattedWeather }
 }
-
 
 /**
  * speech & voice over
  */
 
+// TODO: move to plugins
 let isVoiceVerboseMode = false
 let _isIn1wordAnsExpecting = false
 const isIn1wordAnsExpecting = () => {
   return _isIn1wordAnsExpecting ? (Date.now() - _isIn1wordAnsExpecting < 1000 * consts.ANS_EXP) : false
 }
 
+// TODO: move to commands
 async function say (text, ctx, isQuiet, noIntro) {
   if (!text) { console.log('тут и говорить нечего'); return; }
   console.log(">>", text.trim().replace(/\n/g, ' '))
@@ -520,6 +426,7 @@ async function say (text, ctx, isQuiet, noIntro) {
 
 /**
  * file handlers
+ * TODO: move to commands
  */
 
 async function openTorrentRpi3(link) {
@@ -545,12 +452,10 @@ function openLinkRpi3(link) {
 
 async function playAudioLink(link) {
   const ext = link.match(/\w+$/)[0]
-  const name = `/tmp/tg-bot-audio.${ ext }`
+  const filePath = `/tmp/tg-bot-audio.${ ext }`
 
-  await exec(`wget -O ${ name } "${ link }"`)
-  await exec('pause-music || :')
-  await exec(`mplayer "${ name }"`)
-  await exec('resume-music || :')
+  await exec(`wget -O ${ filePath } "${ link }"`)
+  await music.play(filePath)
 }
 
 

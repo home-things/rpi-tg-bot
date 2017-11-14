@@ -1,7 +1,43 @@
 module.exports = {
-  homemates: {
+  signals: {
+    sources: {
+      telegram: {
+        token: 'XXXXXXXXX:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+        chats: {
+          default: NaN,
+          stderr: NaN, // test, stderr, debug chat
+        },
+      },
+    },
+  },
+  commands: {
+    system: {
+      delays: {
+        answer: 8, // s
+      },
+    },
     list: {
-      sasha: { presense: null, name: 'Саня', id: 147445817 }
-    }
-  }
-}
+      voice: {
+        list: {
+          say: {
+            'intro_delay': 20, // s
+          },
+        },
+      },
+      home: {
+        endpoints: { // wtf?
+          presense: {
+            'diff_delay': 30 * 60 // s
+          },
+        },
+        data: { // wtf?
+          homemates: {
+            list: {
+              'sasha': { presense: null, name: 'Alex', id: 147445817 },
+            },
+          },
+        }
+      }
+    },
+  },
+};
