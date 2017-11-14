@@ -56,14 +56,16 @@ const commands = {
       presense: ['long_wait_msg', async () => ({ resMsg: await homemates.format() })],
     },
     music: {
-      stop:   [null, music.stop, 'ok, music stopped'],
-      pause:  [null, music.pause, 'ok, music paused'],
-      resume: [null, music.resume, 'ok, music resumed'],
+      stop:   [null, () => music.stop(), 'ok, music stopped'],
+      pause:  [null, () => music.pause(), 'ok, music paused'],
+      resume: [null, () => music.resume(), 'ok, music resumed'],
       play:   ['ok, I`ll try', (_, [link]) => music.play(link)],
     },
     vol: {
       louder: [null, () => vol.delta(+10), 'ok, volume increased'],
       quieter:[null, () => vol.delta(-10), 'ok, volume decreased'],
+      upTo:   [null, (_, [vol]) => vol.upTo(vol)],
+      downTo: [null, (_, [vol]) => vol.downTo(vol)],
       get:    async () => ({ resMsg: await vol.get() }),
     },
     light: {
@@ -95,6 +97,9 @@ const commands = {
       link:    [null, (_, [link]) => openLinkRpi3(link), 'Ссылка открыта на станции'],
       picture: [null, (_, [name, link]) => openPictureRpi3(link, name), 'Картинка открыта на станции'],
       torrent: [null, (_, [link]) => openTorrentRpi3(link), 'Поставлено на закачку'],
+    },
+    delivery: {
+      water: () => exec('send-tg-msg @makemetired "воды б"')
     }
   },
 }
