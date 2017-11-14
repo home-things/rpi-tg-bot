@@ -1,5 +1,3 @@
-const Telegraf = require('telegraf')
-const { Extra, Markup } = require('telegraf')
 const config = require('../config')
 const consts = require('../consts')(config)
 const throttle = require('lodash.throttle')
@@ -42,7 +40,9 @@ const decode = (() => {
   return str => new XmlEntities().decode(str)
 })()
 
-const getRandList = list => list[Math.floor(Math.random() * list.length)]
+
+const randFromList = (list) => list[Math.floor(Math.random() * list.length)]
+const randRange = (from, to) => Math.floor(Math.random() * (to - from)) + from
 
 const isDefined = val => val !== undefined && val !== null
 
@@ -65,8 +65,6 @@ const combo = (...variants) => {
   throw new Error('not implemented yet')
 }
 
-const getLandList = (list) => list[Math.floor(Math.random() * list.length)]
-
 class UserError extends Error {
   constructor(message, origError) {
     super(message)
@@ -85,12 +83,12 @@ function join(...args) {
 }
 
 function getOkIcon() {
-  return getLandList(['✅', '👌', '🆗', '🤖👍', '👏', '🤘', '💪', '😺', '👻', '🙏', '✨'])
+  return randFromList(['✅', '👌', '🆗', '🤖👍', '👏', '🤘', '💪', '😺', '👻', '🙏', '✨'])
 }
 
 const getIntro = (() => {
   const getIntro_ = debounce(() => {
-    return getLandList(['ааааа', 'вигв+аме', 'кар+оч', 'сл+ушайте', 'эт с+амое']) + ', ... &&& ... — '
+    return randFromList(['ааааа', 'вигв+аме', 'кар+оч', 'сл+ушайте', 'эт с+амое']) + ', ... &&& ... — '
   }, config.commands.list.voice.list.say.intro_delay * 1000, true)
   return () => getIntro_() || ''
 })()
@@ -100,21 +98,16 @@ function openRpi3(cmd, isX11) {
 }
 
 module.exports = {
-  Telegraf,
-  Extra, Markup,
   token,
   util, read, write,
   exec,
-  throttle,
-  debounce,
+  throttle, debounce,
   inflect,
-  getLandList,
-  fetch,
+  randFromList, randFromList,
   open,
   parse,
   decode,
-	config,
-  consts,
+	config, consts,
   unindent,
   combo,
   UserError,

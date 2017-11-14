@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 // vim: set ts=4
 
+const Telegraf = require('telegraf')
+const { Extra, Markup } = require('telegraf')
+
 const {
-  Telegraf,
-  Extra, Markup,
   token,
   exec,
   config,

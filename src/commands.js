@@ -1,6 +1,6 @@
 const bindAll = require('lodash.bindall')
 
-const { getLandList, join } = require('./common')
+const { randFromList, join } = require('./common')
 
 module.exports = ({
   list,
@@ -58,7 +58,7 @@ module.exports = ({
   },
 
   _normalizeCmd (cmd) {
-    const [waitMsg_, cmd_, okMsg_ = getLandList(['done', 'ok'])] = Array.isArray(cmd) ? cmd : [null, cmd, null]
+    const [waitMsg_, cmd_, okMsg_ = randFromList(['done', 'ok'])] = Array.isArray(cmd) ? cmd : [null, cmd, null]
     return { waitMsg_, cmd_, okMsg_ }
   },
 
@@ -98,12 +98,12 @@ module.exports = ({
       const techTargetError = join(techTargetTitle, ` -> error:\n${ techTargetText }`, `\n(err# ${ uniqId })`)
 
       const userTargetText = e.message + (e.orig ? '\n\n' + e.orig.message : '')
-      const techSourceUserTargetText = getLandList(['нишмаглаа', 'Нимагуу', 'fail', 'error', 'да, ё моё :('])
+      const techSourceUserTargetText = randFromList(['нишмаглаа', 'Нимагуу', 'fail', 'error', 'да, ё моё :('])
       const userTargetError = `${ isUserSourceError ? userTargetText : techSourceUserTargetText }\n(err# ${ uniqId })`
 
       console.error(techTargetError)
 
-      const icon = isUserSourceError ? '🤖👎' : getLandList(['🔴', '❌', '🧟‍♂️', '🤷‍♂️', '🙊', '🐛', '🌚'])
+      const icon = isUserSourceError ? '🤖👎' : randFromList(['🔴', '❌', '🧟‍♂️', '🤷‍♂️', '🙊', '🐛', '🌚'])
       if (ctx && !ctx.isSystem) ctx.reply(icon + ' ' + userTargetError)
 
       sendMsgStderrChat(icon + ' ' + techTargetError)

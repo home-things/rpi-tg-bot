@@ -1,5 +1,5 @@
 const bindAll = require('lodash.bindall')
-const { getLandList, exec } = require('../src/common')
+const { randFromList, exec } = require('../src/common')
 // const { getLightStatus } = require('./light')
 
 module.exports = ({ config }) => ({ ...bindAll({
@@ -20,9 +20,9 @@ async function format (homemates) {
   const status = await whoAtHome()
 
   const name = (key) => homemates.get(key, 'name')
-  const here = (key) => getLandList(['дома ', 'тута', 'где-то здесь'])
-  const outside = (key) => getLandList(['не дома', 'отсутствует', 'шляется'])
-  const outside_ = (key) => key === 'lenya' ? getLandList(['— по бабам', '— опять по бабам']) : outside(key)
+  const here = (key) => randFromList(['дома ', 'тута', 'где-то здесь'])
+  const outside = (key) => randFromList(['не дома', 'отсутствует', 'шляется'])
+  const outside_ = (key) => key === 'lenya' ? randFromList(['— по бабам', '— опять по бабам']) : outside(key)
   const hereStatus = (key) => `✅ ${ name(key) } ${ here(key) }`
   const outsideStatus = (key) => `🔴 ${ name(key) } ${ outside_(key) }`
   const getStatus = (key) => status[key] ? hereStatus(key) : outsideStatus(key)
@@ -93,7 +93,7 @@ module.exports.whoAtHome = whoAtHome
 //           if (homemates.empty()) exec('has-music').then(v => { if (!v.trim()) throw 'none' }).then(() => exec('stop-music')).then(() => {
 //             app.telegram.sendMessage(consts.VIGVAM_ID, 'Nobody at home ==> Music stopped')
 //           }).catch(() => { })
-//           if (homemates.full()) app.telegram.sendMessage(consts.VIGVAM_ID, getLandList(['С возвращением!', 'all in the home.']) + '\n\n 😇 p.s. I don`t notify more often than every 30 minutes');
+//           if (homemates.full()) app.telegram.sendMessage(consts.VIGVAM_ID, randFromList(['С возвращением!', 'all in the home.']) + '\n\n 😇 p.s. I don`t notify more often than every 30 minutes');
 //           break;
 //       }
 //       break;
