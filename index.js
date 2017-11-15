@@ -185,15 +185,19 @@ app.hears(/^(?:(?:(?:сы|и)грай|воспроизведи|play)\s+((?:.|\n)
 */
 
 app.hears(/^(?:(?:сделай\s+)?(?:по)?громче|make(\s+(?:sound|music))?\s+louder)\s+(?:до|up\s*to)\s+(\d+)/i, (ctx) => {
+  console.log('wtf', ctx.match)
   commands.run('vol', 'upTo', ctx)
 })
 app.hears(/^(?:(?:сделай\s+)?(?:по)?тише|make(\s+(?:sound|music))?\s+quieter)\s+(?:до|down\s*to)\s+(\d+)/i, (ctx) => {
+  console.log('wtf', ctx.match)
   commands.run('vol', 'downTo', ctx)
 })
 app.hears(/^(?:(?:сделай\s+)?(?:по)?тише|make(?:\s+(?:sound|music))?\s+quieter)/i, (ctx) => {
+  console.log('wtf', ctx.match)
   commands.run('vol', 'quieter', ctx)
 })
 app.hears(/^(?:(?:сделай\s+)?(?:по)?громче|make(\s+(?:sound|music))?\s+louder)/i, (ctx) => {
+  console.log('wtf', ctx.match)
   commands.run('vol', 'louder', ctx)
 })
 
