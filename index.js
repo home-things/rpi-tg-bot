@@ -38,6 +38,8 @@ const torrents  = require('./commands/torrents')()
 const vol       = require('./commands/vol')()
 const weather   = require('./commands/weather')()
 
+const cl = (...comments) => (fn) => (...args) => { const res = fn(...args); console.info(...comments, ': (', ...args, ') -->', res); return res; };
+
 //
 // commands declaration
 //
@@ -65,7 +67,7 @@ const commands = {
     vol: {
       louder: [null, () => vol.delta(+10), 'ok, volume increased'],
       quieter:[null, () => vol.delta(-10), 'ok, volume decreased'],
-      upTo:   [null, (_, [vol]) => vol.upTo(vol)],
+      upTo:   [null, cl('wtf')((_, [vol]) => vol.upTo(vol))],
       downTo: [null, (_, [vol]) => vol.downTo(vol)],
       get:    async () => ({ resMsg: await vol.get() }),
     },
