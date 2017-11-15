@@ -4,7 +4,7 @@ const { UserError, exec } = require('../src/common')
 module.exports = () => bindAll({
   async set(volume) {
     checkVolumeLimit(volume)
-    return await exec(`vol2 ${ volume }`)
+    return await exec(`simple-vol ${ volume }`)
   },
   async delta(dx) {
     const volume = await this.get()
@@ -24,7 +24,7 @@ module.exports = () => bindAll({
     return await this.set(vol_)
   },
   async get() {
-    return await exec('vol-get')
+    return Number(await exec('vol-get'))
   },
 })
 
