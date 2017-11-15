@@ -31,12 +31,12 @@ const { edit, del, typing, sendMsgDefaultChat, sendMsgStderrChat } = require('./
 
 const Commands = require('./src/commands')
 
-const homemates = require('./commands/home')({ config })
-const light     = require('./commands/light')()
-const music     = require('./commands/music')()
-const torrents  = require('./commands/torrents')()
-const vol       = require('./commands/vol')()
-const weather   = require('./commands/weather')()
+const homeCmd      = require('./commands/home')({ config })
+const lightCmd     = require('./commands/light')()
+const musicCmd     = require('./commands/music')()
+const torrentsCmd  = require('./commands/torrents')()
+const volCmd       = require('./commands/vol')()
+const weatherCmd   = require('./commands/weather')()
 
 const cl = (...comments) => (fn) => (...args) => { const res = fn(...args); console.info(...comments, ': (', ...args, ') -->', res); return res; };
 
@@ -55,26 +55,26 @@ const commands = {
       'say':              ['long_wait_msg', (ctx, [text]) => say(text, ctx)],
     },
     home: {
-      presense: ['long_wait_msg', async () => ({ resMsg: await homemates.format() })],
+      presense: ['long_wait_msg', async () => ({ resMsg: await homeCmd.format() })],
     },
     music: {
-      stop:   [null, () => music.stop(), 'ok, music stopped'],
-      pause:  [null, () => music.pause(), 'ok, music paused'],
-      resume: [null, () => music.resume(), 'ok, music resumed'],
-      play:   ['ok, I`ll try', (_, [link]) => music.play(link)],
+      stop:   [null, () => musicCmd.stop(), 'ok, music stopped'],
+      pause:  [null, () => musicCmd.pause(), 'ok, music paused'],
+      resume: [null, () => musicCmd.resume(), 'ok, music resumed'],
+      play:   ['ok, I`ll try', (_, [link]) => musicCmd.play(link)],
       podcast:() => ['long_wait_msg', exec('music-podcast&')],
     },
     vol: {
-      louder: [null, () => vol.delta(+10), 'ok, volume increased'],
-      quieter:[null, () => vol.delta(-10), 'ok, volume decreased'],
-      upTo:   [null, cl('wtf')((_, [vol]) => vol.upTo(vol))],
-      downTo: [null, (_, [vol]) => vol.downTo(vol)],
-      get:    async () => ({ resMsg: await vol.get() }),
+      louder: [null, () => volCmd.delta(+10), 'ok, volume increased'],
+      quieter:[null, () => volCmd.delta(-10), 'ok, volume decreased'],
+      upTo:   [null, (_, [vol_]) => volCmd.upTo(vol_)],
+      downTo: [null, (_, [vol_]) => volCmd.downTo(vol_)],
+      get:    async () => ({ resMsg: await volCmd.get() }),
     },
     light: {
-      on: () => exec('light on'),
-      off: () => exec('light off'),
-      status: async () => ({ resMsg: await light.status() ? '🌖 on' : '🌘 off' }),
+      on: () => lightCmd.on(),
+      off: () => lightCmd.on(),
+      status: async () => ({ resMsg: await lightCmd.status() ? '🌖 on' : '🌘 off' }),
     },
     weather: {
       forecast: ['long_wait_msg', (ctx) => weatherForecast(ctx)],
@@ -92,7 +92,7 @@ const commands = {
 		torrents: {
 			search: ['wait_msg', (ctx, args) => searchTorrent(ctx, args.join(' ').trim())],
       download: ['start downloading…', (_, [id]) => exec(`download-rutracker ${ id }`)],
-      status: async ({ reply }) => ({ resMsg: await torrents.status() })
+      status: async ({ reply }) => ({ resMsg: await torrentsCmd.status() })
 		},
     fileReactions: {
       audio:   [null, (_, [link]) => playAudioLink(link), 'Музон в ваши уши'],
@@ -112,7 +112,7 @@ const _commands = Commands({
   getOkIcon,
   UserError,
   consts,
-  homemates,
+  homeCmd,
   del, typing, sendMsgDefaultChat, sendMsgStderrChat,
 })
 
@@ -392,7 +392,7 @@ app.hears(/^(hi|hey|ping)$/i, ({ reply }) => reply('Hey there!'))
 app.hears(/./, (ctx) => {
   if (!isVoiceVerboseMode) return
   const name = ctx.update.message.from.first_name
-  say(`говорит ${ homemates.get(name, 'name') || name }: ${ ctx.match.input }`, ctx, true)
+  say(`говорит ${ homeCmd.get(name, 'name') || name }: ${ ctx.match.input }`, ctx, true)
 })
 
 app.action(/.+/, (ctx) => {
@@ -408,16 +408,16 @@ app.action(/.+/, (ctx) => {
 //
 
 async function searchTorrent (ctx, query) {
-  const list = await torrents.search(query)
+  const list = await torrentsCmd.search(query)
   list.forEach(torrent => {
-    ctx.replyWithHTML(torrents.printable(torrent),
+    ctx.replyWithHTML(torrentsCmd.printable(torrent),
       Markup.inlineKeyboard([Markup.callbackButton('Download', `torrent download ${ torrent.id }`)]).extra()
     )
   })
 }
 
 async function weatherForecast (ctx) {
-  const formattedWeather = await weather.forecast()
+  const formattedWeather = await weatherCmd.forecast()
   if ((new Date()).getHours() >= 9) say(formattedWeather, ctx, true, true)
   return { resMsg: formattedWeather }
 }
@@ -474,7 +474,7 @@ async function playAudioLink(link) {
   const filePath = `/tmp/tg-bot-audio.${ ext }`
 
   await exec(`wget -O ${ filePath } "${ link }"`)
-  await music.play(filePath)
+  await musicCmd.play(filePath)
 }
 
 

@@ -7,7 +7,7 @@ module.exports = ({
   getOkIcon,
   UserError,
   consts,
-  homemates,
+  homeCmd,
   del, typing, sendMsgDefaultChat, sendMsgStderrChat,
 }) => bindAll({
   async run (kind, name, ctx, args = []) {
@@ -82,7 +82,7 @@ module.exports = ({
   },
 
   _accessRightsGuard (id, userId, cmd) {
-    const hasAccess = consts.permittedChats.includes(id) || homemates.isMember(userId)
+    const hasAccess = consts.permittedChats.includes(id) || homeCmd.isMember(userId)
     if (!hasAccess) {
       throw new UserError('acl_deny. Не можешь повелевать Ботом ты')
     }
