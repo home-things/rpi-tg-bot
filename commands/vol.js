@@ -36,7 +36,7 @@ function isCorrectVolume(volume) {
 }
 
 function checkVolumeLimit(volume) {
-  if (isCorrectVolume()) return true
+  if (isCorrectVolume(volume)) return true
   throw new UserError(`vol_limit. vol unchanged. new: ${ volume }. limits: ${ MIN }–${ MAX }`)
 }
 
