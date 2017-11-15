@@ -184,10 +184,10 @@ app.hears(/^(?:(?:(?:сы|и)грай|воспроизведи|play)\s+((?:.|\n)
  vol
 */
 
-app.hears(/^(?:(?:сделай\s+)?(?:по)?громче|make(\s+(?:sound|music))?\s+louder\s*(?:до|up\s*to)\s+(\d+))/i, (ctx) => {
+app.hears(/^(?:(?:сделай\s+)?(?:по)?громче|make(\s+(?:sound|music))?\s+louder)\s+(?:до|up\s*to)\s+(\d+)/i, (ctx) => {
   commands.run('vol', 'upTo', ctx)
 })
-app.hears(/^(?:(?:сделай\s+)?(?:по)?тише|make(\s+(?:sound|music))?\s+quieter\s*(?:до|down\s*to)\s+(\d+))/i, (ctx) => {
+app.hears(/^(?:(?:сделай\s+)?(?:по)?тише|make(\s+(?:sound|music))?\s+quieter)\s+(?:до|down\s*to)\s+(\d+)/i, (ctx) => {
   commands.run('vol', 'downTo', ctx)
 })
 app.hears(/^(?:(?:сделай\s+)?(?:по)?тише|make(?:\s+(?:sound|music))?\s+quieter)/i, (ctx) => {
