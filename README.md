@@ -18,6 +18,42 @@
 * Any light controller (I use very own one based on Reley(solid-state/thyristor omron-g3mb-202p))
 * Sound system (I use external rpi sound card *[HIFIBERRY DAC+](https://www.hifiberry.com/shop/boards/hifiberry-dacplus-phone/)* and usual amp+speakers system *Edifier R980T* and second linked sound system in another room)
 
+## Getting started
+*guide is not complete stil 🚧 work in progress…*
+*todo: create installer*
+
+```sh
+# install all apt-get packages you need (todo: enumerate everything)
+# ...
+
+# install dotfiles
+cd && git clone git@github.com:a-x-/.files.git dotfiles
+./installer.sh # It did not tested on raspbian stil
+
+# install bins
+mkdir ~/bin && cd ~/bin
+git clone git@github.com:a-x-/rpi-bin.git
+npm i
+
+# install tg-bot
+mkdir ~/services && cd ~/services
+git clone git@github.com:a-x-/tg-rpi-smart-home-bot.git tg-bot && cd tg-bot
+npm i
+
+# setup tg-bot
+# ...
+
+# setup some bins
+# ...
+```
+
+[Bins Setup Draft Guide](https://github.com/a-x-/tg-rpi-smart-home-bot/wiki/Installation-everything-DRAFT)
+
+#### launch
+```sh
+BOT_TOKEN=$(cat ~/.config/tg-bot.json | jq -r .BOT_TOKEN) forever start ~/services/tg-bot/index.js
+```
+
 ## todo
 
 #### to copy/port to this repo
@@ -33,7 +69,7 @@
 
 [bash scripts]: https://github.com/a-x-/rpi-bin
 
-#### to write
+#### to code
 * [ ] no-interactive actions debug_chat log
 * [ ] run on any machine (rpi2, rpi3)
 * [x] light control, scrpts
