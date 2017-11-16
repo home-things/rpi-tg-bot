@@ -166,6 +166,10 @@ app.hears(/^(?:is\s+light\s+on|light\s+status|включен(\s+ли)?\s+све�
  music
 */
 
+app.hears(/^(?:(?:(?:сы|и)грай|воспроизведи|play))?(megapolis|music\s+podcast)/i, (ctx) => {
+  commands.run('music', 'podcast', ctx)
+})
+
 app.hears(/^(?:(выключи|останови|выруби|убери)\s+(?:музыку|звук|воспроизведение)|не\s+играй|stop\s+playing|stop\s+music)/i, (ctx) => {
   commands.run('music', 'stop', ctx)
 })
@@ -215,10 +219,6 @@ app.hears(/^(?:(?:(?:get|tell|next)\s+)?joke|(?:(?:(?:расскажи|дава�
 
 app.hears(/fix\s+airplay/i, (ctx) => {
   commands.run('fixes', 'airplay', ctx)
-})
-
-app.hears(/(play\s+)?(megapolis|music\s+podcast)/i, (ctx) => {
-  commands.run('music', 'podcast', ctx)
 })
 
 app.hears(/(?:(?:find|search|look up) (?:torrent|rutracker|serial|film)|(?:поищи|ищи|найди|искать|ищи) (?:торрент|на рутрекере|на rutracker|фильм|сериал))(.+)/i, (ctx) => {
