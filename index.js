@@ -37,6 +37,7 @@ const musicCmd     = require('./commands/music')()
 const torrentsCmd  = require('./commands/torrents')()
 const volCmd       = require('./commands/vol')()
 const weatherCmd   = require('./commands/weather')()
+const fixerCmd     = require('./commands/fixer')()
 
 const cl = (...comments) => (fn) => (...args) => { const res = fn(...args); console.info(...comments, ': (', ...args, ') -->', res); return res; };
 
@@ -87,7 +88,7 @@ const commands = {
       update: () => joker._loadNewPage(),
     },
     fixes: {
-      airplay: () => exec('sudo systemctl restart shairport-sync'),
+      airplay: () => fixerCmd.airplay(),
     },
 		torrents: {
 			search: ['wait_msg', (ctx, args) => searchTorrent(ctx, args.join(' ').trim())],

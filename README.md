@@ -104,6 +104,7 @@ BOT_TOKEN=$(cat ~/.config/tg-bot.json | jq -r .BOT_TOKEN) forever start ~/servic
   * get tg audio -> `asr voice.ogg 'audio/ogg;codecs=opus'`
 * [ ] automatic problem diagnosis
 * [ ] VAD+mics
+* [ ] I18N
 
 #### todo: meta/refuctoring
 * [ ] tests
