@@ -3,6 +3,7 @@
 
 const Telegraf = require('telegraf')
 const { Extra, Markup } = require('telegraf')
+const { spawn } = require('child_process')
 
 const {
   token,
@@ -63,7 +64,7 @@ const commands = {
       pause:  [null, () => musicCmd.pause(), 'ok, music paused'],
       resume: [null, () => musicCmd.resume(), 'ok, music resumed'],
       play:   ['ok, I`ll try', (_, [link]) => musicCmd.play(link)],
-      podcast:() => ['long_wait_msg', exec('music-podcast&')],
+      podcast:() => ['long_wait_msg', spawn('music-podcast')],
     },
     vol: {
       louder: [null, () => volCmd.delta(+10), 'ok, volume increased'],
@@ -180,7 +181,20 @@ app.hears(/^(?:поставь\s+на\s+паузу|пауза$|pause(,\s+please!?
 app.hears(/^(?:продолж(и|ай)\s+(воспроизведение|играть)|resume\s+playing)/i, (ctx) => {
   commands.run('music', 'resume', ctx)
 })
-app.hears(/^(?:(?:(?:сы|и)грай|воспроизведи|play)\s+((?:.|\n)+))/i, (ctx) => {
+app.hears(/^(?:(?:(?:сы|и)грай|воспроизведи|play)\s+(\w+))/i, (ctx) => {
+  commands.run('music', 'play', ctx)
+})
+
+app.hears(/^\.\.$/, (ctx) => {
+  commands.run('music', 'stop', ctx)
+})
+app.hears(/^\|\|$/i, (ctx) => {
+  commands.run('music', 'pause', ctx)
+})
+app.hears(/^\>\>$/i, (ctx) => {
+  commands.run('music', 'resume', ctx)
+})
+app.hears(/^\>\>\s+(\w+)/i, (ctx) => {
   commands.run('music', 'play', ctx)
 })
 
@@ -199,6 +213,12 @@ app.hears(/^(?:(?:сделай\s+)?(?:по)?тише|make(?:\s+(?:sound|music))?
   commands.run('vol', 'quieter', ctx)
 })
 app.hears(/^(?:(?:сделай\s+)?(?:по)?громче|make(?:\s+(?:sound|music))?\s+louder)/i, (ctx) => {
+  commands.run('vol', 'louder', ctx)
+})
+app.hears(/^--$/, (ctx) => {
+  commands.run('vol', 'quieter', ctx)
+})
+app.hears(/^\+\+$/, (ctx) => {
   commands.run('vol', 'louder', ctx)
 })
 
