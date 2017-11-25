@@ -22,7 +22,7 @@ module.exports = ({
 
       const res = await this._runWithWaiter(waitMsg_, ctx, () => cmd_(ctx, args_))
 
-      const okMsg__ = res && res.okMsg || okMsg_
+      const okMsg__ = res && res.okMsg || okMsg_ || randFromList(['done', 'ok'])
       const resMsg = res && res.resMsg
       resMsg && ctx.reply(resMsg)
       if (!ctx.isSystem && !resMsg) {
@@ -58,7 +58,7 @@ module.exports = ({
   },
 
   _normalizeCmd (cmd) {
-    const [waitMsg_, cmd_, okMsg_ = randFromList(['done', 'ok'])] = Array.isArray(cmd) ? cmd : [null, cmd, null]
+    const [waitMsg_, cmd_, okMsg_] = Array.isArray(cmd) ? cmd : [null, cmd, null]
     return { waitMsg_, cmd_, okMsg_ }
   },
 
