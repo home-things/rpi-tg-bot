@@ -75,7 +75,7 @@ const commands = {
     },
     light: {
       on: () => lightCmd.on(),
-      off: () => lightCmd.on(),
+      off: () => lightCmd.off(),
       status: async () => ({ resMsg: await lightCmd.status() ? '🌖 on' : '🌘 off' }),
     },
     weather: {
