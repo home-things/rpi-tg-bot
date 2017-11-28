@@ -92,7 +92,12 @@ const commands = {
       airplay: () => fixerCmd.airplay(),
     },
 		torrents: {
-			search: ['wait_msg', (ctx, args) => searchTorrent(ctx, args.join(' ').trim())],
+			search: ['wait_msg', async (ctx, args) => {
+        const res = await searchTorrent(ctx, args.join(' ').trim())
+        if (res === false) {
+          return { resMsg: 'Ничего не нашлось :(' }
+        }
+      }],
       download: ['start downloading…', (_, [id]) => exec(`download-rutracker ${ id }`)],
       status: async ({ reply }) => ({ resMsg: await torrentsCmd.status() })
 		},
@@ -430,6 +435,7 @@ app.action(/.+/, (ctx) => {
 
 async function searchTorrent (ctx, query) {
   const list = await torrentsCmd.search(query)
+  if (!list || !list.length) return false
   list.forEach(torrent => {
     ctx.replyWithHTML(torrentsCmd.printable(torrent),
       Markup.inlineKeyboard([Markup.callbackButton('Download', `torrent download ${ torrent.id }`)]).extra()
