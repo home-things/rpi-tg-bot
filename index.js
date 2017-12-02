@@ -111,6 +111,9 @@ const commands = {
     delivery: {
       water: () => exec('send-tg-msg @makemetired "воды б"')
     },
+    search: {
+      yandex: [null, (_, [query]) => openLinkRpi3('https://ya.ru/?q=' + encodeURIComponent(query)), 'Загуглено на станции'],
+    },
   },
 }
 
@@ -231,7 +234,7 @@ app.hears(/^\+\+$/, (ctx) => {
  misc
 */
 
-app.hears(/^(?:(?:какая\s+)?погода|что\s+(там\s+)?с\s+погодой\??|что\s+обещают\??|что\s+с\s+погодой\??|(?:(?:(?:say|get|read)\s+)?(?:a\s+)?weather))/i, (ctx) => {
+app.hears(/^(?:(?:какая\s+)?погода|что\s+(там\s+)?с\s+погодой\??|что\s+обещают\??|что\s+с\s+погодой\??|(?:(?:(?:say|get|read)\s+)?(?:a\s+)?weather)|с погодой что)/i, (ctx) => {
   commands.run('weather', 'forecast', ctx)
 })
 
@@ -251,7 +254,7 @@ app.hears(/(?:(?:find|search|look up) (?:torrent|rutracker|serial|film)|(?:по�
 	commands.run('torrents', 'search', ctx)
 })
 
-app.hears(/(?:(?:status|get|check) (?:torrent|rutracker|serial|film)s?|(?:проверь|что там с|как там|статус) (?:торрент(ы|ами)?|рутрекер(ом|а)?|на rutracker|фильм(ы|ами)?|сериал(ы|ами)?|закачк(а|и|ами)))(.+)/i, (ctx) => {
+app.hears(/(?:(?:status |get |check )?(?:torrent|rutracker|serial|film)s?|(?:проверь|что (там )?с|как там|статус) (?:торрент(ы|ами)?|рутрекер(ом|а)?|на rutracker|фильм(ы|ами)?|сериал(ы|ами)?|закачк(а|и|ами)))(.+)/i, (ctx) => {
 	commands.run('torrents', 'status', ctx)
 })
 
@@ -270,6 +273,11 @@ app.hears(/([^ ]+\.mp3)/, (ctx) => {
 app.hears(/(https?:[^ ]+)/, (ctx) => {
   commands.run('fileReactions', 'link', ctx)
 })
+
+app.hears(/^(?:google|yandex|search|загугли|найди)\s+(.+)/i, (ctx) => {
+  commands.run('search', 'yandex', ctx)
+})
+
 
 app.on('audio', async (ctx) => {
 	const link = await app.telegram.getFileLink(ctx.message.audio.file_id)
@@ -299,6 +307,7 @@ app.on('voice', async (ctx) => {
 
 	commands.run('fileReactions', 'voice', ctx, voiceLink)
 })
+
 
 /*
  /commands
