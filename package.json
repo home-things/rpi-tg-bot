@@ -6,7 +6,7 @@
   "scripts": {
     "watch": "npm-watch",
     "restart": "./restart",
-    "test": "ava"
+    "test": "./test.sh && ava"
   },
   "author": "",
   "license": "ISC",
