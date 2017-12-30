@@ -43,5 +43,5 @@ module.exports = ({ commands }) => {
 
   // cron('00 00 14 *   *   mon', () => commands.runSys('delivery', 'water')) // TODO: sync with vacancy schedule
 
-  cron('00 00 10 *   *   *  ', () => commands.runSys('music', 'podcast'))
+  // cron('00 00 10 *   *   *  ', () => commands.runSys('music', 'podcast')) // while I'm out
 }
