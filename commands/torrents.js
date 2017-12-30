@@ -21,8 +21,8 @@ module.exports = () => bindAll({
   },
 
   async status () {
-    const info = this.info()
-    return info ? `${ await info }\nОстальное скачалось` : 'Всё скачалось, господа'
+    const info = await this.info()
+    return info ? `${ info }\nОстальное скачалось` : 'Всё скачалось, господа'
   },
 
   async info () {
@@ -34,8 +34,11 @@ module.exports = () => bindAll({
     if (this.isDownloadedPending) return this.isDownloadedPending
 
     this.isDownloadedPending = new Promise(async (res) => {
-      if (!(await this.downloading())) return res(true)
-      setTimeout(() => { check(); }, 10000)
+      const check = () => {
+        if (!(await this.downloading())) return res(true)
+        setTimeout(check, 10000)
+      }
+      check()
     })
 
     const del = () => delete this.isDownloadedPending

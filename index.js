@@ -495,7 +495,7 @@ async function openTorrentRpi3({ link, reply }) {
   await exec(`wget -O ${ tmpFile } "${ link }"`)
   await exec(`scp ${ tmpFile } pi@rpi3:~/Downloads`)
   setTimeout(async () => reply(await torrentsCmd.status()), 3000)
-  setTimeout(async () => notifyWhenTorrentWillBeDone({ reply }), 3000)
+  setTimeout(async () => await notifyWhenTorrentWillBeDone({ reply }), 3000)
 }
 
 async function openPictureRpi3(link, name) {
