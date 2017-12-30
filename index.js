@@ -98,7 +98,11 @@ const commands = {
           return { resMsg: 'Ничего не нашлось :(' }
         }
       }],
-      download: ['start downloading…', (_, [id]) => exec(`download-rutracker ${ id }`)],
+      download: ['start downloading…', async ({ reply }, [id]) => {
+        await exec(`download-rutracker ${ id }`)
+        setTimeout(() => reply(await torrentsCmd.status()), 3000)
+        setTimeout(notifyWhenTorrentWillBeDone({ reply }), 3000)
+      }],
       status: async ({ reply }) => ({ resMsg: await torrentsCmd.status() })
 		},
     fileReactions: {
@@ -441,6 +445,11 @@ app.action(/.+/, (ctx) => {
 //
 // helpers
 //
+
+async function notifyWhenTorrentWillBeDone ({ reply }) {
+  await torrentsCmd.awaitDownloaded()
+  reply('✨ Всё(,) торрентьё(,) скачалось!')
+}
 
 async function searchTorrent (ctx, query) {
   const list = await torrentsCmd.search(query)
