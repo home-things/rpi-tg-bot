@@ -34,7 +34,7 @@ module.exports = () => bindAll({
     if (this.isDownloadedPending) return this.isDownloadedPending
 
     this.isDownloadedPending = new Promise(async (res) => {
-      const check = () => {
+      const check = async () => {
         if (!(await this.downloading())) return res(true)
         setTimeout(check, 10000)
       }
