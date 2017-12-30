@@ -98,11 +98,7 @@ const commands = {
           return { resMsg: 'Ничего не нашлось :(' }
         }
       }],
-      download: ['start downloading…', async ({ reply }, [id]) => {
-        await exec(`download-rutracker ${ id }`)
-        setTimeout(async () => reply(await torrentsCmd.status()), 3000)
-        setTimeout(notifyWhenTorrentWillBeDone({ reply }), 3000)
-      }],
+      download: ['start downloading…', (_, [id]) => exec(`download-rutracker ${ id }`)],
       status: async ({ reply }) => ({ resMsg: await torrentsCmd.status() })
 		},
     fileReactions: {
@@ -110,7 +106,7 @@ const commands = {
       voice:          (_, [link]) => exec(`wget -O /tmp/tg-bot-voice.oga "${ link }"`) /*exec(`asr /tmp/tg-bot-voice.oga`)*/,
       link:    [null, (_, [link]) => openLinkRpi3(link), 'Ссылка открыта на станции'],
       picture: [null, (_, [name, link]) => openPictureRpi3(link, name), 'Картинка открыта на станции'],
-      torrent: [null, (_, [link]) => openTorrentRpi3(link), 'Поставлено на закачку'],
+      torrent: [null, ({ reply }, [link]) => openTorrentRpi3({ link, reply }), 'Поставлено на закачку'],
     },
     delivery: {
       water: () => exec('send-tg-msg @makemetired "воды б"')
@@ -493,21 +489,23 @@ async function say (text, ctx, isQuiet, noIntro) {
  * TODO: move to commands
  */
 
-async function openTorrentRpi3(link) {
-    const tmpFile = '/tmp/tg-bot.torrent'
+async function openTorrentRpi3({ link, reply }) {
+  const tmpFile = '/tmp/tg-bot.torrent'
 
-    await exec(`wget -O ${ tmpFile } "${ link }"`)
-    await exec(`scp ${ tmpFile } pi@rpi3:~/Downloads`)
+  await exec(`wget -O ${ tmpFile } "${ link }"`)
+  await exec(`scp ${ tmpFile } pi@rpi3:~/Downloads`)
+  setTimeout(async () => reply(await torrentsCmd.status()), 3000)
+  setTimeout(notifyWhenTorrentWillBeDone({ reply }), 3000)
 }
 
 async function openPictureRpi3(link, name) {
-    const tmpFileName = `tg-bot.${ name }.jpg`;
-    const tmpFilePath = `/tmp/${ tmpFileName }`;
-    const targetFilePath = `~/Downloads/${ tmpFileName }`;
+  const tmpFileName = `tg-bot.${ name }.jpg`;
+  const tmpFilePath = `/tmp/${ tmpFileName }`;
+  const targetFilePath = `~/Downloads/${ tmpFileName }`;
 
-    await exec(`wget -O "${ tmpFilePath }" "${ link }"`);
-    await exec(`scp "${ tmpFilePath }" "pi@rpi3:${ targetFilePath }"`)
-    openRpi3(`gpicview "${ targetFilePath }" &`, 'x11') // Cannot avoid window closing waiting
+  await exec(`wget -O "${ tmpFilePath }" "${ link }"`);
+  await exec(`scp "${ tmpFilePath }" "pi@rpi3:${ targetFilePath }"`)
+  openRpi3(`gpicview "${ targetFilePath }" &`, 'x11') // Cannot avoid window closing waiting
 }
 
 function openLinkRpi3(link) {

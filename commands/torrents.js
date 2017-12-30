@@ -18,7 +18,8 @@ module.exports = () => ({
   },
 
   status: async () => {
-    return info_ ? `${ await this.info() }\nОстальное скачалось` : 'Всё скачалось, господа'
+    const info = this.info()
+    return info ? `${ await info }\nОстальное скачалось` : 'Всё скачалось, господа'
   },
 
   info: async () => {
