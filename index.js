@@ -100,7 +100,7 @@ const commands = {
       }],
       download: ['start downloading…', async ({ reply }, [id]) => {
         await exec(`download-rutracker ${ id }`)
-        setTimeout(() => reply(await torrentsCmd.status()), 3000)
+        setTimeout(async () => reply(await torrentsCmd.status()), 3000)
         setTimeout(notifyWhenTorrentWillBeDone({ reply }), 3000)
       }],
       status: async ({ reply }) => ({ resMsg: await torrentsCmd.status() })

@@ -29,7 +29,7 @@ module.exports = () => ({
   awaitDownloaded: async () => {
     if (this.isDownloadedPending) return this.isDownloadedPending
 
-    this.isDownloadedPending = new Promise((res) => {
+    this.isDownloadedPending = new Promise(async (res) => {
       if (!(await this.downloading())) return res(true)
       setTimeout(() => { check(); }, 10000)
     })
