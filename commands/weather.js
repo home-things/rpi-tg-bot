@@ -4,11 +4,11 @@ const getUnit = inflect({ zero: 'градусов', one: 'градус', some: '
 
 module.exports = () => ({
   async forecast () {
-    const weather = await exec(`get-weather`).then(res => JSON.parse(res))
+    const weather = await exec(`get-weather2`).then(res => JSON.parse(res))
 
     const temp = Math.floor(weather.temp)
     if (!weather.description || !weather.temp) throw new Error('no_data')
-    const formattedWeather = `Погода в ближайшее время: ${ weather.description }, ${ temp } ${ getUnit(temp) }`
+    const formattedWeather = `Погода в ближайшее время: ${ weather.description || '' } ${ temp } ${ getUnit(temp) }`
 
     return formattedWeather
 
