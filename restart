@@ -1,4 +1,3 @@
 #!/bin/sh
-sudo kill -15 $(cat pid) 2>/dev/null
-node . &
-echo $! > pid
+forever_tg_bot_id=$(./get_forever_pid)
+cd ~/services/tg-bot/ && git pull && forever restart $forever_tg_bot_id

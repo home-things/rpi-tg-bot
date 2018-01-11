@@ -6,10 +6,11 @@
   "scripts": {
     "watch": "npm-watch",
     "restart": "./restart",
+    "start": "./start",
     "test": "./test.sh && ava"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "cron": "^1.2.1",
     "cyrillic-inflector": "^1.1.0",

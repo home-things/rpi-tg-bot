@@ -1,0 +1,2 @@
+#!/bin/sh
+forever list | grep tg-bot | cut -d' ' -f6
