@@ -529,7 +529,12 @@ async function openYoutubeLinkRpi3(link) {
   } catch (e) { // in case kodi does not running
     console.error(e)
     await openRpi3('kodi', { isX11: true, isResident: true })
-    setTimeout(open, 5000)
+    return new Promise(async (res) => {
+      setTimeout(async () => {
+        await open()
+        res()
+      }, 10000)
+    })
   }
 }
 
