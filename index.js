@@ -524,6 +524,7 @@ function openVideoLinkRpi3(link) {
 async function openYoutubeLinkRpi3(link) {
   const open = () => openRpi3(`~/bin/kodi-cli -y "${ link }"`)
   try {
+    await openRpi3('[[ "$(ps aux | grep kodi | grep -v grep)" ]] || (echo "no kodi"; exit 1)')
     return await open()
   } catch (e) { // in case kodi does not running
     console.error(e)
