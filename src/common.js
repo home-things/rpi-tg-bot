@@ -93,7 +93,7 @@ const getIntro = (() => {
   return () => getIntro_() || ''
 })()
 
-function openRpi3(cmd, { isX11, isResident }) {
+function openRpi3(cmd, { isX11, isResident } = {}) {
   return exec(`ssh pi@rpi3 '${ isX11 ? 'DISPLAY=:0.0 ' : '' } ${ isResident ? 'screen -d -m ' : '' } ${ cmd.replace(/'/g, '\'') }'`)
 }
 
