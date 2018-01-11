@@ -505,8 +505,7 @@ async function openPictureRpi3(link, name) {
 
   await exec(`wget "${ link }" -O "${ tmpFilePath }"`);
   await exec(`scp "${ tmpFilePath }" "pi@rpi3:${ targetFilePath }"`)
-  console.log('wtf', 'tmpFileName', tmpFileName, 'tmpFilePath', tmpFilePath, 'targetFilePath', targetFilePath)
-  setTimeout(()=>openRpi3(`gpicview "${ targetFilePath }"`, { isX11: true, isResident: true }), 2000) // Cannot avoid window closing waiting
+  openRpi3(`gpicview ${ targetFilePath }`, { isX11: true, isResident: true })
 }
 
 function openLinkRpi3(link) {
