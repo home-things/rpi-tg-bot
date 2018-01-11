@@ -1,2 +1,3 @@
 #!/bin/sh
+PATH=$PATH:~/n/bin/
 BOT_TOKEN=$(cat $HOME/.config/tg-bot.json | jq -r .BOT_TOKEN) forever start /home/pi/services/tg-bot/index.js

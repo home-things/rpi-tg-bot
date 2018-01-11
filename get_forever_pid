@@ -1,2 +1,3 @@
 #!/bin/sh
+PATH=$PATH:~/n/bin/
 forever list | grep tg-bot | cut -d' ' -f6

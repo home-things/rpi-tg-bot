@@ -1,3 +1,4 @@
 #!/bin/sh
+PATH=$PATH:~/n/bin/
 forever_tg_bot_id=$($(dirname $0)/get_forever_pid)
 cd ~/services/tg-bot/ && git pull && forever restart $forever_tg_bot_id
