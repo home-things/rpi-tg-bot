@@ -509,6 +509,10 @@ async function openPictureRpi3(link, name) {
 }
 
 function openLinkRpi3(link) {
+  if (link.includes('youtube') || link.includes('youtu.be')) {
+    return openYoutubeLinkRpi3(link);
+  }
+
   return openRpi3(`chromium-browser "${ link }"`, { isX11: true, isResident: true })
 }
 
@@ -517,7 +521,7 @@ function openVideoLinkRpi3(link) {
 }
 
 function openYoutubeLinkRpi3(link) {
-  // body...
+  return openRpi3(`kodi-cli -y ${ link }`)
 }
 
 async function playAudioLink(link) {

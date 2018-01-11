@@ -114,7 +114,7 @@ module.exports = {
   exec,
   throttle, debounce,
   inflect,
-  randFromList, randFromList,
+  randFromList, randRange,
   open,
   parse,
   decode,
@@ -126,4 +126,5 @@ module.exports = {
   getOkIcon,
   getIntro,
   openRpi3,
+  isDefined,
 }
