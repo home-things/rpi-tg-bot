@@ -521,13 +521,14 @@ function openVideoLinkRpi3(link) {
   // body...
 }
 
-function openYoutubeLinkRpi3(link) {
+async function openYoutubeLinkRpi3(link) {
   const open = () => openRpi3(`~/bin/kodi-cli -y "${ link }"`)
   try {
-    return open()
+    return await open()
   } catch (e) { // in case kodi does not running
-    openRpi3('kodi', { isX11: true, isResident: true })
-    return open()
+    console.error(e)
+    await openRpi3('kodi', { isX11: true, isResident: true })
+    return await open()
   }
 }
 
