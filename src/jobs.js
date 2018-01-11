@@ -39,7 +39,7 @@ module.exports = ({ commands }) => {
   cron('00 28 09 *   *   *  ', () => commands.runSys('weather', 'forecast'))
   cron('00 06 12 *   *   *  ', () => commands.runSys('weather', 'forecast'))
 
-  cron('00 00 09 *   *   *  ', () => setTimeout(() => commands.runSys('jokes', 'joke'), randRange(HOUR, 8 * HOUR)))
+  cron('00 00 09 *   *   *  ', () => Math.random() > .5 && setTimeout(() => commands.runSys('jokes', 'joke'), randRange(HOUR, 8 * HOUR)))
 
   // cron('00 00 14 *   *   mon', () => commands.runSys('delivery', 'water')) // TODO: sync with vacancy schedule
 
