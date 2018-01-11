@@ -1,0 +1,3 @@
+#!/bin/sh
+PATH=$PATH:~/n/bin/
+tailf /home/pi/.forever/$($(dirname $0)/get_forever_pid).log
