@@ -503,13 +503,22 @@ async function openPictureRpi3(link, name) {
   const tmpFilePath = `/tmp/${ tmpFileName }`;
   const targetFilePath = `~/Downloads/${ tmpFileName }`;
 
-  await exec(`wget -O "${ tmpFilePath }" "${ link }"`);
+  await exec(`wget "${ link }" -O "${ tmpFilePath }"`);
   await exec(`scp "${ tmpFilePath }" "pi@rpi3:${ targetFilePath }"`)
-  openRpi3(`gpicview "${ targetFilePath }" &`, 'x11') // Cannot avoid window closing waiting
+  console.log('wtf', 'tmpFileName', tmpFileName, 'tmpFilePath', tmpFilePath, 'targetFilePath', targetFilePath)
+  openRpi3(`gpicview "${ targetFilePath }"`, { isX11: true, isResident: true }) // Cannot avoid window closing waiting
 }
 
 function openLinkRpi3(link) {
-  return openRpi3(`chromium-browser "${ link }"`, 'x11')
+  return openRpi3(`chromium-browser "${ link }"`, { isX11: true, isResident: true })
+}
+
+function openVideoLinkRpi3(link) {
+  // body...
+}
+
+function openYoutubeLinkRpi3(link) {
+  // body...
 }
 
 async function playAudioLink(link) {
