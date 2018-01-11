@@ -522,7 +522,13 @@ function openVideoLinkRpi3(link) {
 }
 
 function openYoutubeLinkRpi3(link) {
-  return openRpi3(`kodi-cli -y ${ link }`)
+  const open = () => openRpi3(`~/bin/kodi-cli -y "${ link }"`)
+  try {
+    return open()
+  } catch (e) { // in case kodi does not running
+    openRpi3('kodi', { isX11: true, isResident: true })
+    return open()
+  }
 }
 
 async function playAudioLink(link) {
