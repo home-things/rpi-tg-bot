@@ -510,6 +510,7 @@ async function openPictureRpi3(link, name) {
 
 function openLinkRpi3(link) {
   if (link.includes('youtube') || link.includes('youtu.be')) {
+    console.log('youtube link', link)
     return openYoutubeLinkRpi3(link);
   }
 
