@@ -533,7 +533,7 @@ async function openYoutubeLinkRpi3(link) {
       setTimeout(async () => {
         await open()
         res()
-      }, 10000)
+      }, 15000)
     })
   }
 }
