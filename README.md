@@ -6,7 +6,8 @@
 | ![homemates presense](https://user-images.githubusercontent.com/6201068/28362747-53446658-6c86-11e7-9c1a-eb934ae44231.png) **homemates presense** | ![voice over](https://user-images.githubusercontent.com/6201068/28362755-59af9bac-6c86-11e7-9fa1-921e5f025de2.png) **voice over** |
 | ![music & volume](https://user-images.githubusercontent.com/6201068/28362760-5e361d9a-6c86-11e7-887a-0c4b2a675e09.png) **music & volume** | ![light](https://user-images.githubusercontent.com/6201068/28362781-6d89c648-6c86-11e7-847d-bc4c5be0fac9.png) **light** |
 | ![screen shot 2017-07-19 at 13 26 46](https://user-images.githubusercontent.com/6201068/28362820-a6ed78b2-6c86-11e7-8c66-f4a5aa143325.png) | |
-| | ![alfred](https://user-images.githubusercontent.com/6201068/28365373-fc7a4a8a-6c90-11e7-9d79-8b1775fa2f3d.jpg) **macos alfred** |
+| <img alt="homekit" src="https://user-images.githubusercontent.com/6201068/34981829-c515cc6a-fab9-11e7-8af9-8354ce0e212f.jpg" width="80%" /> | ![alfred](https://user-images.githubusercontent.com/6201068/28365373-fc7a4a8a-6c90-11e7-9d79-8b1775fa2f3d.jpg) **macos alfred** |
+
 
 | | | |
 | --- | --- | --- |
@@ -19,7 +20,7 @@
 * Sound system (I use external rpi sound card *[HIFIBERRY DAC+](https://www.hifiberry.com/shop/boards/hifiberry-dacplus-phone/)* and usual amp+speakers system *Edifier R980T* and second linked sound system in another room)
 
 ## Getting started
-*guide is not complete stil 🚧 work in progress…*
+*guide is not complete still 🚧 work in progress…*
 *todo: create installer*
 
 ```sh
@@ -28,7 +29,7 @@
 
 # install dotfiles
 cd && git clone git@github.com:a-x-/.files.git dotfiles
-./installer.sh # It did not tested on raspbian stil
+./installer.sh # It did not tested on raspbian still
 
 # install bins
 mkdir ~/bin && cd ~/bin
@@ -68,6 +69,7 @@ BOT_TOKEN=$(cat ~/.config/tg-bot.json | jq -r .BOT_TOKEN) forever start ~/servic
 * [ ] https://github.com/vysheng/tg.git — telegram cli
   * [installation](https://gist.github.com/a-x-/2530f94f838f7fc910563786269ebe03)
 * [ ] [bash scripts]: https://github.com/a-x-/rpi-bin
+* [ ] services
 
 #### to code
 * [ ] ! mini-bank
