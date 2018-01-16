@@ -26,22 +26,21 @@ module.exports = ({ commands }) => {
 
   //    ss mm hh dom mon dow
   cron('00 00  1 *   *   *  ', () => commands.runSys('light', 'off'))
-  cron('00 30  9 *   *   *  ', () => commands.runSys('light', 'on'))
-  cron('00 10 12 *   *   *  ', () => commands.runSys('light', 'off'))
+  cron('00 00 12 *   *   *  ', () => commands.runSys('light', 'on'))
+  cron('00 10 14 *   *   *  ', () => commands.runSys('light', 'off'))
 
-  cron('00 30 09 *   *   *  ', () => commands.runSys('vol', 'upTo',  80))
-  cron('00 00 10 *   *   *  ', () => commands.runSys('vol', 'upTo',  90))
-  cron('00 30 10 *   *   *  ', () => commands.runSys('vol', 'upTo', 100))
-  cron('00 00 23 *   *   *  ', () => commands.runSys('vol', 'downTo', 90))
-  cron('00 00 01 *   *   *  ', () => commands.runSys('vol', 'downTo', 80))
-  cron('00 00 02 *   *   *  ', () => commands.runSys('vol', 'downTo', 70))
+  cron('00 30 10 *   *   *  ', () => commands.runSys('vol', 'upTo', 70))
+  cron('00 30 12 *   *   *  ', () => commands.runSys('vol', 'upTo', 80))
+  cron('00 30 13 *   *   *  ', () => commands.runSys('vol', 'upTo', 90))
+  cron('00 00 23 *   *   *  ', () => commands.runSys('vol', 'downTo', 80))
+  cron('00 00 01 *   *   *  ', () => commands.runSys('vol', 'downTo', 70))
+  cron('00 00 02 *   *   *  ', () => commands.runSys('vol', 'downTo', 60))
 
   cron('00 28 09 *   *   *  ', () => commands.runSys('weather', 'forecast'))
-  cron('00 06 12 *   *   *  ', () => commands.runSys('weather', 'forecast'))
 
   cron('00 00 09 *   *   *  ', () => Math.random() > .5 && setTimeout(() => commands.runSys('jokes', 'joke'), randRange(HOUR, 8 * HOUR)))
 
-  // cron('00 00 14 *   *   mon', () => commands.runSys('delivery', 'water')) // TODO: sync with vacancy schedule
+  cron('00 00 14 *   *   mon', () => commands.runSys('delivery', 'water')) // TODO: sync with vacancy schedule
 
-  // cron('00 00 10 *   *   *  ', () => commands.runSys('music', 'podcast')) // while I'm out
+  cron('00 00 12 *   *   *  ', () => commands.runSys('music', 'podcast')) // TODO: sync with presense
 }
