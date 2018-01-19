@@ -234,6 +234,10 @@ app.hears(/^\+\+$/, (ctx) => {
  misc
 */
 
+app.hears(/\b(wi-fi|wifi|lan|router|роутер)\b/i, (ctx) => {
+  ctx.reply('Нате вам: https://docs.google.com/document/d/1eXEPilIdV6Bxgbqi3l__uC04goAzYPhfVD-rz1Ixrv4/edit#')
+})
+
 app.hears(/^(?:(?:какая\s+)?погода|чт?о\s+(там\s+)?с\s+погодой\??|чт?о\s+обещают\??|чт?о\s+с\s+погодой\??|(?:(?:(?:say|get|read)\s+)?(?:a\s+)?weather)|с погодой чт?о)/i, (ctx) => {
   commands.run('weather', 'forecast', ctx)
 })
