@@ -57,6 +57,7 @@ npm run watch-logs
 ```
 
 ## Roadmap
+[draft todos](https://github.com/a-x-/tg-rpi-smart-home-bot/wiki/vigvam-bot-todo-DRAFT)
 
 #### architecture and refuctoring
 * tests
@@ -117,7 +118,7 @@ npm run watch-logs
 * [ ] presense sensors
 * [ ] external light intensity (LUX) sensors
 * [ ] advanced LEDs
-  - dimmed fine mixed triple stripes 2700K, 4200K, 6400K
+  - dimmed fine mixed triple stripes [2700K, 4200K, 6400K](https://user-images.githubusercontent.com/6201068/35187670-8f2279c8-fe38-11e7-9e22-234ede179ef3.png)
   - ceiling panels
 
 
