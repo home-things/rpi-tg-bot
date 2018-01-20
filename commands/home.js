@@ -29,7 +29,7 @@ async function format (homemates) {
 module.exports.format = format
 
 async function whoAtHomeRequest () {
-  const stdout = await exec('who-at-home2')
+  const stdout = await exec('who-at-home3')
   const j = JSON.parse(stdout)
   console.log('whoAtHome info', stdout, j)
   return j
