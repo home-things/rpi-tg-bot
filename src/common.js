@@ -88,7 +88,7 @@ function getOkIcon() {
 
 const getIntro = (() => {
   const getIntro_ = debounce(() => {
-    return randFromList(['ааааа', 'вигв+аме', 'кар+оч', 'сл+ушайте', 'эт с+амое']) + ', ...  ... — '
+    return randFromList(['вигв+аме', 'кар+оч', 'сл+ушайте', 'эт с+амое']) + ', ...  ... — '
   }, config && config.commands.list.voice.list.say.intro_delay * 1000, true)
   return () => getIntro_() || ''
 })()
