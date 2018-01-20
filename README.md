@@ -26,9 +26,9 @@
 - 🔈🎵 [snapcast] — Synchronous multi-room audio player (rpi self sourced music)
 - 📱💡 [HAP-NodeJS] — nodejs homekit server (siri: `turn light on`)
 - ⏰💨 @a-x- former [cron jobs] — download & play podcasts, random jokes, sound volume, light scenarios, etc.
-- 🖲💡 [@a-x-/Alfred.app light control workflow](https://yadi.sk/d/lGhNefTz3RdZcD); look the screenshot above; [read more about Alfred](https://www.alfredapp.com)
-* 🎵💨 [@a-x-/megapolist-podcast-crawler] — any podcast crawler & player
-* 💡🌐 [@a-x-/stupid-light-server] — stupid light control http-server
+- 🖲💡 @a-x-/[Alfred.app light control workflow](https://yadi.sk/d/lGhNefTz3RdZcD); look the screenshot above; [read more about Alfred](https://www.alfredapp.com)
+* 🎵💨 @a-x-/[megapolist-podcast-crawler] — any podcast crawler & player
+* 💡🌐 @a-x-/[stupid-light-server] — stupid light control http-server
 * 💬⚙️ [tg] — telegram cli
 
 
@@ -59,8 +59,11 @@ npm run watch-logs
 ## Roadmap
 
 #### architecture and refuctoring
-* [x] add some tests
-* [ ] increase test coverage
+* tests
+   * [x] add some tests
+   * [x] setup CI
+   * [ ] fix CI
+   * [ ] increase test coverage
 * [x] split into modules
 * [ ] create **Installer**
     * think about **Docker**
@@ -124,5 +127,8 @@ npm run watch-logs
 [snapcast]: https://github.com/badaix/snapcast
 [HAP-NodeJS]: https://github.com/a-x-/HAP-NodeJS
 [cron jobs]: https://github.com/a-x-/tg-rpi-smart-home-bot/blob/master/src/jobs.js
+[megapolist-podcast-crawler]: https://github.com/a-x-/megapolist-podcast-crawler
+[stupid-light-server]: https://github.com/a-x-/stupid-light-server
+[tg]: https://github.com/vysheng/tg.git
 
 
