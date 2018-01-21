@@ -25,7 +25,7 @@
 - 📱🎵 [shairport-sync] — nodejs airplay v1 server (syncronous multiroom music from iphone/mac)
 - 🔈🎵 [snapcast] — Synchronous multi-room audio player (rpi self sourced music)
 - 📱💡 [HAP-NodeJS] — nodejs homekit server (siri: `turn light on`)
-- ⏰💨 @a-x-'s [former cron jobs (in js now)] — download & play podcasts, random jokes, sound volume, light scenarios, etc.
+- ⏰💨 @a-x-'s [former cron jobs] — (in js now) download & play podcasts, random jokes, sound volume, light scenarios, etc.
 - 🖲💡 @a-x-'s [Alfred.app light control workflow](https://yadi.sk/d/lGhNefTz3RdZcD); look the screenshot above; [read more about Alfred](https://www.alfredapp.com)
 - 🎵💨 @a-x-/[megapolist-podcast-crawler] — any podcast crawler & player
 - 💡🌐 @a-x-/[stupid-light-server] — stupid light control http-server
@@ -132,7 +132,7 @@ npm run watch-logs
 [shairport-sync]: https://github.com/mikebrady/shairport-sync
 [snapcast]: https://github.com/badaix/snapcast
 [HAP-NodeJS]: https://github.com/a-x-/HAP-NodeJS
-[cron jobs]: https://github.com/a-x-/tg-rpi-smart-home-bot/blob/master/src/jobs.js
+[former cron jobs]: https://github.com/a-x-/tg-rpi-smart-home-bot/blob/master/src/jobs.js
 [megapolist-podcast-crawler]: https://github.com/a-x-/megapolist-podcast-crawler
 [stupid-light-server]: https://github.com/a-x-/stupid-light-server
 [tg]: https://github.com/vysheng/tg.git
