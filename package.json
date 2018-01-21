@@ -8,7 +8,9 @@
     "restart": "./restart",
     "start": "./start",
     "watch-logs": "./watch-logs",
-    "test": "./test.sh && ava"
+    "test": "./test.sh && npm run lint && ava",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix ."
   },
   "author": "",
   "license": "MIT",
@@ -32,6 +34,10 @@
     "restart": "*.js"
   },
   "devDependencies": {
-    "ava": "^0.21.0"
+    "ava": "^0.21.0",
+    "babel-eslint": "^8.0.2",
+    "eslint": "^4.10.0",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.8.0"
   }
 }

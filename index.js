@@ -2,7 +2,7 @@
 // vim: set ts=4
 
 const Telegraf = require('telegraf')
-const { Extra, Markup } = require('telegraf')
+const { /* Extra, */ Markup } = require('telegraf')
 const { spawn } = require('child_process')
 
 const {
@@ -28,102 +28,110 @@ const jobs = require('./src/jobs')
 
 const joker = require('./src/joker')()
 
-const { edit, del, typing, sendMsgDefaultChat, sendMsgStderrChat } = require('./src/tg-helpers')({ app, config })
+const {
+  // edit,
+  del,
+  typing,
+  sendMsgDefaultChat,
+  sendMsgStderrChat,
+} = require('./src/tg-helpers')({ app, config })
 
 const Commands = require('./src/commands')
 
-const homeCmd      = require('./commands/home')({ config })
-const lightCmd     = require('./commands/light')()
-const musicCmd     = require('./commands/music')()
-const torrentsCmd  = require('./commands/torrents')()
-const volCmd       = require('./commands/vol')()
-const weatherCmd   = require('./commands/weather')()
-const fixerCmd     = require('./commands/fixer')()
+const homeCmd = require('./commands/home')({ config })
+const lightCmd = require('./commands/light')()
+const musicCmd = require('./commands/music')()
+const torrentsCmd = require('./commands/torrents')()
+const volCmd = require('./commands/vol')()
+const weatherCmd = require('./commands/weather')()
+const fixerCmd = require('./commands/fixer')()
 
+// eslint-disable-next-line
 const cl = (...comments) => (fn) => (...args) => { const res = fn(...args); console.info(...comments, ': (', ...args, ') -->', res); return res; };
+
+/**
+ * speech & voice over
+ */
+
+// TODO: move to plugins
+let isVoiceVerboseMode = false
+// const _isIn1wordAnsExpecting = false
+// const isIn1wordAnsExpecting = () => {
+//   return _isIn1wordAnsExpecting ? (Date.now() - _isIn1wordAnsExpecting < 1000 * consts.ANS_EXP) : false
+// }
 
 //
 // commands declaration
 //
-
-const commands = {
-  run: (...args) => _commands.run(...args),
-  runSys: (...args) => _commands.runSys(...args),
+const commandsConfig = {
   last: Commands.lastCommand,
   list: {
     voice: {
-      'voice_over':       [null, () => { isVoiceVerboseMode = true }, 'I`ll say everything you post'],
-      'voice_over_stop':  [null, () => { isVoiceVerboseMode = false }, 'I`ll be quiet'],
-      'say':              ['long_wait_msg', (ctx, [text]) => say(text, ctx)],
+      voice_over:      [null, () => { isVoiceVerboseMode = true }, 'I`ll say everything you post'],
+      voice_over_stop: [null, () => { isVoiceVerboseMode = false }, 'I`ll be quiet'],
+      say:             ['long_wait_msg', (ctx, [text]) => say(text, ctx)],
     },
-    home: {
-      presense: ['long_wait_msg', async () => ({ resMsg: await homeCmd.format() })],
-    },
+    home:  { presense: ['long_wait_msg', async () => ({ resMsg: await homeCmd.format() })] },
     music: {
-      stop:   [null, () => musicCmd.stop(), 'ok, music stopped'],
-      pause:  [null, () => musicCmd.pause(), 'ok, music paused'],
-      resume: [null, () => musicCmd.resume(), 'ok, music resumed'],
-      play:   ['ok, I`ll try', (_, [link]) => musicCmd.play(link)],
-      podcast:() => ['long_wait_msg', spawn('music-podcast')],
+      stop:    [null, () => musicCmd.stop(), 'ok, music stopped'],
+      pause:   [null, () => musicCmd.pause(), 'ok, music paused'],
+      resume:  [null, () => musicCmd.resume(), 'ok, music resumed'],
+      play:    ['ok, I`ll try', (_, [link]) => musicCmd.play(link)],
+      podcast: () => ['long_wait_msg', spawn('music-podcast')],
     },
     vol: {
-      louder: [null, () => volCmd.delta(+10), 'ok, volume increased'],
-      quieter:[null, () => volCmd.delta(-10), 'ok, volume decreased'],
-      upTo:   [null, (_, [vol_]) => volCmd.upTo(vol_)],
-      downTo: [null, (_, [vol_]) => volCmd.downTo(vol_)],
-      get:    async () => ({ resMsg: await volCmd.get() }),
+      louder:  [null, () => volCmd.delta(+10), 'ok, volume increased'],
+      quieter: [null, () => volCmd.delta(-10), 'ok, volume decreased'],
+      upTo:    [null, (_, [vol_]) => volCmd.upTo(vol_)],
+      downTo:  [null, (_, [vol_]) => volCmd.downTo(vol_)],
+      get:     async () => ({ resMsg: await volCmd.get() }),
     },
     light: {
-      on: () => lightCmd.on(),
-      off: () => lightCmd.off(),
+      on:     () => lightCmd.on(),
+      off:    () => lightCmd.off(),
       status: async () => ({ resMsg: await lightCmd.status() ? '🌖 on' : '🌘 off' }),
     },
-    weather: {
-      forecast: ['long_wait_msg', (ctx) => weatherForecast(ctx)],
-    },
-    misc: {
-      print: (_, [text]) => sendMsgDefaultChat(text),
-    },
-    jokes: {
-      joke: async () => ({ resMsg: await joker.next() }),
+    weather: { forecast: ['long_wait_msg', (ctx) => weatherForecast(ctx)] },
+    misc:    { print: (_, [text]) => sendMsgDefaultChat(text) },
+    jokes:   {
+      joke:   async () => ({ resMsg: await joker.next() }),
       update: () => joker._loadNewPage(),
     },
-    fixes: {
-      airplay: () => fixerCmd.airplay(),
-    },
-		torrents: {
-			search: ['wait_msg', async (ctx, args) => {
-        const res = await searchTorrent(ctx, args.join(' ').trim())
-        if (res === false) {
-          return { resMsg: 'Ничего не нашлось :(' }
-        }
+    fixes:    { airplay: () => fixerCmd.airplay() },
+    torrents: {
+      search: ['wait_msg', async (ctx, args) => {
+        const res = await searchTorrent(ctx, args.join(' ').trim()) // responds with a buttons
+        if (res === false) return { resMsg: 'Ничего не нашлось :(' }
       }],
       download: ['start downloading…', (_, [id]) => exec(`download-rutracker ${ id }`)],
-      status: async ({ reply }) => ({ resMsg: await torrentsCmd.status() })
-		},
+      status:   async () => ({ resMsg: await torrentsCmd.status() }),
+    },
     fileReactions: {
       audio:   [null, (_, [link]) => playAudioLink(link), 'Музон в ваши уши'],
-      voice:          (_, [link]) => exec(`wget -O /tmp/tg-bot-voice.oga "${ link }"`) /*exec(`asr /tmp/tg-bot-voice.oga`)*/,
+      voice:   (_, [link]) => exec(`wget -O /tmp/tg-bot-voice.oga "${ link }"`) /* exec(`asr /tmp/tg-bot-voice.oga`) */,
       link:    [null, (_, [link]) => openLinkRpi3(link), 'Ссылка открыта на станции'],
       picture: [null, (_, [name, link]) => openPictureRpi3(link, name), 'Картинка открыта на станции'],
       torrent: [null, ({ reply }, [link]) => openTorrentRpi3({ link, reply }), 'Поставлено на закачку'],
     },
     delivery: {
-      water: () => exec('send-tg-msg @makemetired "воды б"')
+      water: () => exec('send-tg-msg @makemetired "воды б"'),
     },
     search: {
-      yandex: [null, (_, [query]) => openLinkRpi3('https://ya.ru/?q=' + encodeURIComponent(query)), 'Загуглено на станции'],
+      google: [null, (_, [query]) => google(query), 'Загуглено на станции'],
     },
   },
 }
 
-const _commands = Commands({
-  list: commands.list,
+const commands = Commands({
+  list: commandsConfig.list,
   getOkIcon,
   UserError,
   consts,
   homeCmd,
-  del, typing, sendMsgDefaultChat, sendMsgStderrChat,
+  del,
+  typing,
+  sendMsgDefaultChat,
+  sendMsgStderrChat,
 })
 
 //
@@ -133,6 +141,8 @@ const _commands = Commands({
 // TODO: use word2vel
 // TODO: use phrase examples instead of RegExps
 //
+
+/* eslint-disable max-len */
 
 /*
  voice
@@ -199,10 +209,10 @@ app.hears(/^\.\.$/, (ctx) => {
 app.hears(/^\|\|$/i, (ctx) => {
   commands.run('music', 'pause', ctx)
 })
-app.hears(/^\>\>$/i, (ctx) => {
+app.hears(/^>>$/i, (ctx) => {
   commands.run('music', 'resume', ctx)
 })
-app.hears(/^\>\>\s+(\w+)/i, (ctx) => {
+app.hears(/^>>\s+(\w+)/i, (ctx) => {
   commands.run('music', 'play', ctx)
 })
 
@@ -255,11 +265,11 @@ app.hears(/fix\s+airplay/i, (ctx) => {
 })
 
 app.hears(/(?:(?:find|search|look up) (?:torrent|rutracker|serial|film)|(?:поищи|ищи|найди|искать|ищи) (?:торрент|на рутрекере|на rutracker|фильм|сериал))(.+)/i, (ctx) => {
-	commands.run('torrents', 'search', ctx)
+  commands.run('torrents', 'search', ctx)
 })
 
 app.hears(/(?:(?:status |get |check )?(?:torrent|rutracker|serial|film)s?|(?:проверь|чт?о (там )?с|как там|статус) (?:торрент(ы|ами)?|рутрекер(ом|а)?|на rutracker|фильм(ы|ами)?|сериал(ы|ами)?|закачк(а|и|ами)))|скачалось\?|торренты/i, (ctx) => {
-	commands.run('torrents', 'status', ctx)
+  commands.run('torrents', 'status', ctx)
 })
 
 app.hears(/([^ ]+\.torrent)/, (ctx) => {
@@ -267,7 +277,7 @@ app.hears(/([^ ]+\.torrent)/, (ctx) => {
 })
 
 app.hears(/([^ ]+\.(jpg|png))/, (ctx) => {
-  commands.run('fileReactions', 'picture', ctx, 'from-chat-link' + new Date().getTime())
+  commands.run('fileReactions', 'picture', ctx, `from-chat-link${ new Date().getTime() }`)
 })
 
 app.hears(/([^ ]+\.mp3)/, (ctx) => {
@@ -279,15 +289,17 @@ app.hears(/(https?:[^ ]+)/, (ctx) => {
 })
 
 app.hears(/^(?:google|yandex|search|загугли|найди)\s+(.+)/i, (ctx) => {
-  commands.run('search', 'yandex', ctx)
+  commands.run('search', 'google', ctx)
 })
 
 
 app.on('audio', async (ctx) => {
-	const link = await app.telegram.getFileLink(ctx.message.audio.file_id)
+  const link = await app.telegram.getFileLink(ctx.message.audio.file_id)
 
   commands.run('fileReactions', 'audio', ctx, link)
 })
+/* eslint-enable max-len */
+
 
 // torrent
 app.on('document', async (ctx) => {
@@ -298,18 +310,18 @@ app.on('document', async (ctx) => {
 })
 
 app.on('photo', async (ctx) => {
-	const data = ctx.message.photo && ctx.message.photo[ctx.message.photo.length - 1]
-	if (!data) return
-	const imageLink = await app.telegram.getFileLink(data.file_id)
+  const data = ctx.message.photo && ctx.message.photo[ctx.message.photo.length - 1]
+  if (!data) return
+  const imageLink = await app.telegram.getFileLink(data.file_id)
 
   commands.run('fileReactions', 'picture', ctx, [data.file_id, imageLink])
 })
 
 app.on('voice', async (ctx) => {
-	if (!ctx.message.voice) return
-	const voiceLink = await app.telegram.getFileLink(ctx.message.voice.file_id)
+  if (!ctx.message.voice) return
+  const voiceLink = await app.telegram.getFileLink(ctx.message.voice.file_id)
 
-	commands.run('fileReactions', 'voice', ctx, voiceLink)
+  commands.run('fileReactions', 'voice', ctx, voiceLink)
 })
 
 
@@ -317,51 +329,53 @@ app.on('voice', async (ctx) => {
  /commands
 */
 
-const cmd = fn => ctx => {
+const withArgs = fn => ctx => {
   const args = ctx.update.message.text.split(/\s+/).slice(1).join(' ')
   fn(ctx, args)
 }
+const call = withArgs
 
-//app.on('inline_query', (props) => {
+// app.on('inline_query', (props) => {
 //  const { inlineQuery } = props
 //  console.log('aa?', props)
 //  //props.replyWithMarkdown('Hey there!')
 //  //answerInputTextMessageContent([{message_text:'Hey there!'}])
-//})
+// })
 
-app.command('start', (props) => {
-  const { from, reply } = props
-  console.log('start', from, props)
-  return reply('Welcome!')
-})
+// app.command('start', (props) => {
+//   const { from, reply } = props
+//   console.log('start', from, props)
+//   return reply('Welcome!')
+// })
 
-app.command('voice_over', cmd((ctx, [cmd]) => {
+// voice over
+app.command('voice_over', call((ctx, [cmd]) => {
   if (['off', 'stop'].includes(cmd)) commands.run('voice', 'voice_over_stop', ctx)
   commands.run('voice', 'voice_over', ctx)
 }))
-
-app.command('voice_over_stop', cmd((ctx) => {
+app.command('voice_over_stop', call((ctx) => {
   commands.run('voice', 'voice_over_stop', ctx)
 }))
 
-app.command('say', cmd((ctx, args) => commands.run('voice', 'say', ctx, args)))
-
-app.command('vol', cmd((ctx, [cmd]) => commands.run('vol', cmd, ctx)))
-app.command('louder', cmd((ctx, args) => commands.run('vol', 'louder', ctx)))
-app.command('quieter', cmd((ctx, args) => commands.run('vol', 'quieter', ctx)))
-
-app.command('music', cmd((ctx, [cmd]) => commands.run('music', cmd, ctx)))
-app.command('pause', cmd((ctx, args) => commands.run('music', 'pause', ctx)))
-app.command('resume', cmd((ctx, args) => commands.run('music', 'resume', ctx)))
-app.command('stop', cmd((ctx, args) => commands.run('music', 'stop', ctx)))
-
-app.command('home', cmd((ctx, args) => commands.run('home', 'presense', ctx)))
-
-app.command('light', cmd((ctx, args) => commands.run('light', args, ctx)))
-
-app.command('weath', cmd((ctx, args) => commands.run('weather', 'forecast', ctx)))
-
-app.command('joke', cmd((ctx, args) => commands.run('jokes', 'joke', ctx)))
+// voice
+app.command('say', call((ctx, args) => commands.run('voice', 'say', ctx, args)))
+// volume
+app.command('vol', call((ctx, [cmd]) => commands.run('vol', cmd, ctx)))
+app.command('louder', call((ctx) => commands.run('vol', 'louder', ctx)))
+app.command('quieter', call((ctx) => commands.run('vol', 'quieter', ctx)))
+// music
+app.command('music', call((ctx, [cmd]) => commands.run('music', cmd, ctx)))
+app.command('pause', call((ctx) => commands.run('music', 'pause', ctx)))
+app.command('resume', call((ctx) => commands.run('music', 'resume', ctx)))
+app.command('stop', call((ctx) => commands.run('music', 'stop', ctx)))
+// home
+app.command('home', call((ctx) => commands.run('home', 'presense', ctx)))
+// light
+app.command('light', call((ctx, args) => commands.run('light', args, ctx)))
+// weather
+app.command('weath', call((ctx) => commands.run('weather', 'forecast', ctx)))
+// joker
+app.command('joke', call((ctx) => commands.run('jokes', 'joke', ctx)))
 
 /*
  universal
@@ -435,11 +449,11 @@ app.hears(/./, (ctx) => {
 })
 
 app.action(/.+/, (ctx) => {
-	let m
-	if (m = ctx.match && ctx.match[0].match(/^torrent download (\d+)/)) {
-    commands.run('torrents', 'download', ctx, [m[1]])
-	}
-  return ctx.answerCallbackQuery(`Oh, ${ctx.match[0]}! Great choise`)
+  const match = ctx.match && ctx.match[0].match(/^torrent download (\d+)/)
+  if (match) {
+    commands.run('torrents', 'download', ctx, [match[1]])
+  }
+  return ctx.answerCallbackQuery(`Oh, ${ ctx.match[0] }! Great choise`)
 })
 
 //
@@ -455,8 +469,9 @@ async function searchTorrent (ctx, query) {
   const list = await torrentsCmd.search(query)
   if (!list || !list.length) return false
   list.forEach(torrent => {
-    ctx.replyWithHTML(torrentsCmd.printable(torrent),
-      Markup.inlineKeyboard([Markup.callbackButton('Download', `torrent download ${ torrent.id }`)]).extra()
+    ctx.replyWithHTML(
+      torrentsCmd.printable(torrent),
+      Markup.inlineKeyboard([Markup.callbackButton('Download', `torrent download ${ torrent.id }`)]).extra(),
     )
   })
 }
@@ -467,24 +482,13 @@ async function weatherForecast (ctx) {
   return { resMsg: formattedWeather }
 }
 
-/**
- * speech & voice over
- */
-
-// TODO: move to plugins
-let isVoiceVerboseMode = false
-let _isIn1wordAnsExpecting = false
-const isIn1wordAnsExpecting = () => {
-  return _isIn1wordAnsExpecting ? (Date.now() - _isIn1wordAnsExpecting < 1000 * consts.ANS_EXP) : false
-}
-
 // TODO: move to commands
 async function say (text, ctx, isQuiet, noIntro) {
-  if (!text) { console.log('тут и говорить нечего'); return; }
-  console.log(">>", text.trim().replace(/\n/g, ' '))
-  const stdout = await exec(`tts "${noIntro ? '' : getIntro()}, ${text.replace(/\n/g, ' ')}"`)
-  console.log('say', stdout)
-  isQuiet || ctx.reply('я всё сказал')
+  if (!text) { console.info('тут и говорить нечего'); return }
+  console.info('>>', text.trim().replace(/\n/g, ' '))
+  const stdout = await exec(`tts "${ noIntro ? '' : getIntro() }, ${ text.replace(/\n/g, ' ') }"`)
+  console.info('say stdout', stdout)
+  if (!isQuiet) ctx.reply('я всё сказал')
 }
 
 
@@ -493,7 +497,7 @@ async function say (text, ctx, isQuiet, noIntro) {
  * TODO: move to commands
  */
 
-async function openTorrentRpi3({ link, reply }) {
+async function openTorrentRpi3 ({ link, reply }) {
   const tmpFile = '/tmp/tg-bot.torrent'
 
   await exec(`wget -O ${ tmpFile } "${ link }"`)
@@ -502,30 +506,30 @@ async function openTorrentRpi3({ link, reply }) {
   setTimeout(async () => await notifyWhenTorrentWillBeDone({ reply }), 3000)
 }
 
-async function openPictureRpi3(link, name) {
-  const tmpFileName = `tg-bot.${ name }.jpg`;
-  const tmpFilePath = `/tmp/${ tmpFileName }`;
-  const targetFilePath = `~/Downloads/${ tmpFileName }`;
+async function openPictureRpi3 (link, name) {
+  const tmpFileName = `tg-bot.${ name }.jpg`
+  const tmpFilePath = `/tmp/${ tmpFileName }`
+  const targetFilePath = `~/Downloads/${ tmpFileName }`
 
-  await exec(`wget "${ link }" -O "${ tmpFilePath }"`);
+  await exec(`wget "${ link }" -O "${ tmpFilePath }"`)
   await exec(`scp "${ tmpFilePath }" "pi@rpi3:${ targetFilePath }"`)
   openRpi3(`gpicview ${ targetFilePath }`, { isX11: true, isResident: true })
 }
 
-function openLinkRpi3(link) {
+function openLinkRpi3 (link) {
   if (link.includes('youtube') || link.includes('youtu.be')) {
-    console.log('youtube link', link)
-    return openYoutubeLinkRpi3(link);
+    console.info('youtube link', link)
+    return openYoutubeLinkRpi3(link)
   }
 
   return openRpi3(`chromium-browser "${ link }"`, { isX11: true, isResident: true })
 }
 
-function openVideoLinkRpi3(link) {
-  // body...
-}
+// function openVideoLinkRpi3 (link) {
+//   // body...
+// }
 
-async function openYoutubeLinkRpi3(link) {
+async function openYoutubeLinkRpi3 (link) {
   const open = () => openRpi3(`~/bin/kodi-cli -y "${ link }"`)
   try {
     await openRpi3('[[ "$(ps aux | grep kodi | grep -v grep)" ]] || (echo "no kodi"; exit 1)')
@@ -542,12 +546,16 @@ async function openYoutubeLinkRpi3(link) {
   }
 }
 
-async function playAudioLink(link) {
+async function playAudioLink (link) {
   const ext = link.match(/\w+$/)[0]
   const filePath = `/tmp/tg-bot-audio.${ ext }`
 
   await exec(`wget -O ${ filePath } "${ link }"`)
   await musicCmd.play(filePath)
+}
+
+async function google (query) {
+  return await openLinkRpi3(`https://ya.ru/?q=${ encodeURIComponent(query) }`)
 }
 
 

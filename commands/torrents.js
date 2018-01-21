@@ -1,16 +1,18 @@
 const bindAll = require('lodash.bindall')
-const { UserError, exec, openRpi3, unindent } = require('../src/common')
+const { exec, openRpi3, unindent } = require('../src/common')
 
 module.exports = () => bindAll({
   async search (query) {
     return JSON.parse(await exec(`search-rutracker ${ query }`)) || []
   },
 
-  printable (torrent) { return unindent`
+  printable (torrent) {
+    return unindent`
     📕 ${ torrent.category }.
     <b>${ torrent.size_h }</b>. seeds: <b>${ torrent.seeds }</b> / leechs: ${ torrent.leechs }
     ${ torrent.title } <b> # ${ torrent.id }</b>
-  `},
+  `
+  },
 
   download (id) {
     return exec(`download-rutracker ${ id }`)
@@ -27,7 +29,7 @@ module.exports = () => bindAll({
 
   async info () {
     const info = await openRpi3('deluge-console info -s Downloading --sort=time_added')
-    return info.replace(/^(ID|State|Seeds|Seed time|Tracker status|Size):.+\n/gm, "").trim()
+    return info.replace(/^(ID|State|Seeds|Seed time|Tracker status|Size):.+\n/gm, '').trim()
   },
 
   async awaitDownloaded () {

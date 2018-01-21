@@ -2,8 +2,9 @@ const config = getConfig()
 const consts = require('../consts')(config)
 const throttle = require('lodash.throttle')
 const debounce = require('just-debounce-it')
-const inflect = conf => val => require('cyrillic-inflector')(val, conf)
 const thrw = require('throw')
+
+const inflect = conf => val => require('cyrillic-inflector')(val, conf)
 
 const { util, pify } = (() => {
   const util = require('util') // eslint-disable-line
@@ -61,64 +62,80 @@ const unindent = (strings, ...values) =>
   weirdTag(strings, ...values).split(/\n/).map(s => s.trim()).join('\n')
 
 // TODO: combo
-const combo = (...variants) => {
+const combo = (...variants) => { // eslint-disable-line no-unused-vars
   throw new Error('not implemented yet')
 }
 
 class UserError extends Error {
-  constructor(message, origError) {
+  constructor (message, origError) {
     super(message)
 
     this.name = 'UserError'
-    this.uniqId =`${ + new Date() }.${ Math.floor(Math.random() * Math.pow(2, 16)) }`
+    this.uniqId = `${ +new Date() }.${ Math.floor(Math.random() * (2 ** 16)) }`
     if (origError) this.orig = origError
   }
 }
 
-function join(...args) {
+function join (...args) {
   return args
     .filter(p => p !== undefined && p !== null && (typeof p === 'string' ? p.length : true))
     .map(p => p instanceof Array ? join(...p) : p)
     .join('')
 }
 
-function getOkIcon() {
+function getOkIcon () {
   return randFromList(['✅', '👌', '🆗', '🤖👍', '👏', '🤘', '💪', '😺', '👻', '🙏', '✨'])
 }
 
 const getIntro = (() => {
   const getIntro_ = debounce(() => {
-    return randFromList(['вигв+аме', 'кар+оч', 'сл+ушайте', 'эт с+амое']) + ', ...  ... — '
+    return `${ randFromList(['вигв+аме', 'кар+оч', 'сл+ушайте', 'эт с+амое']) }, ...  ... — `
   }, config && config.commands.list.voice.list.say.intro_delay * 1000, true)
   return () => getIntro_() || ''
 })()
 
-function openRpi3(cmd, { isX11, isResident } = {}) {
-  return exec(`ssh pi@rpi3 '${ isX11 ? 'DISPLAY=:0.0 ' : '' } ${ isResident ? 'screen -d -m ' : '' } ${ cmd.replace(/'/g, '\'') }'`)
+function openRpi3 (cmd, { isX11, isResident } = {}) {
+  const x11 = isX11 ? 'DISPLAY=:0.0 ' : ''
+  const resident = isResident ? 'screen -d -m ' : ''
+  const cmd_ = cmd.replace(/'/g, '\'')
+  return exec(`ssh pi@rpi3 '${ x11 } ${ resident } ${ cmd_ }'`)
 }
 
-function getConfig() {
-  return typeof global.tgbotConfig !== 'undefined' ? global.tgbotConfig : (global.tgbotConfig = (() => {
-    try {
-      return require('../config')
-    } catch (e) {
-      console.warn('no config file', e)
-      return null
-    }
-  })());
+function getConfig () {
+  if (!global.tgbotConfig) {
+    global.tgbotConfig = (() => {
+      try {
+        return require('../config')
+      } catch (e) {
+        console.error('no config file', e)
+        return null
+      }
+    })()
+  }
+  return global.tgbotConfig
 }
 
 module.exports = {
-  token,
-  util, read, write,
+  // os utils
+  util,
+  read,
+  write,
   exec,
-  throttle, debounce,
+  // functions utils
+  throttle,
+  debounce,
+  // random
+  randFromList,
+  randRange,
+  // conf
+  config,
+  consts,
+  token, // tg-token
+  // misc
   inflect,
-  randFromList, randRange,
   open,
   parse,
   decode,
-	config, consts,
   unindent,
   combo,
   UserError,

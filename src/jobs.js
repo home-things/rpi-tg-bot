@@ -4,7 +4,7 @@ const { randRange } = require('./common')
 
 const cron = (...args) => new (require('cron').CronJob)(...args, null, 'Russia/Moscow')
 const HOUR = 1000 * 60 * 60
-const DAY = HOUR * 24
+const DAY = HOUR * 24 // eslint-disable-line no-unused-vars
 
 
 // const cronTasks = (strings) => {
@@ -23,7 +23,6 @@ const DAY = HOUR * 24
 // todo: alex presense ifttt signal => light schedule
 
 module.exports = ({ commands }) => {
-
   //    ss mm hh dom mon dow
   cron('00 00  1 *   *   *  ', () => commands.runSys('light', 'off'))
   cron('00 00 12 *   *   *  ', () => commands.runSys('light', 'on'))
@@ -38,9 +37,14 @@ module.exports = ({ commands }) => {
 
   cron('00 28 09 *   *   *  ', () => commands.runSys('weather', 'forecast'))
 
-  cron('00 00 09 *   *   *  ', () => Math.random() > .5 && setTimeout(() => commands.runSys('jokes', 'joke'), randRange(HOUR, 8 * HOUR)))
+  cron('00 00 09 *   *   *  ', () => randomize(() => commands.runSys('jokes', 'joke')))
 
   cron('00 00 14 *   *   mon', () => commands.runSys('delivery', 'water')) // TODO: sync with vacancy schedule
 
   cron('00 00 12 *   *   *  ', () => commands.runSys('music', 'podcast')) // TODO: sync with presense
+}
+
+function randomize (cb) {
+  if (Math.random() > .5) return
+  setTimeout(cb, randRange(HOUR, 8 * HOUR))
 }

@@ -1,13 +1,14 @@
 // TODO: use jest
 
 const test = require('ava')
-require('../src/common').exec = console.log
+require('../src/common').exec = console.log // eslint-disable-line no-console
 const volCmd = require('./vol')()
 const Vol = require('./vol')
 
 test.beforeEach(t => {
   // t.context._checkVolumeLimit = Vol.checkVolumeLimit; Vol.checkVolumeLimit = () => true
-  t.context._get = volCmd.get; volCmd.get = () => 80
+  t.context._get = volCmd.get // eslint-disable-line no-param-reassign
+  volCmd.get = () => 80
 })
 
 test.afterEach(t => {
@@ -24,13 +25,13 @@ test('isVolumeCorrect', t => {
 })
 
 test('checkVolumeIntent', t => {
-  t.true(Vol.checkVolumeIntent(90,  90 +10, 'up'))
-  t.true(Vol.checkVolumeIntent(90, 90 +11, 'up'))
-  t.false(Vol.checkVolumeIntent(90, 90 -10, 'up'))
+  t.true(Vol.checkVolumeIntent(90, 90 + 10, 'up'))
+  t.true(Vol.checkVolumeIntent(90, 90 + 11, 'up'))
+  t.false(Vol.checkVolumeIntent(90, 90 - 10, 'up'))
 
-  t.true(Vol.checkVolumeIntent(90,  90 -10, 'down'))
-  t.true(Vol.checkVolumeIntent(90, 90 -11, 'down'))
-  t.false(Vol.checkVolumeIntent(90, 90 +10, 'down'))
+  t.true(Vol.checkVolumeIntent(90, 90 - 10, 'down'))
+  t.true(Vol.checkVolumeIntent(90, 90 - 11, 'down'))
+  t.false(Vol.checkVolumeIntent(90, 90 + 10, 'down'))
 })
 
 test('set', async t => {
