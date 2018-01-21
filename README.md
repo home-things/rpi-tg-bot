@@ -25,11 +25,11 @@
 - 📱🎵 [shairport-sync] — nodejs airplay v1 server (syncronous multiroom music from iphone/mac)
 - 🔈🎵 [snapcast] — Synchronous multi-room audio player (rpi self sourced music)
 - 📱💡 [HAP-NodeJS] — nodejs homekit server (siri: `turn light on`)
-- ⏰💨 @a-x- former [cron jobs] — download & play podcasts, random jokes, sound volume, light scenarios, etc.
-- 🖲💡 @a-x-/[Alfred.app light control workflow](https://yadi.sk/d/lGhNefTz3RdZcD); look the screenshot above; [read more about Alfred](https://www.alfredapp.com)
-* 🎵💨 @a-x-/[megapolist-podcast-crawler] — any podcast crawler & player
-* 💡🌐 @a-x-/[stupid-light-server] — stupid light control http-server
-* 💬⚙️ [tg] — telegram cli
+- ⏰💨 @a-x-'s [former cron jobs (in js now)] — download & play podcasts, random jokes, sound volume, light scenarios, etc.
+- 🖲💡 @a-x-'s [Alfred.app light control workflow](https://yadi.sk/d/lGhNefTz3RdZcD); look the screenshot above; [read more about Alfred](https://www.alfredapp.com)
+- 🎵💨 @a-x-/[megapolist-podcast-crawler] — any podcast crawler & player
+- 💡🌐 @a-x-/[stupid-light-server] — stupid light control http-server
+- 💬⚙️ [tg] — telegram cli
 
 
 ## Architecture
@@ -72,8 +72,8 @@ npm run watch-logs
 * [ ] write or use some **Platform**
   * with plugins, signals, commands, jobs, machines, sensors, configs, state-management, etc.
   * **state and signals** (actions)
-    * universal rest api *signal* (action/event) adaptor
-    * programming state maschine transitions via `tg`
+    * universal rest/tg/in-app/app-api/sensor *signal* (action/event) adaptor
+    * programming finite state maschine transitions via `tg`
     * think about **redux**
   * platform example: http://hobbyquaker.github.io/ccu.io
 
@@ -84,7 +84,7 @@ npm run watch-logs
 * [ ] ! mini-bank
 * [ ] no-interactive actions debug_chat log
 * [ ] run on any machine abstraction layer (rpi2, rpi3)
-* [ ] **NLP** and rocket-science (natural lang processing) improve text command flexibility
+* [ ] *#rock-sci* **NLP** (natural lang processing) improve text command flexibility
   * [ ] `word2vec` for 1) command matching, 2) music search
   * [ ] `api.ai` for intent mining ()
   * [ ] repeat, undo, ask detaild commands
@@ -93,8 +93,10 @@ npm run watch-logs
 * [ ] transcribing voice messages, interpret commands
   * get tg audio -> `asr voice.ogg 'audio/ogg;codecs=opus'`
 * [ ] automatic problem diagnosis
+  * *#rock-sci* CBR case-based reasoning aka copy-pasete development aka stackoverflow/google development
 * [ ] VAD+mics
 * [ ] I18N
+* [ ] _fix_ HomeKit external data updating https://github.com/KhaosT/HAP-NodeJS/issues/497
 * [x] light control, scrpts
 * [x] volume control, scrpts
 * [x] sound control: play by url, pause/resume/stop, scrpts
@@ -102,7 +104,10 @@ npm run watch-logs
 * [x] basic weather
 * [x] weather
   * [ ] (with icons and smart recommendations)
-* [x] ACL (control rights)
+* AAA aka **Authorization**
+  * [x] telegram nicknames whitelist
+  * [ ] granular ACL
+  * [ ] auth command (add name, role, ifttt, mac/ip/hostname)
 * [x] `/commands` for usual cases
 * [x] basic presense control
 * [x] handle photos, voice-records, music, torrent-files and links
