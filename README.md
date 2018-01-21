@@ -138,12 +138,17 @@ npm run watch-logs
 
 ## Alternative solutions
 - [Gladys](https://github.com/GladysProject/Gladys)
-  - life-style selling promo description 
-  - community
-  - simple installation
-  - **NFC** scenarios
-  - sensors integration. [list](https://gladysproject.com/en/compatibilities/)
-  - ML, voice-activation, telegram. [read more](https://gladysproject.com/en/installation/talking-to-gladys/)
+  - pros
+    - life-style selling promo description 
+    - community
+    - simple installation
+    - **NFC** scenarios
+    - sensors integration. [list](https://gladysproject.com/en/compatibilities/)
+    - ML, voice-activation, telegram something. [read more](https://gladysproject.com/en/installation/talking-to-gladys/)
+  - cons
+    - frontend gui
+    - not a telegram first sitizen
+    - SQL
 
 
 [rpi-bins]: https://github.com/a-x-/rpi-bin
