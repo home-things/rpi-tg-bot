@@ -133,6 +133,8 @@ npm run watch-logs
 * [ ] advanced LEDs
   - dimmed fine mixed triple stripes [2700K, 4200K, 6400K](https://user-images.githubusercontent.com/6201068/35187670-8f2279c8-fe38-11e7-9e22-234ede179ef3.png)
   - ceiling panels
+  - Philips HUE lamps (itsnt my choise)
+  - Xiaomi smart lamps
 
 ## Alternative solutions
 - [Gladys](https://github.com/GladysProject/Gladys)
@@ -140,6 +142,8 @@ npm run watch-logs
   - community
   - simple installation
   - **NFC** scenarios
+  - sensors integration. [list](https://gladysproject.com/en/compatibilities/)
+  - ML, voice-activation, telegram. [read more](https://gladysproject.com/en/installation/talking-to-gladys/)
 
 
 [rpi-bins]: https://github.com/a-x-/rpi-bin
