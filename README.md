@@ -140,15 +140,18 @@ npm run watch-logs
 - [Gladys](https://github.com/GladysProject/Gladys)
   - pros
     - life-style selling promo description 
-    - community
+    - community, much plugins
     - simple installation
     - **NFC** scenarios
     - sensors integration. [list](https://gladysproject.com/en/compatibilities/)
     - ML, voice-activation, telegram something. [read more](https://gladysproject.com/en/installation/talking-to-gladys/)
+    - good ux/ui
   - cons
-    - frontend gui
+    - frontend gui centric 
     - not a telegram first sitizen
     - SQL
+    - everything is js?
+    - no homekit, airplay intergation? 
 
 
 [rpi-bins]: https://github.com/a-x-/rpi-bin
