@@ -102,6 +102,7 @@ npm run watch-logs
 * [ ] automatic problem diagnosis
   * *#rock-sci* CBR case-based reasoning aka copy-pasete development aka stackoverflow/google development
 * [ ] VAD+mics
+  * think about **amazon alexa** with its skills integration
 * [ ] I18N
 * [ ] _fix_ HomeKit external data updating https://github.com/KhaosT/HAP-NodeJS/issues/497
 * [x] light control, scrpts
@@ -137,6 +138,8 @@ npm run watch-logs
 - [Gladys](https://github.com/GladysProject/Gladys)
   - life-style selling promo description 
   - community
+  - simple installation
+  - **NFC** scenarios
 
 
 [rpi-bins]: https://github.com/a-x-/rpi-bin
