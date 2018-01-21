@@ -85,8 +85,10 @@ npm run watch-logs
 * [ ] no-interactive actions debug_chat log
 * [ ] run on any machine abstraction layer (rpi2, rpi3)
 * [ ] *#rock-sci* **NLP** (natural lang processing) improve text command flexibility
-  * [ ] `word2vec` for 1) command matching, 2) music search
-  * [ ] `api.ai` for intent mining ()
+  * [ ] `word2vec`, `levinshtain` for 1) command matching, 2) music search
+  * [ ] `api.ai` for intent mining
+  * [ ] `RandomForest` (that better than CatBoosk) for **ML** classification
+  * [ ] `xgboost` for simple general purpose ML
   * [ ] repeat, undo, ask detaild commands
   * [ ] learnings new commands synonyms (— do magic — ... — I say to you, bot! — wow, do you mean 'switch magic on'?)
 * [ ] ! reminders
