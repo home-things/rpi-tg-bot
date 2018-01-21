@@ -82,7 +82,7 @@ npm run watch-logs
 * ifttt integrations
   * [ ] home presense
 * [ ] ! mini-bank
-* [ ] _wip_ delivery club automation
+* [ ] _wip_ [delivery club automation](https://github.com/a-x-/delivery-club-api)
 * [ ] router integration (remote restart, lan dns mngmnt)
   * openwrt https://gist.github.com/boube/7a4ca061fd3f29d940ee
   * http://help-wifi.com/tp-link/nastrojka-routera-tp-link-v-rezhime-mosta-wds-soedinyaem-dva-routera-po-wi-fi/
