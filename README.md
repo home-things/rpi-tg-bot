@@ -137,8 +137,8 @@ npm run watch-logs
   - Xiaomi smart lamps
 
 ## Alternative solutions
-- [Gladys](https://github.com/GladysProject/Gladys)
-  - pros
+#### [Gladys](https://github.com/GladysProject/Gladys)
+- pros
     - life-style selling promo description 
     - community, much plugins
     - simple installation
@@ -146,14 +146,16 @@ npm run watch-logs
     - sensors integration. [list](https://gladysproject.com/en/compatibilities/)
     - ML, voice-activation, telegram something. [read more](https://gladysproject.com/en/installation/talking-to-gladys/)
     - good ux/ui
-  - cons
+- cons
     - frontend gui centric 
     - not a telegram first sitizen
     - SQL
     - everything is js?
     - no homekit, airplay intergation? 
 
-
+#### [home-assistant](https://github.com/home-assistant/home-assistant) (python3)
+- cons
+    - python
 [rpi-bins]: https://github.com/a-x-/rpi-bin
 [rpi-services]: https://github.com/a-x-/rpi-services
 [shairport-sync]: https://github.com/mikebrady/shairport-sync
