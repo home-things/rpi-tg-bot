@@ -118,6 +118,10 @@ npm run watch-logs
   * [ ] auth command (add name, role, ifttt, mac/ip/hostname)
 * [x] `/commands` for usual cases
 * [x] basic presense control
+  * [x] over wi-wi mac addr based
+  * [ ] ifttt geolocation webhooks
+  * [ ] presense/movement sensors
+  * [alternative solution I dislike](https://github.com/initialstate/pi-sensor-free-presence-detector/wiki/Part-2.-Your-Personal-Dashboard)
 * [x] handle photos, voice-records, music, torrent-files and links
 * [x] jokes
   * [x] jokes random schedule
