@@ -120,7 +120,9 @@ npm run watch-logs
 * [x] basic presense control
 * [x] handle photos, voice-records, music, torrent-files and links
 * [x] jokes
- * [x] jokes random schedule
+  * [x] jokes random schedule
+* [ ] Data sequences streams, data series db
+  * viewer: Initial State Platform
 
 #### todo: add hardware
 * [ ] light toggle button
