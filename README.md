@@ -63,7 +63,7 @@ npm run watch-logs
 * tests
    * [x] add some tests
    * [x] setup CI
-   * [ ] fix CI
+   * [ ] _fix_ CI
    * [ ] increase test coverage
 * [x] split into modules
 * [ ] create **Installer**
@@ -82,13 +82,18 @@ npm run watch-logs
 * ifttt integrations
   * [ ] home presense
 * [ ] ! mini-bank
+* [ ] _wip_ delivery club automation
+* [ ] router integration (remote restart, lan dns mngmnt)
+  * openwrt https://gist.github.com/boube/7a4ca061fd3f29d940ee
+  * http://help-wifi.com/tp-link/nastrojka-routera-tp-link-v-rezhime-mosta-wds-soedinyaem-dva-routera-po-wi-fi/
 * [ ] no-interactive actions debug_chat log
 * [ ] run on any machine abstraction layer (rpi2, rpi3)
 * [ ] *#rock-sci* **NLP** (natural lang processing) improve text command flexibility
-  * [ ] `word2vec`, `levinshtain` for 1) command matching, 2) music search
+  * [ ] [word2vec], `levinshtain` for 1) command matching, 2) music search
   * [ ] `api.ai` for intent mining
   * [ ] `RandomForest` (that better than CatBoosk) for **ML** classification
   * [ ] `xgboost` for simple general purpose ML
+  * _wip_ music genres pleer.net
   * [ ] repeat, undo, ask detaild commands
   * [ ] learnings new commands synonyms (— do magic — ... — I say to you, bot! — wow, do you mean 'switch magic on'?)
 * [ ] ! reminders
@@ -138,5 +143,5 @@ npm run watch-logs
 [megapolist-podcast-crawler]: https://github.com/a-x-/megapolist-podcast-crawler
 [stupid-light-server]: https://github.com/a-x-/stupid-light-server
 [tg]: https://github.com/vysheng/tg.git
-
+[word2vec]: https://github.com/Planeshifter/node-word2vec
 
