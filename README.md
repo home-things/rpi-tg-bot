@@ -65,6 +65,7 @@ npm run watch-logs
    * [x] setup CI
    * [ ] _fix_ CI
    * [ ] increase test coverage
+* [ ] более тесная интеграция с бота homekit
 * [x] split into modules
 * [ ] create **Installer**
     * think about **Docker**
@@ -162,6 +163,11 @@ npm run watch-logs
 #### [home-assistant](https://github.com/home-assistant/home-assistant) (python3)
 - cons
     - python
+
+
+
+
+
 [rpi-bins]: https://github.com/a-x-/rpi-bin
 [rpi-services]: https://github.com/a-x-/rpi-services
 [shairport-sync]: https://github.com/mikebrady/shairport-sync
