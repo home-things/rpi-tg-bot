@@ -66,6 +66,8 @@ npm run watch-logs
    * [ ] _fix_ CI
    * [ ] increase test coverage
 * [ ] более тесная интеграция с бота homekit
+  * [ ] volume control
+  * [ ] two-side mapping (sync everything instantly, pubsub)
 * [x] split into modules
 * [ ] create **Installer**
     * think about **Docker**
