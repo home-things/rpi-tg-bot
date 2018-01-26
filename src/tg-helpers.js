@@ -1,7 +1,7 @@
 module.exports = ({ app, config }) => ({
-  edit:               (repCtx, txt) => app.telegram.editMessageText(repCtx.chat.id, repCtx.message_id, null, txt),
-  del:                (repCtx) => app.telegram.deleteMessage(repCtx.chat.id, repCtx.message_id),
-  typing:             (ctx) => app.telegram.sendChatAction(ctx.chat.id, 'typing').catch(e => console.error('e', e)),
+  edit:               (repCtx, txt) => app.telegram.editMessageText(getChat(repCtx).id, repCtx.message_id, null, txt),
+  del:                (repCtx) => app.telegram.deleteMessage(getChat(repCtx).id, repCtx.message_id),
+  typing:             (ctx) => app.telegram.sendChatAction(getChat(ctx).id, 'typing').catch(e => console.error('e', e)),
   sendMsg:            (chatId, msg) => app.telegram.sendMessage(chatId, msg),
   sendMsgDefaultChat: (msg) => app.telegram.sendMessage(config.signals.sources.telegram.chats.default, msg),
   sendMsgStderrChat:  (msg) => {
@@ -9,3 +9,7 @@ module.exports = ({ app, config }) => ({
     app.telegram.sendMessage(config.signals.sources.telegram.chats.stderr, msg)
   },
 })
+
+function getChat(repCtx) {
+  return repCtx.chat || repCtx.from
+}
