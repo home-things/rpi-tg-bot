@@ -1,5 +1,5 @@
 const bindAll = require('lodash.bindall')
-const { randFromList, exec } = require('../src/common')
+const { randFromList, exec, reduceObjectsThroughArray } = require('../src/common')
 // const { getLightStatus } = require('./light')
 
 module.exports = ({ config }) => bindAll({
@@ -28,19 +28,22 @@ async function format (homemates) {
 }
 module.exports.format = format
 
-async function whoAtHomeRequest () {
-  const stdout = await exec('who-at-home3')
-  const j = JSON.parse(stdout)
-  return j
+async function whoAtHome3 () {
+  return JSON.parse(await exec('who-at-home3'))
 }
 
-async function whoAtHome () {
+async function whoAtHome2 () {
+  const request = async () => JSON.parse(await exec('who-at-home2'))
   try {
-    return await whoAtHomeRequest()
+    return await request()
   } catch (e) {
     console.error('whoAtHome error', e)
-    return await whoAtHomeRequest() // try once again
+    return await request() // try once again
   }
+}
+async function whoAtHome () {
+  const answers = await Promise.all([whoAtHome2(), whoAtHome3()])
+  return reduceObjectsThroughArray(answers, (res, val, key) => res[key] || val)
 }
 module.exports.whoAtHome = whoAtHome
 

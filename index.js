@@ -14,9 +14,8 @@ const {
   getOkIcon,
   getIntro,
   openRpi3,
+  setAsyncInterval,
 } = require('./src/common')
-
-require('dotenv').config() // load BOT_TOKE from .env file
 
 const app = new Telegraf(token)
 app.telegram.getMe().then((botInfo) => {
@@ -29,7 +28,7 @@ const jobs = require('./src/jobs')
 const joker = require('./src/joker')()
 
 const {
-  // edit,
+  edit,
   del,
   typing,
   sendMsgDefaultChat,
@@ -502,7 +501,19 @@ async function openTorrentRpi3 ({ link, reply }) {
 
   await exec(`wget -O ${ tmpFile } "${ link }"`)
   await exec(`scp ${ tmpFile } pi@rpi3:~/Downloads`)
-  setTimeout(async () => reply(await torrentsCmd.status()), 3000)
+
+  // Send torrents progress status
+  setTimeout(async () => {
+    const repCtx = reply(await torrentsCmd.status())
+
+    // update torrents progress status message every 5 second
+    const editNotify = async () => edit(repCtx, await torrentsCmd.status())
+    const cycle = setAsyncInterval(editNotify, 5000)
+    torrentsCmd.awaitDownloaded().then(cycle.stop())
+    setTimeout(() => cycle.stop(), 1000 * 60 * 60 * 1)
+  }, 3000)
+
+  // Notify when torrent downloaded
   setTimeout(async () => await notifyWhenTorrentWillBeDone({ reply }), 3000)
 }
 

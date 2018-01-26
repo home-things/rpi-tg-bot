@@ -50,7 +50,6 @@ const isDefined = val => val !== undefined && val !== null
 const TOKEN = null
 const token = process.env.BOT_TOKEN || TOKEN
 
-
 // weirdTag`1${ 2 }3` --> '123'
 const weirdTag = (strings, ...values) =>
   strings.reduce((res, str, i) => res + values[i - 1] + str)
@@ -115,6 +114,43 @@ function getConfig () {
   return global.tgbotConfig
 }
 
+/**
+ * @example
+ * objects = [{ a: 'a', b: 'b' }, { a: 'c', b: 'd' }, { a: 'e', b: 'f' }]
+ * cb = (res, val, key) => res[key] + val
+ * return = { a: 'ace', b: 'bdf' }
+ */
+function reduceObjectsThroughArray (objects, cb, init) {
+  if (!objects) return objects
+  if (!objects.length) return {}
+  const hasInit = init !== undefined
+
+  const res = {}
+  {
+    // eslint-disable-next-line no-unused-vars
+    const initKey = hasInit ? ([_, key]) => { res[key] = init } : ([val, key]) => { res[key] = val }
+    Object.entries(objects[0]).forEach(initKey)
+  }
+  const objects_ = hasInit ? objects : objects.slice(1)
+  objects_.forEach((ans) => {
+    return Object.entries(ans).forEach(([val, key]) => {
+      return Object.assign(res, { [key]: cb(res, val, key) })
+    })
+  })
+  return res
+}
+
+function setAsyncInterval (fn, interval) {
+  let active = true
+  const cycle = async () => {
+    if (!active) return
+    await fn()
+    setTimeout(cycle, interval)
+  }
+  cycle()
+  return { stop: () => { active = false } }
+}
+
 module.exports = {
   // os utils
   util,
@@ -124,6 +160,7 @@ module.exports = {
   // functions utils
   throttle,
   debounce,
+  reduceObjectsThroughArray,
   // random
   randFromList,
   randRange,
@@ -144,4 +181,5 @@ module.exports = {
   getIntro,
   openRpi3,
   isDefined,
+  setAsyncInterval,
 }
