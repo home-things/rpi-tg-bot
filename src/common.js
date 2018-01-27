@@ -142,13 +142,20 @@ function reduceObjectsThroughArray (objects, cb, init) {
 
 function setAsyncInterval (fn, interval) {
   let active = true
+  console.log('setAsyncInterval', fn, interval, active)
   const cycle = async () => {
+    console.log('setAsyncInterval iter pre', fn, interval, active)
     if (!active) return
+    console.log('setAsyncInterval iter after cond', fn, interval, active)
     await fn()
+    console.log('setAsyncInterval iter after fn', fn, interval, active)
     setTimeout(cycle, interval)
   }
   cycle()
-  return { stop: () => { active = false } }
+  return { stop: () => {
+    console.log('setAsyncInterval :: stop()')
+    active = false
+  } }
 }
 
 module.exports = {
