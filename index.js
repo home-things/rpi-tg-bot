@@ -103,7 +103,7 @@ const commandsConfig = {
         if (res === false) return { resMsg: 'Ничего не нашлось :(' }
       }],
       download: ['start downloading…', (_, [id]) => exec(`download-rutracker ${ id }`)],
-      status:   async () => ({ resMsg: await torrentsCmd.status() }),
+      status:   ({ reply }) => torrentsStatus({ reply }),
     },
     fileReactions: {
       audio:   [null, (_, [link]) => playAudioLink(link), 'Музон в ваши уши'],
@@ -502,6 +502,13 @@ async function openTorrentRpi3 ({ link, reply }) {
   await exec(`wget -O ${ tmpFile } "${ link }"`)
   await exec(`scp ${ tmpFile } pi@rpi3:~/Downloads`)
 
+  torrentsStatus({ reply })
+
+  // Notify when torrent downloaded
+  setTimeout(async () => await notifyWhenTorrentWillBeDone({ reply }), 3000)
+}
+
+async function torrentsStatus({ reply }) {
   // Send torrents progress status
   setTimeout(async () => {
     const repCtx = await reply(await torrentsCmd.status())
@@ -511,9 +518,6 @@ async function openTorrentRpi3 ({ link, reply }) {
     const cycle = setAsyncInterval(editNotify, 1000 * 60)
     setTimeout(() => cycle.stop(), 1000 * 60 * 60 * 1)
   }, 3000)
-
-  // Notify when torrent downloaded
-  setTimeout(async () => await notifyWhenTorrentWillBeDone({ reply }), 3000)
 }
 
 async function openPictureRpi3 (link, name) {
