@@ -11,5 +11,6 @@ module.exports = ({ app, config }) => ({
 })
 
 function getChat(repCtx) {
+  console.log('getChat wtf', JSON.stringify(repCtx, null, 4))
   return repCtx.chat || repCtx.from
 }
