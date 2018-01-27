@@ -504,7 +504,7 @@ async function openTorrentRpi3 ({ link, reply }) {
 
   // Send torrents progress status
   setTimeout(async () => {
-    const repCtx = reply(await torrentsCmd.status())
+    const repCtx = await reply(await torrentsCmd.status())
 
     // update torrents progress status message every 5 second
     const editNotify = async () => edit(repCtx, await torrentsCmd.status())
