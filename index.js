@@ -36,6 +36,7 @@ const {
 } = require('./src/tg-helpers')({ app, config })
 
 const Commands = require('./src/commands')
+const { WAIT } = require('./src/commands')
 
 const homeCmd = require('./commands/home')({ config })
 const lightCmd = require('./commands/light')()
@@ -65,58 +66,161 @@ let isVoiceVerboseMode = false
 const commandsConfig = {
   last: Commands.lastCommand,
   list: {
+
+    //
+    // Bot's Voice, asr, tts
     voice: {
-      voice_over:      [null, () => { isVoiceVerboseMode = true }, 'I`ll say everything you post'],
-      voice_over_stop: [null, () => { isVoiceVerboseMode = false }, 'I`ll be quiet'],
-      say:             ['long_wait_msg', (ctx, [text]) => say(text, ctx)],
+      voice_over:      {
+        cmd: () => { isVoiceVerboseMode = true },
+        ok: 'I`ll say everything you post',
+      },
+      voice_over_stop: {
+        cmd: () => { isVoiceVerboseMode = false },
+        ok: 'I`ll be quiet',
+      },
+      say:             {
+        wait: WAIT.LONG,
+        cmd: (ctx, [text]) => say(text, ctx),
+      },
     },
-    home:  { presense: ['long_wait_msg', async () => ({ resMsg: await homeCmd.format() })] },
+
+    //
+    // Homemates presense
+    home:  {
+      presense: {
+        wait: WAIT.LONG,
+        cmd: async () => ({ resMsg: await homeCmd.format() }),
+      },
+    },
+
+    //
+    // Music and podcasts playing and control
     music: {
-      stop:    [null, () => musicCmd.stop(), 'ok, music stopped'],
-      pause:   [null, () => musicCmd.pause(), 'ok, music paused'],
-      resume:  [null, () => musicCmd.resume(), 'ok, music resumed'],
-      play:    ['ok, I`ll try', (_, [link]) => musicCmd.play(link)],
-      podcast: () => ['long_wait_msg', spawn('music-podcast')],
+      stop:    {
+        cmd: () => musicCmd.stop(),
+        ok: 'ok, music stopped',
+      },
+      pause:   {
+        cmd: () => musicCmd.pause(),
+        ok: 'ok, music paused',
+      },
+      resume:  {
+        cmd: () => musicCmd.resume(),
+        ok: 'ok, music resumed',
+      },
+      play:    {
+        wait: 'ok, I`ll try',
+        cmd: (_, [link]) => musicCmd.play(link),
+      },
+      podcast: {
+        wait: WAIT.LONG,
+        cmd: () => spawn('music-podcast'),
+      },
     },
+
+    //
+    // Room Volume control
     vol: {
-      louder:  [null, () => volCmd.delta(+10), 'ok, volume increased'],
-      quieter: [null, () => volCmd.delta(-10), 'ok, volume decreased'],
-      upTo:    [null, (_, [vol_]) => volCmd.upTo(vol_)],
-      downTo:  [null, (_, [vol_]) => volCmd.downTo(vol_)],
-      get:     async () => ({ resMsg: await volCmd.get() }),
+      louder:  { cmd: () => volCmd.delta(+10), ok: 'ok, volume increased' },
+      quieter: { cmd: () => volCmd.delta(-10), ok: 'ok, volume decreased' },
+      upTo:    { cmd: (_, [vol_]) => volCmd.upTo(vol_) },
+      downTo:  { cmd: (_, [vol_]) => volCmd.downTo(vol_) },
+      get:     { cmd: async () => ({ resMsg: await volCmd.get() }) },
     },
+
+    //
+    // Room light control
     light: {
       on:     () => lightCmd.on(),
       off:    () => lightCmd.off(),
       status: async () => ({ resMsg: await lightCmd.status() ? '🌖 on' : '🌘 off' }),
     },
-    weather: { forecast: ['long_wait_msg', (ctx) => weatherForecast(ctx)] },
-    misc:    { print: (_, [text]) => sendMsgDefaultChat(text) },
+
+    //
+    // Weather informer commands
+    weather: {
+      forecast: {
+        wait: WAIT.LONG,
+        cmd: (ctx) => ({ resMsg: weatherForecast(ctx) }),
+      },
+    },
+
+    //
+    // Some technical commands
+    misc:    {
+      print: (_, [text]) => sendMsgDefaultChat(text),
+    },
+
+    //
+    // Joker the joke master prints old jokes from bash.org
     jokes:   {
       joke:   async () => ({ resMsg: await joker.next() }),
       update: () => joker._loadNewPage(),
     },
-    fixes:    { airplay: () => fixerCmd.airplay() },
+
+    //
+    // Feels good
+    fixes:    {
+      airplay: () => fixerCmd.airplay(),
+    },
+
+    //
+    // The best torrent client
     torrents: {
-      search: ['wait_msg', async (ctx, args) => {
-        const res = await searchTorrent(ctx, args.join(' ').trim()) // responds with a buttons
-        if (res === false) return { resMsg: 'Ничего не нашлось :(' }
-      }],
-      download: ['start downloading…', (_, [id]) => exec(`download-rutracker ${ id }`)],
-      status:   ({ reply }) => torrentsStatus({ reply }),
+      search: {
+        wait: WAIT.SHORT,
+        cmd: async (ctx, args) => {
+          const res = await searchTorrent(ctx, args.join(' ').trim()) // responds with a buttons
+          if (res === false) return { resMsg: 'Ничего не нашлось :(' }
+        },
+      },
+      download: {
+        wait: 'start downloading…',
+        cmd: (_, [id]) => exec(`download-rutracker ${ id }`),
+      },
+      status: {
+        live: true,
+        wait: WAIT.LONG,
+        cmd: async () => await torrentsCmd.status(),
+      }
     },
+
+    //
+    // File attachments automagical handlers
     fileReactions: {
-      audio:   [null, (_, [link]) => playAudioLink(link), 'Музон в ваши уши'],
-      voice:   (_, [link]) => exec(`wget -O /tmp/tg-bot-voice.oga "${ link }"`) /* exec(`asr /tmp/tg-bot-voice.oga`) */,
-      link:    [null, (_, [link]) => openLinkRpi3(link), 'Ссылка открыта на станции'],
-      picture: [null, (_, [name, link]) => openPictureRpi3(link, name), 'Картинка открыта на станции'],
-      torrent: [null, ({ reply }, [link]) => openTorrentRpi3({ link, reply }), 'Поставлено на закачку'],
+      audio:   {
+        cmd: (_, [link]) => playAudioLink(link),
+        ok: 'Музон в ваши уши',
+      },
+      voice:   {
+        cmd: (_, [link]) => decodeVoiceRec(link) },
+      link:    {
+        cmd: (_, [link]) => openLinkRpi3(link),
+        ok: 'Ссылка открыта на станции',
+      },
+      picture: {
+        cmd: (_, [name, link]) => openPictureRpi3(link, name),
+        ok: 'Картинка открыта на станции',
+      },
+      torrent: {
+        cmd: ({ reply }, [link]) => openTorrentRpi3({ link, reply }),
+        ok: 'Поставлено на закачку',
+      },
     },
+
+    //
+    // Food&drink delivery automation control
     delivery: {
       water: () => exec('send-tg-msg @makemetired "воды б"'),
     },
+
+    //
+    // Googler
     search: {
-      google: [null, (_, [query]) => google(query), 'Загуглено на станции'],
+      google: {
+        cmd: (_, [query]) => google(query),
+        ok: 'Загуглено на станции',
+      },
     },
   },
 }
@@ -129,6 +233,7 @@ const commands = Commands({
   homeCmd,
   del,
   typing,
+  edit,
   sendMsgDefaultChat,
   sendMsgStderrChat,
 })
@@ -478,7 +583,7 @@ async function searchTorrent (ctx, query) {
 async function weatherForecast (ctx) {
   const formattedWeather = await weatherCmd.forecast()
   if ((new Date()).getHours() >= 9) say(formattedWeather, ctx, true, true)
-  return { resMsg: formattedWeather }
+  return formattedWeather
 }
 
 // TODO: move to commands
@@ -502,21 +607,10 @@ async function openTorrentRpi3 ({ link, reply }) {
   await exec(`wget -O ${ tmpFile } "${ link }"`)
   await exec(`scp ${ tmpFile } pi@rpi3:~/Downloads`)
 
-  torrentsStatus({ reply })
-
   // Notify when torrent downloaded
-  setTimeout(async () => await notifyWhenTorrentWillBeDone({ reply }), 3000)
-}
-
-async function torrentsStatus({ reply }) {
-  // Send torrents progress status
   setTimeout(async () => {
-    const repCtx = await reply(await torrentsCmd.status())
-
-    // update torrents progress status message every 5 second
-    const editNotify = async () => await edit(repCtx, await torrentsCmd.status())
-    const cycle = setAsyncInterval(editNotify, 1000 * 60)
-    setTimeout(() => cycle.stop(), 1000 * 60 * 60 * 1)
+    await torrentsCmd.status()
+    await notifyWhenTorrentWillBeDone({ reply })
   }, 3000)
 }
 
@@ -528,6 +622,12 @@ async function openPictureRpi3 (link, name) {
   await exec(`wget "${ link }" -O "${ tmpFilePath }"`)
   await exec(`scp "${ tmpFilePath }" "pi@rpi3:${ targetFilePath }"`)
   openRpi3(`gpicview ${ targetFilePath }`, { isX11: true, isResident: true })
+}
+
+// TODO: fix asr
+async function decodeVoiceRec({ link }) {
+  exec(`wget -O /tmp/tg-bot-voice.oga "${ link }"`)
+  /* exec(`asr /tmp/tg-bot-voice.oga`) */
 }
 
 function openLinkRpi3 (link) {
