@@ -521,6 +521,8 @@ async function torrentsStatus({ reply }) {
 }
 
 async function openPictureRpi3 (link, name) {
+  if (isNight()) return
+
   const tmpFileName = `tg-bot.${ name }.jpg`
   const tmpFilePath = `/tmp/${ tmpFileName }`
   const targetFilePath = `~/Downloads/${ tmpFileName }`
@@ -531,6 +533,8 @@ async function openPictureRpi3 (link, name) {
 }
 
 function openLinkRpi3 (link) {
+  if (isNight()) return
+
   if (link.includes('youtube') || link.includes('youtu.be')) {
     console.info('youtube link', link)
     return openYoutubeLinkRpi3(link)
@@ -545,6 +549,9 @@ function openLinkRpi3 (link) {
 
 async function openYoutubeLinkRpi3 (link) {
   const open = () => openRpi3(`~/bin/kodi-cli -y "${ link }"`)
+
+  if (isNight()) return
+
   try {
     await openRpi3('[[ "$(ps aux | grep kodi | grep -v grep)" ]] || (echo "no kodi"; exit 1)')
     return await open()
@@ -572,6 +579,11 @@ async function google (query) {
   return await openLinkRpi3(`https://ya.ru/?q=${ encodeURIComponent(query) }`)
 }
 
+function isNight () {
+  const h = (new Date()).getHours()
+
+  return h > 23 || h < 8
+}
 
 /**
  * misc
