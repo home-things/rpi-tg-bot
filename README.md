@@ -132,8 +132,10 @@ npm run watch-logs
   * [ ] presense/movement sensors
   * [alternative solution I dislike](https://github.com/initialstate/pi-sensor-free-presence-detector/wiki/Part-2.-Your-Personal-Dashboard)
 * [x] handle photos, voice-records, music, torrent-files and links
-* [x] jokes
-  * [x] jokes random schedule
+* fun
+  * [x] jokes
+    * [x] jokes random schedule
+  * сделать так, чтобы на похвалу бот отвечал в стиле "хозяин любит нас ^-^"
 * [ ] Data sequences streams, data series db
   * viewer: Initial State Platform
 * [ ] scheduled / delayed tg messages via tg message-commands
