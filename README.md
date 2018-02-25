@@ -79,11 +79,15 @@ npm run watch-logs
     * programming finite state maschine transitions via `tg`
     * think about **redux**
   * platform example: http://hobbyquaker.github.io/ccu.io
+* [ ] configs: separate;  specify
+  * ?? separate: `(config)` <-- `({command}.config)`
+  * ?? specify: `command(config)` <-- `command(config.commands.list.command))` 
 
 
 #### to code
 * ifttt integrations
   * [ ] home presense
+  * [ ] не включ будильник/музыкальный подкаст если меня нет
 * [ ] ! mini-bank
 * [ ] _wip_ [delivery club automation](https://github.com/a-x-/delivery-club-api)
 * [ ] router integration (remote restart, lan dns mngmnt)
@@ -110,6 +114,8 @@ npm run watch-logs
 * [ ] _fix_ HomeKit external data updating https://github.com/KhaosT/HAP-NodeJS/issues/497
 * [x] light control, scrpts
 * [x] volume control, scrpts
+  * [ ] automatic smooth volume changing
+  * [ ] local volume (e.g. alarm smooth increasing)
 * [x] sound control: play by url, pause/resume/stop, scrpts
 * [x] voice over
 * [x] basic weather
@@ -130,6 +136,7 @@ npm run watch-logs
   * [x] jokes random schedule
 * [ ] Data sequences streams, data series db
   * viewer: Initial State Platform
+* [ ] scheduled / delayed tg messages via tg message-commands
 
 #### todo: add hardware
 * [ ] light toggle button
