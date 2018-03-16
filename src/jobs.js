@@ -41,7 +41,7 @@ module.exports = ({ commands }) => {
 
   // cron('00 00 14 *   *   mon', () => commands.runSys('delivery', 'water')) // TODO: sync with vacancy schedule
 
-  cron('00 00 11 *   *   *  ', () => commands.runSys('music', 'podcast')) // TODO: sync with presense
+  cron('00 00 10 *   *   *  ', () => commands.runSys('music', 'podcast')) // TODO: sync with presense
 }
 
 function randomize (cb) {
