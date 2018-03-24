@@ -134,6 +134,7 @@ npm run watch-logs
 * [x] handle photos, voice-records, music, torrent-files and links
   * [ ] torrents: wait for downloading started
   * [ ] video: check rpi3 alive. abort failed by timeout videos.
+  * [ ] dont answer done innediately to torrent status command
 * fun
   * [x] jokes
     * [x] jokes random schedule
