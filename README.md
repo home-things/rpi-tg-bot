@@ -132,6 +132,8 @@ npm run watch-logs
   * [ ] presense/movement sensors
   * [alternative solution I dislike](https://github.com/initialstate/pi-sensor-free-presence-detector/wiki/Part-2.-Your-Personal-Dashboard)
 * [x] handle photos, voice-records, music, torrent-files and links
+  * [ ] torrents: wait for downloading started
+  * [ ] video: check rpi3 alive. abort failed by timeout videos.
 * fun
   * [x] jokes
     * [x] jokes random schedule
