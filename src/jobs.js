@@ -24,13 +24,17 @@ const DAY = HOUR * 24 // eslint-disable-line no-unused-vars
 
 module.exports = ({ commands }) => {
   //    ss mm hh dom mon dow
-  cron('00 00  1 *   *   *  ', () => commands.runSys('light', 'off'))
+  cron('00 40 12 *   *   *  ', () => commands.runSys('light', 'off'))
   cron('00 00 12 *   *   *  ', () => commands.runSys('light', 'on'))
   cron('00 10 14 *   *   *  ', () => commands.runSys('light', 'off'))
 
-  cron('00 30 10 *   *   *  ', () => commands.runSys('vol', 'upTo', 70))
-  cron('00 30 12 *   *   *  ', () => commands.runSys('vol', 'upTo', 80))
-  cron('00 30 13 *   *   *  ', () => commands.runSys('vol', 'upTo', 90))
+  cron('00 30 10 *   *   *  ', () => commands.runSys('vol', 'upTo', 65))
+  cron('00 30 11 *   *   *  ', () => commands.runSys('vol', 'upTo', 70))
+  cron('00 30 12 *   *   *  ', () => commands.runSys('vol', 'upTo', 75))
+  cron('00 00 13 *   *   *  ', () => commands.runSys('vol', 'upTo', 80))
+  cron('00 30 13 *   *   *  ', () => commands.runSys('vol', 'upTo', 85))
+  cron('00 00 14 *   *   *  ', () => commands.runSys('vol', 'upTo', 90))
+
   cron('00 00 23 *   *   *  ', () => commands.runSys('vol', 'downTo', 80))
   cron('00 00 01 *   *   *  ', () => commands.runSys('vol', 'downTo', 70))
   cron('00 00 02 *   *   *  ', () => commands.runSys('vol', 'downTo', 60))
@@ -41,7 +45,7 @@ module.exports = ({ commands }) => {
 
   // cron('00 00 14 *   *   mon', () => commands.runSys('delivery', 'water')) // TODO: sync with vacancy schedule
 
-  cron('00 00 10 *   *   *  ', () => commands.runSys('music', 'podcast')) // TODO: sync with presense
+  cron('00 30 09 *   *   *  ', () => commands.runSys('music', 'podcast')) // TODO: sync with presense
 }
 
 function randomize (cb) {
