@@ -26,6 +26,7 @@
     "just-debounce-it": "^1.0.1",
     "lodash.bindall": "^4.4.0",
     "lodash.throttle": "^4.1.1",
+    "moment": "^2.19.3",
     "npm-watch": "^0.2.0",
     "recastai": "^3.4.1",
     "redux-action-creator": "^2.2.0",
