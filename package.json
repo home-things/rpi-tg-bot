@@ -10,7 +10,8 @@
     "watch-logs": "./watch-logs",
     "test": "npm run lint && ava",
     "lint": "eslint .",
-    "lint:fix": "eslint --fix ."
+    "lint:fix": "eslint --fix .",
+    "deploy": "git push && ssh pi@rpi2main '~/services/tg-bot/pull-restart'"
   },
   "author": "",
   "license": "MIT",
