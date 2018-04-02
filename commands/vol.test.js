@@ -1,5 +1,6 @@
 // TODO: use jest
 
+console.info('wtf', process.env)
 const test = require('ava')
 require('../src/common').exec = console.log // eslint-disable-line no-console
 const volCmd = require('./vol')()

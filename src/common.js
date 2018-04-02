@@ -1,3 +1,5 @@
+console.info('wtf', process.env)
+
 const config = getConfig()
 const consts = (process.env.CI ? require('../consts.sample') : require('../consts'))(config)
 const throttle = require('lodash.throttle')
