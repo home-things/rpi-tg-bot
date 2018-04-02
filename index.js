@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 // vim: set ts=4
 
-console.info('wtf', process.env)
-
 const Telegraf = require('telegraf')
 const { /* Extra, */ Markup } = require('telegraf')
 const { spawn } = require('child_process')
@@ -531,7 +529,7 @@ async function torrentsStatus ({ reply }) {
 }
 
 async function openPictureRpi3 (link, name, { sudo = false } = {}) {
-  if (sudo || isNight()) throw new UserError('night. Try with sudo, bro')
+  if (!sudo && isNight()) throw new UserError('night. Try with sudo, bro')
 
   const tmpFileName = `tg-bot.${ name }.jpg`
   const tmpFilePath = `/tmp/${ tmpFileName }`
@@ -543,7 +541,7 @@ async function openPictureRpi3 (link, name, { sudo = false } = {}) {
 }
 
 function openLinkRpi3 (link, { sudo = false } = {}) {
-  if (sudo || isNight()) throw new UserError('night. Try with sudo, bro')
+  if (!sudo && isNight()) throw new UserError('night. Try with sudo, bro')
 
   if (link.includes('youtube') || link.includes('youtu.be')) {
     console.info('youtube link', link)
@@ -561,7 +559,7 @@ async function openYoutubeLinkRpi3 (link, { sudo = false } = {}) {
   const normalizedLink = /^http/.test(link) ? `https://${ link }` : link
   const open = () => openRpi3(`~/bin/kodi-cli -s; ~/bin/kodi-cli -y "${ normalizedLink }"`)
 
-  if (sudo || isNight()) throw new UserError('night. Try with sudo, bro')
+  if (!sudo && isNight()) throw new UserError('night. Try with sudo, bro')
 
   try {
     await openRpi3('[[ "$(ps aux | grep kodi | grep -v grep)" ]] || (echo "no kodi"; exit 1)')
