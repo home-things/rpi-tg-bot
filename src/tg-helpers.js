@@ -10,7 +10,6 @@ module.exports = ({ app, config }) => ({
   },
 })
 
-function getChat(repCtx) {
-  console.log('getChat wtf', repCtx, repCtx.chat, repCtx.from)
+function getChat (repCtx) {
   return repCtx.chat || repCtx.from
 }

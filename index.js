@@ -108,7 +108,7 @@ const commandsConfig = {
     fileReactions: {
       audio:   [null, (_, [link]) => playAudioLink(link), 'Музон в ваши уши'],
       voice:   (_, [link]) => exec(`wget -O /tmp/tg-bot-voice.oga "${ link }"`) /* exec(`asr /tmp/tg-bot-voice.oga`) */,
-      link:    [null, (_, [link]) => openLinkRpi3(link), 'Ссылка открыта на станции'],
+      link:    [null, (_, [sudo, link]) => openLinkRpi3(link, { sudo }), 'Ссылка открыта на станции'],
       picture: [null, (_, [name, link]) => openPictureRpi3(link, name), 'Картинка открыта на станции'],
       torrent: [null, ({ reply }, [link]) => openTorrentRpi3({ link, reply }), 'Поставлено на закачку'],
     },
@@ -283,7 +283,8 @@ app.hears(/([^ ]+\.mp3)/, (ctx) => {
   commands.run('fileReactions', 'audio', ctx)
 })
 
-app.hears(/(https?:[^ ]+)/, (ctx) => {
+// todo: link detect
+app.hears(/(sudo,?\s*)?((https?:\S+)|(\S*(\.com\/|youtu\.be\/|\.ru\/)\S+))/, (ctx) => {
   commands.run('fileReactions', 'link', ctx)
 })
 
@@ -508,7 +509,7 @@ async function openTorrentRpi3 ({ link, reply }) {
   setTimeout(async () => await notifyWhenTorrentWillBeDone({ reply }), 3000)
 }
 
-async function torrentsStatus({ reply }) {
+async function torrentsStatus ({ reply }) {
   // Send torrents progress status
   setTimeout(async () => {
     const repCtx = await reply(await torrentsCmd.status())
@@ -520,8 +521,8 @@ async function torrentsStatus({ reply }) {
   }, 3000)
 }
 
-async function openPictureRpi3 (link, name) {
-  if (isNight()) return
+async function openPictureRpi3 (link, name, { sudo = false } = {}) {
+  if (sudo || isNight()) return
 
   const tmpFileName = `tg-bot.${ name }.jpg`
   const tmpFilePath = `/tmp/${ tmpFileName }`
@@ -532,12 +533,12 @@ async function openPictureRpi3 (link, name) {
   openRpi3(`gpicview ${ targetFilePath }`, { isX11: true, isResident: true })
 }
 
-function openLinkRpi3 (link) {
-  if (isNight()) return
+function openLinkRpi3 (link, { sudo = false } = {}) {
+  if (sudo || isNight()) throw new Error('night')
 
   if (link.includes('youtube') || link.includes('youtu.be')) {
     console.info('youtube link', link)
-    return openYoutubeLinkRpi3(link)
+    return openYoutubeLinkRpi3(link, { sudo })
   }
 
   return openRpi3(`chromium-browser "${ link }"`, { isX11: true, isResident: true })
@@ -547,10 +548,11 @@ function openLinkRpi3 (link) {
 //   // body...
 // }
 
-async function openYoutubeLinkRpi3 (link) {
-  const open = () => openRpi3(`~/bin/kodi-cli -y "${ link }"`)
+async function openYoutubeLinkRpi3 (link, { sudo = false } = {}) {
+  const normalizedLink = /^http/.test(link) ? `https://${ link }` : link
+  const open = () => openRpi3(`~/bin/kodi-cli -s; ~/bin/kodi-cli -y "${ normalizedLink }"`)
 
-  if (isNight()) return
+  if (sudo || isNight()) throw new Error('night')
 
   try {
     await openRpi3('[[ "$(ps aux | grep kodi | grep -v grep)" ]] || (echo "no kodi"; exit 1)')
@@ -575,8 +577,8 @@ async function playAudioLink (link) {
   await musicCmd.play(filePath)
 }
 
-async function google (query) {
-  return await openLinkRpi3(`https://ya.ru/?q=${ encodeURIComponent(query) }`)
+async function google (query, { sudo = false } = {}) {
+  return await openLinkRpi3(`https://ya.ru/?q=${ encodeURIComponent(query) }`, { sudo })
 }
 
 function isNight () {
