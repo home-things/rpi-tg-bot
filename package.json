@@ -8,7 +8,7 @@
     "restart": "./restart",
     "start": "./start",
     "watch-logs": "./watch-logs",
-    "test": "./test.sh && npm run lint && ava",
+    "test": "npm run lint && ava",
     "lint": "eslint .",
     "lint:fix": "eslint --fix ."
   },
