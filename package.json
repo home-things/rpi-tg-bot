@@ -8,7 +8,7 @@
     "restart": "./restart",
     "start": "./start",
     "watch-logs": "./watch-logs",
-    "test": "npm run lint && ava",
+    "test": "npm run lint && cross-env-shell CI=$CI ava",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "deploy": "git push && ssh pi@rpi2main '~/services/tg-bot/pull-restart'"
@@ -39,6 +39,7 @@
   "devDependencies": {
     "ava": "^0.21.0",
     "babel-eslint": "^8.0.2",
+    "cross-env": "^5.1.4",
     "eslint": "^4.10.0",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.8.0"
