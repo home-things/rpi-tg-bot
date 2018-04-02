@@ -63,7 +63,7 @@ npm run watch-logs
 * tests
    * [x] add some tests
    * [x] setup CI
-   * [ ] _fix_ CI
+   * [x] _fix_ CI
    * [ ] increase test coverage
 * [ ] более тесная интеграция с бота homekit
   * [ ] volume control
