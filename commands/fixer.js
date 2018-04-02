@@ -8,4 +8,8 @@ module.exports = () => ({
       exec('ssh pi@rpi3 sudo systemctl restart shairport-sync'), // rpi3
     ])
   },
+
+  rpi3 () {
+    return exec ('ssh pi@rpi3 "sudo reboot"')
+  }
 })

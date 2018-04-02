@@ -96,7 +96,10 @@ const commandsConfig = {
       joke:   async () => ({ resMsg: await joker.next() }),
       update: () => joker._loadNewPage(),
     },
-    fixes:    { airplay: () => fixerCmd.airplay() },
+    fixes:    {
+      airplay: () => fixerCmd.airplay(),
+      rpi3: () => fixerCmd.rpi3(),
+    },
     torrents: {
       search: ['wait_msg', async (ctx, args) => {
         const res = await searchTorrent(ctx, args.join(' ').trim()) // responds with a buttons
@@ -261,6 +264,10 @@ app.hears(/^(?:(?:(?:get|tell|next)\s+)?joke|(?:(?:(?:расскажи|дава�
 
 app.hears(/fix\s+airplay/i, (ctx) => {
   commands.run('fixes', 'airplay', ctx)
+})
+
+app.hears(/fix\s+rpi3/i, (ctx) => {
+  commands.run('fixes', 'rpi3', ctx)
 })
 
 app.hears(/(?:(?:find|search|look up) (?:torrent|rutracker|serial|film)|(?:поищи|ищи|найди|искать|ищи) (?:торрент|на рутрекере|на rutracker|фильм|сериал))(.+)/i, (ctx) => {
@@ -522,7 +529,7 @@ async function torrentsStatus ({ reply }) {
 }
 
 async function openPictureRpi3 (link, name, { sudo = false } = {}) {
-  if (sudo || isNight()) return
+  if (sudo || isNight()) throw new UserError('night. Try with sudo, bro')
 
   const tmpFileName = `tg-bot.${ name }.jpg`
   const tmpFilePath = `/tmp/${ tmpFileName }`
