@@ -8,7 +8,7 @@
     "restart": "./restart",
     "start": "./start",
     "watch-logs": "./watch-logs",
-    "test": "npm run lint && cross-env-shell CI=$CI ava",
+    "test": "npm run lint && ava",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "deploy": "git push && ssh pi@rpi2main '~/services/tg-bot/pull-restart'"

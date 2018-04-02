@@ -1,6 +1,5 @@
-console.info('wtf', process.env)
-
 const config = getConfig()
+// eslint-disable-next-line import/no-unresolved
 const consts = (process.env.CI ? require('../consts.sample') : require('../consts'))(config)
 const throttle = require('lodash.throttle')
 const debounce = require('just-debounce-it')
@@ -106,6 +105,7 @@ function getConfig () {
   if (!global.tgbotConfig) {
     global.tgbotConfig = (() => {
       try {
+        // eslint-disable-next-line import/no-unresolved
         return process.env.CI ? require('../config.sample') : require('../config')
       } catch (e) {
         console.error('no config file', e)
