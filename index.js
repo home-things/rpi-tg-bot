@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // vim: set ts=4
 
+console.info(process.env.NODE_ENV, process.env.CI, process.env.CONTINUOUS_INTEGRATION)
+
 const Telegraf = require('telegraf')
 const { /* Extra, */ Markup } = require('telegraf')
 const { spawn } = require('child_process')
