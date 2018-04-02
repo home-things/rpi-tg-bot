@@ -60,7 +60,7 @@ module.exports.whoAtHome = whoAtHome
 
 // const sendHomematesDiff = debounce((diff) => {
 //   console.log('diff', diff);
-//   app.telegram.sendMessage(VIGVAM_ID, '🏠↘︎↖︎\n'
+//   app.telegram.sendMessage(DEFAULT_CHAT_ID, '🏠↘︎↖︎\n'
 //   + diff.map(item => homemates.get(item.who, 'name') + (item.before ? ' вернулся' : (Math.random() > .5 ? ' ушёл' :
 // ' свалил'))));
 // }, 1000 * 60 * consts.HOME_DIFF_DELAY, true);
@@ -95,9 +95,9 @@ module.exports.whoAtHome = whoAtHome
 //           }).catch(() => { })
 //           if (homemates.empty()) exec('has-music').then(v => { if (!v.trim()) throw 'none' })
 // .then(() => exec('stop-music')).then(() => {
-//             app.telegram.sendMessage(consts.VIGVAM_ID, 'Nobody at home ==> Music stopped')
+//             app.telegram.sendMessage(consts.DEFAULT_CHAT_ID, 'Nobody at home ==> Music stopped')
 //           }).catch(() => { })
-//           if (homemates.full()) app.telegram.sendMessage(consts.VIGVAM_ID, randFromList(['С возвращением!',
+//           if (homemates.full()) app.telegram.sendMessage(consts.DEFAULT_CHAT_ID, randFromList(['С возвращением!',
 // 'all in the home.']) + '\n\n 😇 p.s. I don`t notify more often than every 30 minutes');
 //           break;
 //       }

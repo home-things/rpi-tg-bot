@@ -41,7 +41,7 @@ module.exports = ({
   runSys (kind, name, args = []) {
     const ctx = {
       isSystem: true,
-      chat:     { id: consts.VIGVAM_ID },
+      chat:     { id: consts.DEFAULT_CHAT_ID },
       reply:    msg => sendMsgDefaultChat(msg),
     }
     return this.run(kind, name, ctx, args)

@@ -1,5 +1,5 @@
 const config = getConfig()
-const consts = require('../consts')(config)
+const consts = (process.env.CI ? require('../consts.sample') : require('../consts'))(config)
 const throttle = require('lodash.throttle')
 const debounce = require('just-debounce-it')
 const thrw = require('throw')
@@ -104,7 +104,7 @@ function getConfig () {
   if (!global.tgbotConfig) {
     global.tgbotConfig = (() => {
       try {
-        return require('../config')
+        return process.env.CI ? require('../config.sample') : require('../config')
       } catch (e) {
         console.error('no config file', e)
         return null
