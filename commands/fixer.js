@@ -10,6 +10,6 @@ module.exports = () => ({
   },
 
   rpi3 () {
-    return exec ('ssh pi@rpi3 "sudo reboot"')
-  }
+    return exec('ssh pi@rpi3 "sudo reboot"')
+  },
 })

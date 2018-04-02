@@ -29,7 +29,7 @@ module.exports = () => bindAll({
   async complete () {
     const checkCompleteCmd = COMPLETE_DELUGE_STATUSES.map(s => `deluge-console info -s ${ s }`).join('; ')
     return Boolean((await openRpi3(checkCompleteCmd)).trim())
-  }
+  },
 
   async status () {
     const info = await this.info()

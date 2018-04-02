@@ -96,9 +96,9 @@ const commandsConfig = {
       joke:   async () => ({ resMsg: await joker.next() }),
       update: () => joker._loadNewPage(),
     },
-    fixes:    {
+    fixes: {
       airplay: () => fixerCmd.airplay(),
-      rpi3: () => fixerCmd.rpi3(),
+      rpi3:    () => fixerCmd.rpi3(),
     },
     torrents: {
       search: ['wait_msg', async (ctx, args) => {
