@@ -1,6 +1,10 @@
 const bindAll = require('lodash.bindall')
 const { exec, openRpi3, unindent } = require('../src/common')
 
+const COMPLETE_DELUGE_STATUSES = ['Downloading', 'Active', 'Allocating', 'Checking']
+
+// TODO: Create abstract torrent client SDK
+
 module.exports = () => bindAll({
   async search (query) {
     return JSON.parse(await exec(`search-rutracker ${ query }`)) || []
@@ -22,6 +26,11 @@ module.exports = () => bindAll({
     return Boolean(await this.info())
   },
 
+  async complete () {
+    const checkCompleteCmd = COMPLETE_DELUGE_STATUSES.map(s => `deluge-console info -s ${ s }`).join('; ')
+    return Boolean((await openRpi3(checkCompleteCmd)).trim())
+  }
+
   async status () {
     const info = await this.info()
     return info ? `${ info }\nОстальное скачалось` : 'Всё скачалось, господа'
@@ -37,10 +46,10 @@ module.exports = () => bindAll({
 
     this.isDownloadedPending = new Promise(async (res) => {
       const check = async () => {
-        if (!(await this.downloading())) return res(true)
+        if (await this.complete()) return res(true)
         setTimeout(check, 10000)
       }
-      check()
+      setTimeout(check, 10000)
     })
 
     const del = () => delete this.isDownloadedPending

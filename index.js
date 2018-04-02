@@ -106,7 +106,7 @@ const commandsConfig = {
         if (res === false) return { resMsg: 'Ничего не нашлось :(' }
       }],
       download: ['start downloading…', (_, [id]) => exec(`download-rutracker ${ id }`)],
-      status:   ({ reply }) => torrentsStatus({ reply }),
+      status:   ['long_wait_msg', ({ reply }) => torrentsStatus({ reply })],
     },
     fileReactions: {
       audio:   [null, (_, [link]) => playAudioLink(link), 'Музон в ваши уши'],
@@ -469,7 +469,7 @@ app.action(/.+/, (ctx) => {
 
 async function notifyWhenTorrentWillBeDone ({ reply }) {
   await torrentsCmd.awaitDownloaded()
-  reply('✨ Всё(,) торрентьё(,) скачалось!')
+  reply('✨ Трррррнты скчччлись, мои маленькие пираты!\nСвистать всех наверх!')
 }
 
 async function searchTorrent (ctx, query) {
