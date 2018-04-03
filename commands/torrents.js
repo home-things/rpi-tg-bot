@@ -22,18 +22,18 @@ module.exports = () => bindAll({
     return exec(`download-rutracker ${ id }`)
   },
 
-  async downloading () {
-    return Boolean(await this.info())
-  },
-
   async complete () {
     const checkCompleteCmd = COMPLETE_DELUGE_STATUSES.map(s => `deluge-console info -s ${ s }`).join('; ')
-    return Boolean((await openRpi3(checkCompleteCmd)).trim())
+    return !(await openRpi3(checkCompleteCmd)).trim()
   },
 
   async status () {
+    const complete = await this.complete()
     const info = await this.info()
-    return info ? `${ info }\nОстальное скачалось` : 'Всё скачалось, господа'
+    return {
+      complete: complete || !info,
+      message:  info ? `${ info }\nОстальное скачалось` : 'Всё скачалось, господа',
+    }
   },
 
   async info () {

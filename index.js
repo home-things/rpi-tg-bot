@@ -468,11 +468,6 @@ app.action(/.+/, (ctx) => {
 // helpers
 //
 
-async function notifyWhenTorrentWillBeDone ({ reply }) {
-  await torrentsCmd.awaitDownloaded()
-  reply('✨ Трррррнты скчччлись, мои маленькие пираты!\nСвистать всех наверх!')
-}
-
 async function searchTorrent (ctx, query) {
   const list = await torrentsCmd.search(query)
   if (!list || !list.length) return false
@@ -512,19 +507,23 @@ async function openTorrentRpi3 ({ link, reply }) {
   await exec(`scp ${ tmpFile } pi@rpi3:~/Downloads`)
 
   torrentsStatus({ reply })
-
-  // Notify when torrent downloaded
-  setTimeout(async () => await notifyWhenTorrentWillBeDone({ reply }), 3000)
 }
 
 // Send torrents progress status
 async function torrentsStatus ({ reply }) {
   await setTimeoutAsync(3000)
 
-  const repCtx = await reply(await torrentsCmd.status())
+  const repCtx = await reply((await torrentsCmd.status()).message)
 
   // update torrents progress status message every 5 second
-  const editNotify = async () => await edit(repCtx, await torrentsCmd.status())
+  const editNotify = async () => {
+    const nextStatus = await torrentsCmd.status()
+    if (nextStatus.complete) {
+      reply('✨ Трррррнты скчччлись, мои маленькие пираты!\nСвистать всех наверх!')
+      return setAsyncInterval.STOP
+    }
+    return await edit(repCtx, nextStatus.message)
+  }
   const cycle = setAsyncInterval(editNotify, 1000 * 60)
   setTimeout(() => cycle.stop(), 1000 * 60 * 60 * 1)
 

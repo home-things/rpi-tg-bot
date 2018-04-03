@@ -146,14 +146,20 @@ function setAsyncInterval (fn, interval) {
   let active = true
   const cycle = async () => {
     if (!active) return
-    await fn()
+
+    const res = await fn()
+
+    if (res === setAsyncInterval.STOP) return
     setTimeout(cycle, interval)
   }
   cycle()
-  return { stop: () => {
-    active = false
-  } }
+  return {
+    stop: () => {
+      active = false
+    },
+  }
 }
+setAsyncInterval.STOP = Symbol('setAsyncInterval.STOP')
 
 module.exports = {
   // os utils
