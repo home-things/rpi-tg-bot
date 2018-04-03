@@ -10,6 +10,9 @@ module.exports = () => ({
   },
 
   rpi3 () {
-    return exec('ssh pi@rpi3 "sudo reboot"')
+    return exec('ssh pi@rpi3 "sudo reboot"').catch(e => {
+      // If reboot had started then Connection closed. Else pass the error
+      if (!/Connection to (.+) closed/.test(e.message)) throw e
+    })
   },
 })
