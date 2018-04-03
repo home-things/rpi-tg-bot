@@ -520,6 +520,7 @@ async function torrentsStatus ({ reply }) {
   // Send torrents progress status
   setTimeout(async () => {
     const repCtx = await reply(await torrentsCmd.status())
+    sendMsgStderrChat('torrentsStatus got repCtx')
 
     // update torrents progress status message every 5 second
     const editNotify = async () => await edit(repCtx, await torrentsCmd.status())
