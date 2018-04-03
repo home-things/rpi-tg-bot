@@ -4,6 +4,7 @@
 const Telegraf = require('telegraf')
 const { /* Extra, */ Markup } = require('telegraf')
 const { spawn } = require('child_process')
+const setTimeoutAsync = require('./src/set-timeout-async')
 
 const {
   token,
@@ -516,17 +517,18 @@ async function openTorrentRpi3 ({ link, reply }) {
   setTimeout(async () => await notifyWhenTorrentWillBeDone({ reply }), 3000)
 }
 
+// Send torrents progress status
 async function torrentsStatus ({ reply }) {
-  // Send torrents progress status
-  setTimeout(async () => {
-    const repCtx = await reply(await torrentsCmd.status())
-    sendMsgStderrChat('torrentsStatus got repCtx')
+  await setTimeoutAsync(3000)
 
-    // update torrents progress status message every 5 second
-    const editNotify = async () => await edit(repCtx, await torrentsCmd.status())
-    const cycle = setAsyncInterval(editNotify, 1000 * 60)
-    setTimeout(() => cycle.stop(), 1000 * 60 * 60 * 1)
-  }, 3000)
+  const repCtx = await reply(await torrentsCmd.status())
+
+  // update torrents progress status message every 5 second
+  const editNotify = async () => await edit(repCtx, await torrentsCmd.status())
+  const cycle = setAsyncInterval(editNotify, 1000 * 60)
+  setTimeout(() => cycle.stop(), 1000 * 60 * 60 * 1)
+
+  return { okMsg: false }
 }
 
 async function openPictureRpi3 (link, name, { sudo = false } = {}) {

@@ -19,19 +19,25 @@ module.exports = ({
     const args_ = this._retreiveArgs(ctx, args)
 
     try {
-      const cmd = this._retreiveCmd(ctx, kind, name)
-      const { waitMsg_, cmd_, okMsg_ } = this._normalizeCmd(cmd)
+      if (!ctx.isSystem && !this._accessRightsGuard(ctx.update || ctx.callback_query)) {
+        throw this.NoRightsError()
+      }
+
+      const { waitMsg, cmd, okMsg } = this._retreiveCmd(ctx, kind, name)
 
       console.info(this._buildTitle({ kind, name, args: args_ }))
-      // lastCommand.set(cmd_)
+      // lastCommand.set(cmd)
 
-      const res = await this._runWithWaiter(waitMsg_, ctx, () => cmd_(ctx, args_))
+      const res = await this._runWithWaiter(waitMsg, ctx, () => cmd(ctx, args_))
 
-      const okMsg__ = (res && res.okMsg) || okMsg_ || randFromList(['done', 'ok'])
+      const okMsg_ = this._noFalse(res && res.okMsg, okMsg)
+      const fallbackOk = randFromList(['done', 'ok'])
+
       const resMsg = res && res.resMsg
+
       if (resMsg) ctx.reply(resMsg)
-      if (!ctx.isSystem && !resMsg) {
-        ctx.reply(`${ getOkIcon() } ${ okMsg__ }`, { disable_notification: true })
+      if (!ctx.isSystem && !resMsg && okMsg_ !== false) {
+        ctx.reply(`${ getOkIcon() } ${ okMsg_ || fallbackOk }`, { disable_notification: true })
       }
     } catch (e) {
       this._createOnError({ ctx, cmd: { kind, name, args: args_ } })(e)
@@ -48,22 +54,19 @@ module.exports = ({
   },
 
   _retreiveCmd (ctx, kind, name) {
-    const data = ctx.update || ctx.callback_query
-    if (!ctx.isSystem && data.message && !this._accessRightsGuard(data.message.chat.id, data.message.from.id)) return
-
     const cmd = list[kind][name]
     if (!cmd) throw new UserError('no_cmd. No such command')
 
-    return cmd
+    return this._normalizeCmd(cmd)
   },
 
   _retreiveArgs (ctx, args) {
     return [].concat(args).concat(ctx.match && ctx.match.slice(1))
   },
 
-  _normalizeCmd (cmd) {
-    const [waitMsg_, cmd_, okMsg_] = Array.isArray(cmd) ? cmd : [null, cmd, null]
-    return { waitMsg_, cmd_, okMsg_ }
+  _normalizeCmd (rawCmd) {
+    const [waitMsg, cmd, okMsg] = Array.isArray(rawCmd) ? rawCmd : [null, rawCmd, null]
+    return { waitMsg, cmd, okMsg }
   },
 
   async _runWithWaiter (waitMsg, ctx, cb) {
@@ -80,12 +83,15 @@ module.exports = ({
     return await cb()
   },
 
-  _accessRightsGuard (id, userId/* , cmd */) {
+  _accessRightsGuard ({ message }) {
+    if (!message) return true
+    const { chat: { id }, from: { id: userId } } = message
     const hasAccess = consts.permittedChats.includes(id) || homeCmd.isMember(userId)
-    if (!hasAccess) {
-      throw new UserError('acl_deny. Не можешь повелевать Ботом ты')
-    }
     return hasAccess
+  },
+
+  NoRightsError () {
+    return new UserError('acl_deny. Не можешь повелевать Ботом ты')
   },
 
   _createOnError ({ ctx, cmd: { kind, name, args } } = {}) {
@@ -112,6 +118,12 @@ module.exports = ({
   _buildTitle ({ kind, name, args = [] }) {
     return `${ kind }::${ name }(${ args.map(arg => JSON.stringify(arg)).join(', ') })`
   },
+
+  _noFalse (...values) {
+    if (values.some((value) => value === false)) return false
+    return values.reduce((res, val) => res || val)
+  },
+
 })
 
 // const lastCommand =
