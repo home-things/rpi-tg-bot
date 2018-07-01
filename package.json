@@ -22,13 +22,13 @@
     "express": "^4.16.2",
     "html-entities": "^1.2.1",
     "isomorphic-fetch": "^2.2.1",
-    "jsdom": "^11.1.0",
+    "jsdom": "^11.11.0",
     "just-debounce-it": "^1.0.1",
     "lodash.bindall": "^4.4.0",
     "lodash.throttle": "^4.1.1",
     "moment": "^2.19.3",
     "npm-watch": "^0.2.0",
-    "recastai": "^3.4.1",
+    "recastai": "^3.7.0",
     "redux-action-creator": "^2.2.0",
     "redux-actions": "^2.2.1",
     "telegraf": "^3.8.0",
@@ -38,11 +38,11 @@
     "restart": "*.js"
   },
   "devDependencies": {
-    "ava": "^0.21.0",
+    "ava": "^0.25.0",
     "babel-eslint": "^8.0.2",
     "cross-env": "^5.1.4",
     "eslint": "^4.10.0",
     "eslint-config-airbnb-base": "^12.1.0",
-    "eslint-plugin-import": "^2.8.0"
+    "eslint-plugin-import": "^2.13.0"
   }
 }
