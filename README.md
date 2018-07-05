@@ -89,6 +89,7 @@ npm run watch-logs
   * [ ] home presense
   * [ ] не включ будильник/музыкальный подкаст если меня нет
 * [ ] ! mini-bank
+  e.g. use [transity](https://github.com/feramhq/transity) under the hood
 * [ ] _wip_ [delivery club automation](https://github.com/a-x-/delivery-club-api)
 * [ ] router integration (remote restart, lan dns mngmnt)
   * openwrt https://gist.github.com/boube/7a4ca061fd3f29d940ee
