@@ -24,6 +24,8 @@ const {
 const socksAgent = new SocksAgent({
   socksHost: config.proxy.host,
   socksPort: config.proxy.port,
+  socksUsername: config.proxy.login,
+  socksPassword: config.proxy.psswd,
 })
 
 const app = new Telegraf(token, {
