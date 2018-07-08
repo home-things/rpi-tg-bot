@@ -3,6 +3,8 @@
 
 const Telegraf = require('telegraf')
 const { /* Extra, */ Markup } = require('telegraf')
+const SocksAgent = require('socks5-https-client/lib/Agent');
+
 const { spawn } = require('child_process')
 const setTimeoutAsync = require('./src/set-timeout-async')
 
@@ -18,7 +20,17 @@ const {
   setAsyncInterval,
 } = require('./src/common')
 
-const app = new Telegraf(token)
+
+const socksAgent = new SocksAgent({
+  socksHost: config.proxy.host,
+  socksPort: config.proxy.port,
+  socksUsername: config.proxy.login,
+  socksPassword: config.proxy.psswd,
+})
+
+const app = new Telegraf(token, {
+  telegram: { agent: socksAgent }
+})
 app.telegram.getMe().then((botInfo) => {
   app.options.username = botInfo.username
 })

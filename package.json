@@ -31,6 +31,7 @@
     "recastai": "^3.7.0",
     "redux-action-creator": "^2.2.0",
     "redux-actions": "^2.2.1",
+    "socks5-https-client": "^1.2.1",
     "telegraf": "^3.8.0",
     "throw": "^1.1.0"
   },

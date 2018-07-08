@@ -1,4 +1,4 @@
 #!/bin/sh
 PATH=$PATH:~/n/bin/
 forever_tg_bot_id=$($(dirname $0)/get_forever_pid)
-cd ~/services/tg-bot/ && git pull --rebase && forever restart $forever_tg_bot_id
+cd ~/services/tg-bot/ && git pull --rebase && npm i && forever restart $forever_tg_bot_id
