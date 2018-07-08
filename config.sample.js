@@ -1,4 +1,8 @@
 module.exports = {
+  proxy: {
+    host: 'login:passw@telegram.socks5.proxy',
+    port: '4343',
+  },
   signals: {
     sources: {
       telegram: {
