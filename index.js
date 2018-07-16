@@ -22,14 +22,19 @@ const {
 
 
 const socksAgent = new SocksAgent({
-  socksHost: config.proxy.host,
-  socksPort: config.proxy.port,
-  socksUsername: config.proxy.login,
-  socksPassword: config.proxy.psswd,
+  socksHost:      config.proxy.host,
+  socksPort:      config.proxy.port,
+  socksUsername:  config.proxy.login,
+  socksPassword:  config.proxy.psswd,
 })
 
 const app = new Telegraf(token, {
-  telegram: { agent: socksAgent }
+  telegram: {
+    agent:   socksAgent,
+
+    // https://habr.com/sandbox/115306/
+    apiRoot: 'https://tg-api.invntrm.ru', // https://api.telegram.org
+  },
 })
 app.telegram.getMe().then((botInfo) => {
   app.options.username = botInfo.username
