@@ -5,10 +5,7 @@ module.exports = {
     login: 'login',
     psswd: 'psswd',
   },
-  httpsProxy: {
-    host: 'my-tg.com',
-    port: '443',
-  }
+  httpsProxy: 'https://my-https-proxy.com',
   signals: {
     sources: {
       telegram: {

@@ -35,11 +35,7 @@ const {
 // 3. wrap into nginx proxy_pass
 // 4. setup letsencrypt on it
 
-const httpsAgent = new HttpsAgent({
-  host: config.httpsProxy.host,
-  port: config.httpsProxy.port,
-  secureProxy: config.httpsProxy.port === 443,
-})
+const httpsAgent = new HttpsAgent(config.httpsProxy)
 
 const app = new Telegraf(token, {
   telegram: {
