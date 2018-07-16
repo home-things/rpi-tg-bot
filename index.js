@@ -3,7 +3,8 @@
 
 const Telegraf = require('telegraf')
 const { /* Extra, */ Markup } = require('telegraf')
-const SocksAgent = require('socks5-https-client/lib/Agent');
+// const SocksAgent = require('socks5-https-client/lib/Agent');
+const HttpsAgent = require('https-proxy-agent')
 
 const { spawn } = require('child_process')
 const setTimeoutAsync = require('./src/set-timeout-async')
@@ -21,16 +22,28 @@ const {
 } = require('./src/common')
 
 
-const socksAgent = new SocksAgent({
-  socksHost:      config.proxy.host,
-  socksPort:      config.proxy.port,
-  socksUsername:  config.proxy.login,
-  socksPassword:  config.proxy.psswd,
+// const socksAgent = new SocksAgent({
+//   socksHost:      config.proxy.host,
+//   socksPort:      config.proxy.port,
+//   socksUsername:  config.proxy.login,
+//   socksPassword:  config.proxy.psswd,
+// })
+
+// how to setup https proxy server:
+// 1. apt-get install tinyproxy
+// 2. setup tinyproxy (allow 0.0.0.0)
+// 3. wrap into nginx proxy_pass
+// 4. setup letsencrypt on it
+
+const httpsAgent = new HttpsAgent({
+  host: config.httpsProxy.host,
+  port: config.httpsProxy.port,
+  secureProxy: config.httpsProxy.port === 443,
 })
 
 const app = new Telegraf(token, {
   telegram: {
-    agent:   socksAgent,
+    agent:   httpsAgent,
 
     // https://habr.com/sandbox/115306/
     apiRoot: 'https://tg-api.invntrm.ru', // https://api.telegram.org

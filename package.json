@@ -21,6 +21,7 @@
     "dotenv": "^4.0.0",
     "express": "^4.16.2",
     "html-entities": "^1.2.1",
+    "https-proxy-agent": "^2.2.1",
     "isomorphic-fetch": "^2.2.1",
     "jsdom": "^11.11.0",
     "just-debounce-it": "^1.0.1",
@@ -31,7 +32,6 @@
     "recastai": "^3.7.0",
     "redux-action-creator": "^2.2.0",
     "redux-actions": "^2.2.1",
-    "socks5-https-client": "^1.2.1",
     "telegraf": "^3.8.0",
     "throw": "^1.1.0"
   },
