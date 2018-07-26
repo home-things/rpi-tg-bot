@@ -44,7 +44,6 @@ _🚧 work in progress_
 #### installation
 ```
 npm add -g forever
-sudo apt-get install -y jq
 # ... rpi-bin
 # ... tg-rpi-smart-home-bot
 # npm i
