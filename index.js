@@ -534,7 +534,8 @@ async function openTorrentRpi3 ({ link, reply }) {
   const tmpFile = '/tmp/tg-bot.torrent'
 
   await exec(`wget -O ${ tmpFile } "${ link }"`)
-  await exec(`scp ${ tmpFile } pi@rpi3:~/Downloads`)
+  // await exec(`scp ${ tmpFile } pi@rpi3:~/Downloads`)
+  await exec(`cp ${ tmpFile } ~/Downloads`)
 
   torrentsStatus({ reply })
 }
@@ -568,7 +569,8 @@ async function openPictureRpi3 (link, name, { sudo = false } = {}) {
   const targetFilePath = `~/Downloads/${ tmpFileName }`
 
   await exec(`wget "${ link }" -O "${ tmpFilePath }"`)
-  await exec(`scp "${ tmpFilePath }" "pi@rpi3:${ targetFilePath }"`)
+  // await exec(`scp "${ tmpFilePath }" "pi@rpi3:${ targetFilePath }"`)
+  await exec(`cp "${ tmpFilePath }" "${ targetFilePath }"`)
   openRpi3(`gpicview ${ targetFilePath }`, { isX11: true, isResident: true })
 }
 

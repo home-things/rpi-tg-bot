@@ -98,7 +98,8 @@ function openRpi3 (cmd, { isX11, isResident } = {}) {
   const x11 = isX11 ? 'DISPLAY=:0.0 ' : ''
   const resident = isResident ? 'screen -d -m ' : ''
   const cmd_ = cmd.replace(/'/g, '\'')
-  return exec(`ssh pi@rpi3 '${ x11 } ${ resident } ${ cmd_ }'`)
+  // return exec(`ssh pi@rpi3 '${ x11 } ${ resident } ${ cmd_ }'`)
+  return exec(`${ x11 } ${ resident } ${ cmd_ }`)
 }
 
 function getConfig () {
