@@ -49,7 +49,7 @@ sudo apt-get install -y jq
 # ... tg-rpi-smart-home-bot
 # npm i
 # ... crontab -e
-BOT_TOKEN=$(cat $HOME/.config/tg-bot.json | jq -r .BOT_TOKEN) forever start /home/pi/services/tg-bot/index.js
+BOT_TOKEN=$(node -p "require('./config').signals.sources.telegram.token") forever start /home/pi/services/tg-rpi/
 
 ```
 [Documentation](https://github.com/a-x-/tg-rpi-smart-home-bot/wiki/Installation-everything-DRAFT)
