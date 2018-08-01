@@ -277,7 +277,7 @@ app.hears(/\b(wi-fi|wifi|lan|router|роутер)\b/i, (ctx) => {
   ctx.reply('Нате вам: https://docs.google.com/document/d/1eXEPilIdV6Bxgbqi3l__uC04goAzYPhfVD-rz1Ixrv4/edit')
 })
 
-app.hears(/\b(умный дом|умном доме|умного дома|домашняя автоматизация|smarthome|smart home)\b/i, (ctx) => {
+app.hears(/(умный дом|умном доме|умного дома|домашняя автоматизация|smarthome|smart home)/i, (ctx) => {
   ctx.reply('Нате вам: https://www.notion.so/mxtnr/SmartHome-8db72c9f45ac4a3eb499dc603bc7cd04')
 })
 
