@@ -534,8 +534,8 @@ async function openTorrentRpi3 ({ link, reply }) {
   const tmpFile = '/tmp/tg-bot.torrent'
 
   await exec(`wget -O ${ tmpFile } "${ link }"`)
-  // await exec(`scp ${ tmpFile } pi@rpi3:~/Downloads`)
-  await exec(`cp ${ tmpFile } ~/Downloads`)
+  // await exec(`scp ${ tmpFile } pi@rpi3:/home/pi/Downloads`)
+  await exec(`cp ${tmpFile } /home/pi/Downloads`)
 
   torrentsStatus({ reply })
 }
@@ -566,7 +566,7 @@ async function openPictureRpi3 (link, name, { sudo = false } = {}) {
 
   const tmpFileName = `tg-bot.${ name }.jpg`
   const tmpFilePath = `/tmp/${ tmpFileName }`
-  const targetFilePath = `~/Downloads/${ tmpFileName }`
+  const targetFilePath = `/home/pi/Downloads/${ tmpFileName }`
 
   await exec(`wget "${ link }" -O "${ tmpFilePath }"`)
   // await exec(`scp "${ tmpFilePath }" "pi@rpi3:${ targetFilePath }"`)
@@ -591,7 +591,7 @@ function openLinkRpi3 (link, { sudo = false } = {}) {
 
 async function openYoutubeLinkRpi3 (link, { sudo = false } = {}) {
   const normalizedLink = /^http/.test(link) ? `https://${ link }` : link
-  const open = () => openRpi3(`~/bin/kodi-cli -s; ~/bin/kodi-cli -y "${ normalizedLink }"`)
+  const open = () => openRpi3(`/home/pi/bin/kodi-cli -s; /home/pi/bin/kodi-cli -y "${ normalizedLink }"`)
 
   if (!sudo && isNight()) throw new UserError('night. Try with sudo, bro')
 
