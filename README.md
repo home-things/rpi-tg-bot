@@ -17,6 +17,7 @@
 ## Hardware
 * Any raspbery pi (I use Raspberry Pi Model B Rev 2 and Pi Rev 3)
 * Light driver (I use very own one based on Reley(solid-state/thyristor omron-g3mb-202p))
+  * @a-x-'s [esp-light-ctr](https://github.com/a-x-/esp-light-ctr)
 * Sound system (I use external rpi sound card *[HIFIBERRY DAC+](https://www.hifiberry.com/shop/boards/hifiberry-dacplus-phone/)* and usual amp+speakers system *Edifier R980T*)
 
 ## Software
