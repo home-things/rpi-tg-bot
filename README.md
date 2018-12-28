@@ -30,6 +30,7 @@
 - 🖲💡 @a-x-'s [Alfred.app light control workflow](https://yadi.sk/d/lGhNefTz3RdZcD); look the screenshot above; [read more about Alfred](https://www.alfredapp.com)
 - 🎵💨 @a-x-/[megapolist-podcast-crawler] — any podcast crawler & player
 - 💡🌐 @a-x-/[stupid-light-server] — stupid light control http-server
+- 💦📏 @a-x-/[rpi-water-isr](https://github.com/a-x-/rpi-water-isr) — water meter
 - 💬⚙️ [tg] — telegram cli
 
 
